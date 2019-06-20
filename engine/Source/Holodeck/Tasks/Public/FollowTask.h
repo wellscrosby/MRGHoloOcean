@@ -27,7 +27,8 @@ public:
 	/**
 	* Default Constructor
 	*/
-	UFollowTask() {}
+	UFollowTask() : ToFollow(nullptr), ToFollowTag(""), FollowSocket(""), OnlyWithinSight(true),
+		FOVRadians(1.5), MinDistance(10000) {}
 
 	/**
 	* InitializeSensor
@@ -44,8 +45,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		AActor* ToFollow;
 
+	// Socket on Follow actor for ray trace
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FString ToFollowTag;
+		FString FollowSocket;
 
 	// Only give reward if target is in sight
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -59,10 +61,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float MinDistance;
 
-	// Defines the target's height
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float TargetHeight;
-	
 protected:
 	//Checkout HolodeckSensor.h for the documentation for this overridden function.
 	virtual void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -70,5 +68,6 @@ protected:
 private:
 	// Scales score between 0-1 to 0-100
 	const int MaxScore = 100;
-	void FindToFollow(FString tag);
+
+	FString ToFollowTag;
 };
