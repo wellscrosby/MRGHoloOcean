@@ -36,6 +36,7 @@ class ControlSchemes:
     # Nav Agent Control Schemes
     NAV_TARGET_LOCATION = 0
 
+
     # Turtle agent
     TURTLE_DIRECT_TORQUES = 0
 
@@ -47,6 +48,9 @@ class ControlSchemes:
     HAND_AGENT_MAX_TORQUES = 0
     HAND_AGENT_MAX_SCALED_TORQUES = 1
     HAND_AGENT_MAX_TORQUES_FLOAT = 2
+
+    # AUV Control Schemes
+    AUV_DIRECT_TORQUES = 0
 
 
 class HolodeckAgent:
@@ -648,6 +652,39 @@ class TurtleAgent(HolodeckAgent):
         np.copyto(self._action_buffer, action)
 
 
+class AuvAgent(HolodeckAgent):
+    """A simple autonomous underwater vehicle.
+
+    **Action Space**:
+
+    ``[up_thruster, down_thruster, left_thruster, right_thruster]``
+    
+    -  All are capped by max acceleration
+
+    Inherits from :class:`HolodeckAgent`."""
+    # constants in AuvAgent.h in holodeck-engine
+    __MAX_ACCEL = 3
+    __MIN_ACCEL = 0
+
+    agent_type = "AUV"
+
+    @property
+    def control_schemes(self):
+        low = [self.__MIN_ACCEL]*4
+        high = [self.__MAX_ACCEL]*4
+        return [("[up_thruster, down_thruster, left_thruster, right_thruster]", ContinuousActionSpace([4], low=low, high=high))]
+
+    def get_joint_constraints(self, joint_name):
+        return None
+
+    def __repr__(self):
+        return "AuvAgent " + self.name
+
+    def __act__(self, action):
+        np.copyto(self._action_buffer, np.array(action))
+        np.copyto(self._action_buffer, action)
+
+
 class AgentDefinition:
     """Represents information needed to initialize agent.
 
@@ -670,7 +707,8 @@ class AgentDefinition:
         "NavAgent": NavAgent,
         "AndroidAgent": AndroidAgent,
         "HandAgent": HandAgent,
-        "TurtleAgent": TurtleAgent
+        "TurtleAgent": TurtleAgent,
+        "AuvAgent": AuvAgent
     }
 
     def __init__(self, agent_name, agent_type, sensors=None, starting_loc=(0, 0, 0),
