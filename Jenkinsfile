@@ -6,8 +6,8 @@ pipeline {
     stage('build') {
       steps {
         sh '''
-          apt update
-          apt install libgl1-mesa-glx
+          apt-get update
+          apt-get -y install libgl1-mesa-glx
           pip install pytest opencv-python
           pip install .
         '''
