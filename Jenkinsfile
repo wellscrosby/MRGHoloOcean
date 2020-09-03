@@ -1,6 +1,6 @@
 pipeline {
   agent { 
-      docker{ image 'python:slim' }
+      docker{ image 'python' }
   }
   stages {
     stage('build') {
