@@ -1,14 +1,9 @@
 pipeline {
-  agent { 
-      docker{ image 'python' }
-  }
+  agent { dockerfile true }
   stages {
     stage('build') {
       steps {
         sh '''
-          apt-get update
-          apt-get -y install libgl1-mesa-glx
-          pip install pytest opencv-python
           pip install .
         '''
       }
