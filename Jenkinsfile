@@ -6,6 +6,7 @@ pipeline {
     stage('build') {
       steps {
         sh '''
+          sudo apt install libgl1-mesa-glx
           pip install pytest opencv-python
           pip install .
         '''
