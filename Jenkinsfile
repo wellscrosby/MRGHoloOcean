@@ -15,7 +15,7 @@ pipeline {
     stage('test') {
       steps {
         sh '''
-          su - holodeckuser && py.test
+          runuser -l holodeckuser -c 'pytest'
         '''
       }
     }
