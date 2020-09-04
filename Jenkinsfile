@@ -1,8 +1,9 @@
 pipeline {
-  agent { 
+  agent {
     dockerfile {
       args '--runtime=nvidia'
     }
+
   }
   stages {
     stage('build') {
@@ -12,9 +13,10 @@ pipeline {
         '''
       }
     }
+
     stage('test') {
       steps {
-	sh 'echo ls'
+        sh 'ls'
         sh 'runuser -l holodeckuser -c \\"ls\\"'
         sh 'runuser -l holodeckuser -c \\"pytest\\"'
       }
