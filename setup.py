@@ -4,14 +4,14 @@ with open("README.md") as f:
     readme = f.read()
 
 setup(
-    name="holodeck",
+    name="holodeck-ocean",
     version="0.3.1",
-    description="High fidelity simulated environments for reinforcement learning",
+    description="Autonomous Underwater Vehicle Simulator",
     long_description=readme,
     long_description_content_type="text/markdown",
     author="Joshua Greaves, Max Robinson, Nick Walton, Jayden Milne, Vin Howe, Daniel Ekpo, Kolby Nottingham",
-    author_email="holodeck@cs.byu.edu",
-    url="https://github.com/byu-pccl/holodeck",
+    author_email="contagon@byu.edu",
+    url="https://bitbucket.org/frostlab/holodeck-ocean",
     packages=find_packages('src'),
     package_dir={'': 'src'},
     license='MIT License',
