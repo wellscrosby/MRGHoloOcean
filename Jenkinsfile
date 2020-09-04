@@ -1,7 +1,7 @@
 pipeline {
   agent { 
     dockerfile {
-      args '--runtime=nvidia -u holodeckuser'
+      args '--runtime=nvidia'
     }
   }
   stages {
@@ -17,6 +17,7 @@ pipeline {
     stage('test') {
       steps {
         sh '''
+	  su - holodeckuser
           py.test
         '''
       }
