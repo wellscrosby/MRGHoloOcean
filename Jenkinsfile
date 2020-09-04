@@ -18,7 +18,9 @@ pipeline {
       steps {
         sh 'ls'
         sh 'pwd'
-        sh 'runuser -l holodeckuser -c \\"pytest\\"'
+        sh '''runuser -l holodeckuser -c \\"cd /var/jenkins_home/jobs/holodeck-ocean/branches/jenkins/workspace
+
+ && pytest\\"'''
       }
     }
 
