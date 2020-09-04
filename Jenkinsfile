@@ -8,9 +8,7 @@ pipeline {
   stages {
     stage('build') {
       steps {
-        sh '''
-          pip install .
-        '''
+        sh 'pip install .'
       }
     }
 
