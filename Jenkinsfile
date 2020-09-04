@@ -7,7 +7,6 @@ pipeline {
   stages {
     stage('build') {
       steps {
-        sh 'ls /home/holodeckuser/.local/share/holodeck/0.3.1/worlds/'
         sh '''
           pip install .
         '''
@@ -17,6 +16,8 @@ pipeline {
       steps {
         sh '''
           su - holodeckuser
+	  whoami
+          ls /home/holodeckuser/.local/share/holodeck/0.3.1/worlds/
           py.test
         '''
       }
