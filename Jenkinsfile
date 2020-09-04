@@ -1,5 +1,9 @@
 pipeline {
-  agent { dockerfile true }
+  agent { 
+    dockerfile {
+      args '--runtime=nvidia'
+    }
+  }
   stages {
     stage('build') {
       steps {
