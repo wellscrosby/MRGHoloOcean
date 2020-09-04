@@ -14,6 +14,7 @@ pipeline {
     }
     stage('test') {
       steps {
+	sh 'echo ls'
         sh 'runuser -l holodeckuser -c \\"ls\\"'
         sh 'runuser -l holodeckuser -c \\"pytest\\"'
       }
