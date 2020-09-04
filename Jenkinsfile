@@ -7,11 +7,11 @@ pipeline {
   stages {
     stage('build') {
       steps {
+	sh 'whoami'
+	sh 'ls ~/.local/share/holodeck/0.3.1/worlds/'
         sh '''
           pip install .
         '''
-	sh 'whoami'
-	sh 'ls ~/.local/share/holodeck/0.3.1/worlds/'
       }
     }
     stage('test') {
