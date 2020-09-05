@@ -74,7 +74,7 @@ def test_joint_rotation_sensor(joint_agent_type):
         failures = list()
 
         num_joints = len(joints)
-        num_steps = 10
+        num_steps = 40
         for i in range(num_joints):
 
             torque_backwards = np.zeros(num_joints)
