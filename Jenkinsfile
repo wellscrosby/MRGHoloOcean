@@ -3,20 +3,24 @@ pipeline {
     dockerfile {
       args '--runtime=nvidia'
     }
-
   }
+
   stages {
-    stage('build') {
+    stage('Build') {
       steps {
         sh 'pip install .'
       }
     }
 
-    stage('test') {
+    stage('Test') {
       steps {
-        sh 'pytest'
+        sh 'py.test --junitxml results.xml'
       }
     }
-
   }
+  post {
+        always {
+            junit 'results.xml'
+        }
+    }
 }
