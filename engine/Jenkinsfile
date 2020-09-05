@@ -12,6 +12,7 @@ pipeline
 		{
 			image 'adamrehn/ue4-full:4.22.3'
 			// TODO: persist in volume? Does Jenkins use a bind mount?
+			args '-u root --privileged'
 		}
 	}
 	
@@ -36,24 +37,6 @@ pipeline
 		{
 			steps
 			{
-				dir('holodeck-worlds') {
-					checkout ([
-						userRemoteConfigs: [[
-							url: 'https://github.com/BYU-PCCL/holodeck-worlds',
-							credentialsId: 'github'
-						]],
-						$class: 'GitSCM',
-						branches: [[name: '*/master']],
-						extensions: [[$class: 'GitLFSPull'],
-						             [$class: 'CloneOption',
-                    					depth: 0,
-                    					noTags: false,
-                    					shallow: true,
-                    					timeout: 120]
-						]
-					])
-				}
-
 				dir('holodeck-configs') {
 					checkout ([
 						userRemoteConfigs: [[
