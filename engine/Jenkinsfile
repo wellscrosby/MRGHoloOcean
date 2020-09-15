@@ -40,8 +40,8 @@ pipeline
 				dir('holodeck-ocean-worlds') {
 					checkout ([
 						userRemoteConfigs: [[
-							url: 'https://bitbucket.org/frostlab/holodeck-ocean-worlds/',
-							credentialsId: 'bitbucket'
+							url: 'https://bitbucket.org/frostlab/holodeck-ocean-worlds',
+							credentialsId: 'bitbucket-cloud'
 						]],
 						$class: 'GitSCM',
 						branches: [[name: '*/master']],
