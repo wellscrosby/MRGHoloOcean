@@ -10,6 +10,10 @@ echo "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠�
 echo "⚠ Packaging $packagename..."
 echo "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
 
+#move our worlds into it
+mkdir Content/Worlds
+mv holodeck-ocean-worlds/* Content/Worlds/
+
 # Package it up
 echo "👉 Starting Packaging Process..."
 ue4 package Development

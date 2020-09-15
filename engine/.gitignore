@@ -1,6 +1,7 @@
 # Content files
 Content/DesertRuins
 Content/ForestCollection
+Content/Worlds
 
 *.VC.db
 
@@ -64,4 +65,5 @@ DerivedDataCache/*
 
 # Visual Studio Artifacts
 .vs/
+.vscode/
 Content/HolodeckContent/Bots/HuntingSpider/*
