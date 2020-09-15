@@ -37,6 +37,23 @@ pipeline
 		{
 			steps
 			{
+				dir('holodeck-ocean-worlds') {
+					checkout ([
+						userRemoteConfigs: [[
+							url: 'https://bitbucket.org/frostlab/holodeck-ocean-worlds',
+							credentialsId: 'bitbucket-cloud'
+						]],
+						$class: 'GitSCM',
+						branches: [[name: '*/master']],
+						extensions: [[$class: 'GitLFSPull'],
+						             [$class: 'CloneOption',
+                    					depth: 0,
+                    					noTags: false,
+                    					shallow: true,
+                    					timeout: 120]
+						]
+					])
+				}
 				dir('holodeck-configs') {
 					checkout ([
 						userRemoteConfigs: [[
