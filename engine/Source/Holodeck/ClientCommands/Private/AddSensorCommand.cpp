@@ -43,7 +43,8 @@ void UAddSensorCommand::Execute() {
 										{ "CupGameTask", UCupGameTask::StaticClass() },
 										{ "WorldNumSensor", UWorldNumSensor::StaticClass() }, 
 										{ "RangeFinderSensor", URangeFinderSensor::StaticClass() },
-										{ "CleanUpTask", UCleanUpTask::StaticClass() }, };
+										{ "CleanUpTask", UCleanUpTask::StaticClass() },
+										{ "DVLSensor", UDVLSensor::StaticClass() }, };
 
 	FString AgentName = StringParams[0].c_str();
 	FString SensorName = StringParams[1].c_str();
