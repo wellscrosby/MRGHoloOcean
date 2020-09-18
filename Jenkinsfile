@@ -9,6 +9,7 @@ pipeline {
     stage('Build') {
       steps {
         sh 'pip install .'
+        sh 'python3 -c "import holodeck; holodeck.install(\"Ocean\", \"https://robots.et.byu.edu/jenkins/job/holodeck-ocean-engine/job/master/lastSuccessfulBuild/artifact/Ocean.zip\")"'
       }
     }
 
