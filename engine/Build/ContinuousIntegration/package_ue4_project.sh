@@ -34,7 +34,7 @@ chmod 777 dist
 cd dist
 
 echo "👉 Copying config files into output directory..."
-cp ../holodeck-ocean-worlds/Config/*.json .
+cp ../Content/Worlds/Config/*.json .
 
 echo "👉 Compressing contents into $packagename.zip..."
 zip -r "$packagename.zip" *
