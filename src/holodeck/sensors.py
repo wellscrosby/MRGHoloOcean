@@ -607,7 +607,35 @@ class AbuseSensor(HolodeckSensor):
     def data_shape(self):
         return [1]
 
+######################## HOLODECK-OCEAN CUSTOM SENSORS ###########################
+#Make sure to also add your new sensor to SensorDefintion below
 
+class DVLSensor(HolodeckSensor):
+    """Doppler Velocity Log Sensor.
+
+    Returns a 1D numpy array of
+
+    ::`
+
+       [velocity_x, velocity_y]
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the
+    following options:
+
+    - ``AcousticDebug``: Show debug traces. (default false)
+    """
+
+    sensor_type = "DVLSensor"
+
+    @property
+    def dtype(self):
+        return np.float32
+
+    @property
+    def data_shape(self):
+        return [2]
+
+######################################################################################
 class SensorDefinition:
     """A class for new sensors and their parameters, to be used for adding new sensors.
 
@@ -646,6 +674,7 @@ class SensorDefinition:
         "WorldNumSensor": WorldNumSensor,
         "BallLocationSensor": BallLocationSensor,
         "AbuseSensor": AbuseSensor,
+        "DVLSensor": DVLSensor,
     }
 
     def get_config_json_string(self):
