@@ -9,7 +9,7 @@ pipeline {
     stage('Build') {
       steps {
         sh 'pip install .'
-        sh 'python3 -c \\"import holodeck; holodeck.install()\\"'
+        sh 'python3 -c "import holodeck; holodeck.install()"'
       }
     }
 
