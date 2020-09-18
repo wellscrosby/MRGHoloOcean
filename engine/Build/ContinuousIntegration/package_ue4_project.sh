@@ -4,7 +4,7 @@
 
 ue4 setroot /home/ue4/UnrealEngine
 
-packagename="DEFAULT"
+packagename="Ocean"
 
 echo "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
 echo "⚠ Packaging $packagename..."
@@ -32,6 +32,9 @@ chmod 777 dist
 
 # Create the zip file
 cd dist
+
+echo "👉 Copying config files into output directory..."
+cp ../Content/Worlds/Config/*.json .
 
 echo "👉 Compressing contents into $packagename.zip..."
 zip -r "$packagename.zip" *
