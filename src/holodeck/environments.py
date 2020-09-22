@@ -94,6 +94,7 @@ class HolodeckEnvironment:
         self._initial_agent_defs = agent_definitions
         self._spawned_agent_defs = []
         self._lcm_channels = dict()
+        self._tick_num = 0
 
         # Start world based on OS
         if start_world:
@@ -215,7 +216,6 @@ class HolodeckEnvironment:
                 if sensor_config['publish'] == 'lcm':
                     if not self._lcm_channels:
                         globals()["lcm"] = __import__("lcm")
-                        # globals()["exlcm"] = __import__("exlcm")
                         self._lcm = lcm.LCM()
                     if agent['agent_name'] in self._lcm_channels:
                         self._lcm_channels[agent['agent_name']][sensor_config['sensor_name']] = \
@@ -361,6 +361,7 @@ class HolodeckEnvironment:
             reward, terminal = self._get_reward_terminal()
             last_state = self._default_state_fn(), reward, terminal, None
 
+        self._tick_num += 1
         if publish:
             self.publish()
 
@@ -411,6 +412,8 @@ class HolodeckEnvironment:
             self._client.acquire()
             state = self._default_state_fn()
 
+        self._tick_num += 1
+
         if publish:
             self.publish()
 
@@ -418,10 +421,11 @@ class HolodeckEnvironment:
 
     def publish(self):
         """Publishes current state to channels chosen by the scenario config."""
-        if self._lcm_channels is not None:
+        if self._lcm_channels:
             for agent, sensors in self._lcm_channels.items():
                 for sensor, msg in sensors.items():
                     msg.value = self._state_dict[agent][sensor].tolist()
+                    msg.timestamp = self._tick_num / self._ticks_per_sec
                     self._lcm.publish(sensor, msg.encode())
 
     def _enqueue_command(self, command_to_send):

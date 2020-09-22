@@ -10,9 +10,10 @@ except ImportError:
 import struct
 
 class IMUSensor(object):
-    __slots__ = ["value"]
+    __slots__ = ["timestamp", "value"]
 
     def __init__(self):
+        self.timestamp = 0.0
         self.value = [ [ 0.0 for dim1 in range(3) ] for dim0 in range(2) ]
 
     def encode(self):
@@ -22,6 +23,7 @@ class IMUSensor(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
+        buf.write(struct.pack(">f", self.timestamp))
         for i0 in range(2):
             buf.write(struct.pack('>3f', *self.value[i0][:3]))
 
@@ -37,6 +39,7 @@ class IMUSensor(object):
 
     def _decode_one(buf):
         self = IMUSensor()
+        self.timestamp = struct.unpack(">f", buf.read(4))[0]
         self.value = []
         for i0 in range(2):
             self.value.append(struct.unpack('>3f', buf.read(12)))
@@ -46,7 +49,7 @@ class IMUSensor(object):
     _hash = None
     def _get_hash_recursive(parents):
         if IMUSensor in parents: return 0
-        tmphash = (0x4dca9b6385eeb97b) & 0xffffffffffffffff
+        tmphash = (0xb3bf4699968bb97f) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)

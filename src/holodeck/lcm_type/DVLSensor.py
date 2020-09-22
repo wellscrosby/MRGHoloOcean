@@ -10,9 +10,10 @@ except ImportError:
 import struct
 
 class DVLSensor(object):
-    __slots__ = ["value"]
+    __slots__ = ["timestamp", "value"]
 
     def __init__(self):
+        self.timestamp = 0.0
         self.value = [ 0.0 for dim0 in range(2) ]
 
     def encode(self):
@@ -22,6 +23,7 @@ class DVLSensor(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
+        buf.write(struct.pack(">f", self.timestamp))
         buf.write(struct.pack('>2f', *self.value[:2]))
 
     def decode(data):
@@ -36,6 +38,7 @@ class DVLSensor(object):
 
     def _decode_one(buf):
         self = DVLSensor()
+        self.timestamp = struct.unpack(">f", buf.read(4))[0]
         self.value = struct.unpack('>2f', buf.read(8))
         return self
     _decode_one = staticmethod(_decode_one)
@@ -43,7 +46,7 @@ class DVLSensor(object):
     _hash = None
     def _get_hash_recursive(parents):
         if DVLSensor in parents: return 0
-        tmphash = (0x775c244dcb9b6385) & 0xffffffffffffffff
+        tmphash = (0x3a22a64c3fb96669) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)
