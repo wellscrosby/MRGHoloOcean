@@ -217,7 +217,7 @@ class HolodeckEnvironment:
                 if sensor_config['publish'] == 'lcm':
                     if not self._lcm_channels:
                         globals()["lcm"] = __import__("lcm")
-                        self._lcm = lcm.LCM()
+                        self._lcm = lcm.LCM(self._scenario['lcm_provider'])
                     if agent['agent_name'] in self._lcm_channels:
                         self._lcm_channels[agent['agent_name']][sensor_config['sensor_name']] = \
                                                                     SensorData(sensor_config['sensor_type'], sensor_config['channel'])

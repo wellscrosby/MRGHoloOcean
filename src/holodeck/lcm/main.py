@@ -12,7 +12,6 @@ class SensorData:
     }
 
     def __init__(self, sensor_type, channel):
-        print(sensor_type)
         self.type = sensor_type
         self.sensor = self._sensor_keys_[sensor_type]()
         self.channel = channel
