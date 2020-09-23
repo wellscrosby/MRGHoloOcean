@@ -5,8 +5,4 @@ DO NOT MODIFY BY HAND!!!!
 
 from .DVLSensor import DVLSensor
 from .IMUSensor import IMUSensor
-
-_sensor_keys_ = {
-        "IMUSensor": IMUSensor,
-        "DVLSensor": DVLSensor,
-    }
+from .main import SensorData

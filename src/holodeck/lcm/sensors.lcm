@@ -1,0 +1,14 @@
+package lcm;
+
+struct DVLSensor
+{
+    int64_t  timestamp;
+    float velocity[2];
+}
+
+struct IMUSensor
+{
+    int64_t  timestamp;
+    float acceleration[3];
+    float angular_velocity[3];
+}

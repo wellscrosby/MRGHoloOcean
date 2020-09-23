@@ -21,7 +21,7 @@ from holodeck.exceptions import HolodeckException
 from holodeck.holodeckclient import HolodeckClient
 from holodeck.agents import AgentDefinition, SensorDefinition, AgentFactory
 from holodeck.weather import WeatherController
-from holodeck import lcm_type
+from holodeck.lcm import SensorData
 
 class HolodeckEnvironment:
     """Proxy for communicating with a Holodeck world
@@ -94,7 +94,7 @@ class HolodeckEnvironment:
         self._initial_agent_defs = agent_definitions
         self._spawned_agent_defs = []
         self._lcm_channels = dict()
-        self._tick_num = 0
+        self._tick_lengthms = int( (1 / ticks_per_sec) * 1000 )
 
         # Start world based on OS
         if start_world:
@@ -196,6 +196,7 @@ class HolodeckEnvironment:
                     'socket': "",
                     'configuration': None,
                     'sensor_name': sensor['sensor_type'],
+                    'channel': sensor['sensor_type'],
                     'existing': False,
                     'publish': None
                 }
@@ -219,11 +220,11 @@ class HolodeckEnvironment:
                         self._lcm = lcm.LCM()
                     if agent['agent_name'] in self._lcm_channels:
                         self._lcm_channels[agent['agent_name']][sensor_config['sensor_name']] = \
-                                lcm_type._sensor_keys_[sensor_config['sensor_type']]()
+                                                                    SensorData(sensor_config['sensor_type'], sensor_config['channel'])
                     else:
                         self._lcm_channels[agent['agent_name']] = \
-                            { sensor_config['sensor_name'] : lcm_type._sensor_keys_[sensor_config['sensor_type']]() }
-                    
+                                    { sensor_config['sensor_name'] : SensorData(sensor_config['sensor_type'], sensor_config['channel']) }
+            
             # Default values for an agent
             agent_config = {
                 'location': [0, 0, 0],
@@ -361,7 +362,6 @@ class HolodeckEnvironment:
             reward, terminal = self._get_reward_terminal()
             last_state = self._default_state_fn(), reward, terminal, None
 
-        self._tick_num += 1
         if publish:
             self.publish()
 
@@ -412,8 +412,6 @@ class HolodeckEnvironment:
             self._client.acquire()
             state = self._default_state_fn()
 
-        self._tick_num += 1
-
         if publish:
             self.publish()
 
@@ -424,9 +422,8 @@ class HolodeckEnvironment:
         if self._lcm_channels:
             for agent, sensors in self._lcm_channels.items():
                 for sensor, msg in sensors.items():
-                    msg.value = self._state_dict[agent][sensor].tolist()
-                    msg.timestamp = self._tick_num / self._ticks_per_sec
-                    self._lcm.publish(sensor, msg.encode())
+                    msg.set_value(self._tick_lengthms, self._state_dict[agent][sensor])
+                    self._lcm.publish(msg.channel, msg.sensor.encode())
 
     def _enqueue_command(self, command_to_send):
         self._command_center.enqueue_command(command_to_send)
