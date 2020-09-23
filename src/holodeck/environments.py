@@ -21,7 +21,7 @@ from holodeck.exceptions import HolodeckException
 from holodeck.holodeckclient import HolodeckClient
 from holodeck.agents import AgentDefinition, SensorDefinition, AgentFactory
 from holodeck.weather import WeatherController
-
+from holodeck.lcm import SensorData
 
 class HolodeckEnvironment:
     """Proxy for communicating with a Holodeck world
@@ -93,6 +93,8 @@ class HolodeckEnvironment:
         self._scenario = scenario
         self._initial_agent_defs = agent_definitions
         self._spawned_agent_defs = []
+        self._lcm_channels = dict()
+        self._tick_lengthms = int( (1 / ticks_per_sec) * 1000 )
 
         # Start world based on OS
         if start_world:
@@ -194,7 +196,9 @@ class HolodeckEnvironment:
                     'socket': "",
                     'configuration': None,
                     'sensor_name': sensor['sensor_type'],
-                    'existing': False
+                    'channel': sensor['sensor_type'],
+                    'existing': False,
+                    'publish': None
                 }
                 # Overwrite the default values with what is defined in the scenario config
                 sensor_config.update(sensor)
@@ -203,10 +207,24 @@ class HolodeckEnvironment:
                                                 agent['agent_type'],
                                                 sensor_config['sensor_name'],
                                                 sensor_config['sensor_type'],
+                                                publish=sensor_config['publish'],
                                                 socket=sensor_config['socket'],
                                                 location=sensor_config['location'],
                                                 rotation=sensor_config['rotation'],
                                                 config=sensor_config['configuration']))
+
+                # Set up channels to publish to lcm
+                if sensor_config['publish'] == 'lcm':
+                    if not self._lcm_channels:
+                        globals()["lcm"] = __import__("lcm")
+                        self._lcm = lcm.LCM(self._scenario['lcm_provider'])
+                    if agent['agent_name'] in self._lcm_channels:
+                        self._lcm_channels[agent['agent_name']][sensor_config['sensor_name']] = \
+                                                                    SensorData(sensor_config['sensor_type'], sensor_config['channel'])
+                    else:
+                        self._lcm_channels[agent['agent_name']] = \
+                                    { sensor_config['sensor_name'] : SensorData(sensor_config['sensor_type'], sensor_config['channel']) }
+            
             # Default values for an agent
             agent_config = {
                 'location': [0, 0, 0],
@@ -312,7 +330,7 @@ class HolodeckEnvironment:
 
         return self._default_state_fn()
 
-    def step(self, action, ticks=1):
+    def step(self, action, ticks=1, publish=True):
         """Supplies an action to the main agent and tells the environment to tick once.
         Primary mode of interaction for single agent environments.
 
@@ -320,6 +338,7 @@ class HolodeckEnvironment:
             action (:obj:`np.ndarray`): An action for the main agent to carry out on the next tick.
             ticks (:obj:`int`): Number of times to step the environment wiht this action.
                 If ticks > 1, this function returns the last state generated.
+            publish (:obj: `bool`): Whether or not to publish as defined by scenario. Defaults to True.
 
         Returns:
             (:obj:`dict`, :obj:`float`, :obj:`bool`, info): A 4tuple:
@@ -342,6 +361,9 @@ class HolodeckEnvironment:
 
             reward, terminal = self._get_reward_terminal()
             last_state = self._default_state_fn(), reward, terminal, None
+
+        if publish:
+            self.publish()
 
         return last_state
 
@@ -367,10 +389,11 @@ class HolodeckEnvironment:
         """
         return self.agents[agent_name].get_joint_constraints(joint_name)
 
-    def tick(self, num_ticks=1):
+    def tick(self, num_ticks=1, publish=True):
         """Ticks the environment once. Normally used for multi-agent environments.
         Args:
             num_ticks (:obj:`int`): Number of ticks to perform. Defaults to 1. 
+            publish (:obj: `bool`): Whether or not to publish as defined by scenario. Defaults to True.
         Returns:
             :obj:`dict`: A dictionary from agent name to its full state. The full state is another
                 dictionary from :obj:`holodeck.sensors.Sensors` enum to np.ndarray, containing the
@@ -389,7 +412,18 @@ class HolodeckEnvironment:
             self._client.acquire()
             state = self._default_state_fn()
 
+        if publish:
+            self.publish()
+
         return state
+
+    def publish(self):
+        """Publishes current state to channels chosen by the scenario config."""
+        if self._lcm_channels:
+            for agent, sensors in self._lcm_channels.items():
+                for sensor, msg in sensors.items():
+                    msg.set_value(self._tick_lengthms, self._state_dict[agent][sensor])
+                    self._lcm.publish(msg.channel, msg.sensor.encode())
 
     def _enqueue_command(self, command_to_send):
         self._command_center.enqueue_command(command_to_send)

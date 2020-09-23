@@ -691,10 +691,11 @@ class SensorDefinition:
 
     def __init__(self, agent_name, agent_type, sensor_name, sensor_type, 
                  socket="", location=(0, 0, 0), rotation=(0, 0, 0), config=None, 
-                 existing=False):
+                 existing=False, publish=None):
         self.agent_name = agent_name
         self.agent_type = agent_type
         self.sensor_name = sensor_name
+        self.publish = publish
 
         if isinstance(sensor_type, str):
             self.type = SensorDefinition._sensor_keys_[sensor_type]
