@@ -9,52 +9,53 @@ except ImportError:
     from io import BytesIO
 import struct
 
-class DVLSensor(object):
-    __slots__ = ["timestamp", "velocity"]
+class RangeFinderSensor(object):
+    __slots__ = ["timestamp", "count", "distances"]
 
     def __init__(self):
         self.timestamp = 0
-        self.velocity = [ 0.0 for dim0 in range(2) ]
+        self.count = 0
+        self.distances = []
 
     def encode(self):
         buf = BytesIO()
-        buf.write(DVLSensor._get_packed_fingerprint())
+        buf.write(RangeFinderSensor._get_packed_fingerprint())
         self._encode_one(buf)
         return buf.getvalue()
 
     def _encode_one(self, buf):
-        buf.write(struct.pack(">q", self.timestamp))
-        buf.write(struct.pack('>2f', *self.velocity[:2]))
+        buf.write(struct.pack(">qi", self.timestamp, self.count))
+        buf.write(struct.pack('>%df' % self.count, *self.distances[:self.count]))
 
     def decode(data):
         if hasattr(data, 'read'):
             buf = data
         else:
             buf = BytesIO(data)
-        if buf.read(8) != DVLSensor._get_packed_fingerprint():
+        if buf.read(8) != RangeFinderSensor._get_packed_fingerprint():
             raise ValueError("Decode error")
-        return DVLSensor._decode_one(buf)
+        return RangeFinderSensor._decode_one(buf)
     decode = staticmethod(decode)
 
     def _decode_one(buf):
-        self = DVLSensor()
-        self.timestamp = struct.unpack(">q", buf.read(8))[0]
-        self.velocity = struct.unpack('>2f', buf.read(8))
+        self = RangeFinderSensor()
+        self.timestamp, self.count = struct.unpack(">qi", buf.read(12))
+        self.distances = struct.unpack('>%df' % self.count, buf.read(self.count * 4))
         return self
     _decode_one = staticmethod(_decode_one)
 
     _hash = None
     def _get_hash_recursive(parents):
-        if DVLSensor in parents: return 0
-        tmphash = (0x13111cc3baf33cad) & 0xffffffffffffffff
+        if RangeFinderSensor in parents: return 0
+        tmphash = (0xdd4cee0e1177fc8) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)
     _packed_fingerprint = None
 
     def _get_packed_fingerprint():
-        if DVLSensor._packed_fingerprint is None:
-            DVLSensor._packed_fingerprint = struct.pack(">Q", DVLSensor._get_hash_recursive([]))
-        return DVLSensor._packed_fingerprint
+        if RangeFinderSensor._packed_fingerprint is None:
+            RangeFinderSensor._packed_fingerprint = struct.pack(">Q", RangeFinderSensor._get_hash_recursive([]))
+        return RangeFinderSensor._packed_fingerprint
     _get_packed_fingerprint = staticmethod(_get_packed_fingerprint)
 

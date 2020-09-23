@@ -12,3 +12,30 @@ struct IMUSensor
     float acceleration[3];
     float angular_velocity[3];
 }
+
+struct LocationSensor
+{
+    int64_t  timestamp;
+    float position[3];
+}
+
+struct RangeFinderSensor
+{
+    int64_t  timestamp;
+    int32_t count;
+    float distances[count];
+}
+
+struct RotationSensor
+{
+    int64_t  timestamp;
+    float roll;
+    float pitch;
+    float yaw;
+}
+
+struct VelocitySensor
+{
+    int64_t  timestamp;
+    float velocity[3];
+}

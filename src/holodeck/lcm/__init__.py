@@ -5,4 +5,8 @@ DO NOT MODIFY BY HAND!!!!
 
 from .DVLSensor import DVLSensor
 from .IMUSensor import IMUSensor
-from .main import SensorData
+from .LocationSensor import LocationSensor
+from .RangeFinderSensor import RangeFinderSensor
+from .RotationSensor import RotationSensor
+from .VelocitySensor import VelocitySensor
+from .main import SensorData, gen
