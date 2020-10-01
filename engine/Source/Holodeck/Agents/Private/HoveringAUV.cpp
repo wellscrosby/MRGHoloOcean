@@ -11,6 +11,10 @@ AHoveringAUV::AHoveringAUV() {
 	// Set the defualt controller
 	AIControllerClass = LoadClass<AController>(NULL, TEXT("/Script/Holodeck.HoveringAUVController"), NULL, LOAD_None, NULL);
 	AutoPossessAI = EAutoPossessAI::PlacedInWorld;
+
+	// Setup buoyancy properties
+	this->Volume = 2;
+	this->CenterBuoyancy = FVector(0,0,20);
 }
 
 void AHoveringAUV::InitializeAgent() {
@@ -20,8 +24,5 @@ void AHoveringAUV::InitializeAgent() {
 
 // Called every frame
 void AHoveringAUV::Tick(float DeltaSeconds) {
-
+	ApplyBuoyantForce();
 }
-
-
-

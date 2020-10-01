@@ -6,8 +6,6 @@
 
 void AHolodeckBuoyantAgent::ApplyBuoyantForce(){
     //Get all the values we need once
-    if(this->Mass == 0)
-        float Mass = RootMesh->GetMass();
     FVector ActorLocation = GetActorLocation();
 	FRotator ActorRotation = GetActorRotation();
 

@@ -33,7 +33,7 @@ public:
 	*/
 	void Tick(float DeltaSeconds) override;
 
-	unsigned int GetRawActionSizeInBytes() const override { return 2 * sizeof(float); };
+	unsigned int GetRawActionSizeInBytes() const override { return 4 * sizeof(float); };
 	void* GetRawActionBuffer() const override { return (void*)CommandArray; };
 
 	// Allows agent to fall up to ~8 meters
@@ -44,6 +44,6 @@ private:
 	* 0: ThrustToApply
 	* 1: YawTorqueToApply
 	*/
-	float CommandArray[2];
+	float CommandArray[4];
 
 };

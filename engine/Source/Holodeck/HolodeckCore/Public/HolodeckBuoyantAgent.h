@@ -22,7 +22,6 @@ public:
 		UStaticMeshComponent* RootMesh;
 
 	float Volume;
-	float Mass = 0;
 	FVector CenterBuoyancy;
 	
 	void ApplyBuoyantForce();
