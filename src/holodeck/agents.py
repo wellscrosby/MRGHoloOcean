@@ -652,7 +652,7 @@ class TurtleAgent(HolodeckAgent):
         np.copyto(self._action_buffer, action)
 
 
-class AuvAgent(HolodeckAgent):
+class HoveringAUV(HolodeckAgent):
     """A simple autonomous underwater vehicle.
 
     **Action Space**:
@@ -662,11 +662,11 @@ class AuvAgent(HolodeckAgent):
     -  All are capped by max acceleration
 
     Inherits from :class:`HolodeckAgent`."""
-    # constants in AuvAgent.h in holodeck-engine
+    # constants in HoveringAUV.h in holodeck-engine
     __MAX_ACCEL = 3
     __MIN_ACCEL = 0
 
-    agent_type = "AUV"
+    agent_type = "HoveringAUV"
 
     @property
     def control_schemes(self):
@@ -678,12 +678,11 @@ class AuvAgent(HolodeckAgent):
         return None
 
     def __repr__(self):
-        return "AuvAgent " + self.name
+        return "HoveringAUV " + self.name
 
     def __act__(self, action):
         np.copyto(self._action_buffer, np.array(action))
         np.copyto(self._action_buffer, action)
-
 
 class AgentDefinition:
     """Represents information needed to initialize agent.
@@ -708,7 +707,7 @@ class AgentDefinition:
         "AndroidAgent": AndroidAgent,
         "HandAgent": HandAgent,
         "TurtleAgent": TurtleAgent,
-        "AuvAgent": AuvAgent
+        "AuvAgent": AuvAgent,
     }
 
     def __init__(self, agent_name, agent_type, sensors=None, starting_loc=(0, 0, 0),

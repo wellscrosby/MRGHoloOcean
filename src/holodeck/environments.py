@@ -86,6 +86,9 @@ class HolodeckEnvironment:
         else:
             self._window_size = window_size
 
+        if scenario is not None and "lcm_provider" not in scenario:
+            scenario['lcm_provider'] = ""
+
         self._uuid = uuid
         self._pre_start_steps = pre_start_steps
         self._copy_state = copy_state
