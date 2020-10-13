@@ -2,6 +2,12 @@ from holodeck.lcm import DVLSensor, IMUSensor, LocationSensor, RangeFinderSensor
 import os
 
 class SensorData:
+    """Wrapper class for the various types of publishable sensor data.
+
+    Parameters:
+        sensor_type (:obj:`str`): Type of sensor to be imported
+        channel (:obj:`str`): Name of channel to publish to.
+    """
     _sensor_keys_ = {
         "IMUSensor": IMUSensor,
         "DVLSensor": DVLSensor,
@@ -17,6 +23,12 @@ class SensorData:
         self.channel = channel
 
     def set_value(self, timestamp, value):
+        """Set value in respective sensor class.
+
+        Parameters:
+            timestamp (:obj:`int`): Number of milliseconds since last data was published
+            value (:obj:`list`): List of sensor data to put into LCM sensor class
+            """
         self.sensor.timestamp = timestamp
 
         if self.type == "IMUSensor":
@@ -40,9 +52,9 @@ def gen(lang, path='.', headers=None):
     """Generates LCM files for sensors in whatever language requested. 
 
     Args:
-        lang (:obj: `str`): One of "cpp", "c", "java", "python", "lua", "csharp", "go"
+        lang (:obj:`str`): One of "cpp", "c", "java", "python", "lua", "csharp", "go"
         path (:obj:`str`, optional): Location to save files in. Defaults to current directory.
-        headers (:obj: `str`, optional): Where to store .h files for C . Defaults to same as c files, given by path arg.
+        headers (:obj:`str`, optional): Where to store .h files for C . Defaults to same as c files, given by path arg.
     """
     #set up all paths
     lcm_path = os.path.join( os.path.dirname(os.path.realpath(__file__)), 'sensors.lcm' )
