@@ -1,11 +1,6 @@
-Welcome to Holodeck's documentation!
-====================================
+Welcome to Holodeck-Ocean's's documentation!
+==============================================
 .. image:: images/sunrise_Moment.jpg
-
-.. note::
-    **Have a question?** Join our Discord_!
-
-.. _Discord: https://discord.gg/Xqqksje
 
 .. toctree::
    :maxdepth: 2
