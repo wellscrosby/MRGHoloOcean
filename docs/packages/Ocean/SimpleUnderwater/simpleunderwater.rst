@@ -1,7 +1,7 @@
 SimpleUnderwater
 =================
 
-.. image:: sinmple_underwater.png
+.. image:: simple_underwater.png
 
 
 This is a basic underwater world to use for simulation purposes. It's equipped with pipes at one end to inspect, and very basic underwater imagery.
