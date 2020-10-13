@@ -10,8 +10,8 @@ contains one or more worlds, which each have one or more scenarios.
    :maxdepth: 3
    :caption: Packages
 
+   Ocean/Ocean
    DefaultWorlds/DefaultWorlds
-   Dexterity/Dexterity
 
 
 .. toctree::

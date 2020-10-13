@@ -54,6 +54,7 @@ Scenario File
    {
       "name": "{Scenario Name}",
       "world": "{world it is associated with}",
+      "lcm_provider": "{Optional, where to publish lcm to}"
       "agents":[
          "array of agent objects"
       ],
@@ -142,6 +143,8 @@ Sensor Objects
       "location": [1.0, 2.0, 3.0],
       "rotation": [1.0, 2.0, 3.0],
       "socket": "socket name or \"\"",
+      "publish": "lcm",
+      "channel": "channel_name",
       "configuration": {
 
       }
@@ -185,6 +188,20 @@ Sensors have a couple options for placement.
          "location": [1.0, 2.0, 3.0]
       }
 
+4 **Publish Message**
+
+   Currently, Holodeck-Ocean supports publishing mesages to LCM (with possible ROS package coming).
+   To publish sensor data to LCM, specify the type to publish.
+
+   .. code-block:: json
+
+      {
+         "sensor_type": "RGBCamera",
+         "publish": "lcm",
+         "channel": "CAMERA"
+      }
+
+   The channel parameter specifies which channel to publish the sensor data to.
 
 The only keys that are required in a sensor object is ``"sensor_type"``, the
 rest will default as shown below
@@ -196,6 +213,8 @@ rest will default as shown below
       "location": [0, 0, 0],
       "rotation": [0, 0, 0],
       "socket": "",
+      "publish": "",
+      "channel": "sensor_type",
       "configuration": {}
    }
 

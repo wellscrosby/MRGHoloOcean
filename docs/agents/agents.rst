@@ -9,10 +9,6 @@ Documentation on specific agents available in Holodeck:
    :maxdepth: 1
    :caption: Agents
 
-   android-agent
-   hand-agent
-   nav-agent
-   sphere-agent
    turtle-agent
    uav-agent
 
