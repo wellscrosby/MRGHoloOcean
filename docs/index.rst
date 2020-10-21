@@ -26,6 +26,7 @@ Welcome to Holodeck-Ocean's's documentation!
    holodeck/holodeckclient
    holodeck/packagemanager
    holodeck/sensors
+   holodeck/lcm
    holodeck/shmem
    holodeck/util
    holodeck/exceptions
