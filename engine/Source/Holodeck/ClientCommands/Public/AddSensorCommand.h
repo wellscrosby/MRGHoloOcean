@@ -23,6 +23,7 @@
 #include "CupGameTask.h"
 #include "CleanUpTask.h"
 #include "DVLSensor.h"
+#include "PoseSensor.h"
 
 #include "Command.h"
 #include "AddSensorCommand.generated.h"
