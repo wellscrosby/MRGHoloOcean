@@ -24,6 +24,7 @@ struct RangeFinderSensor
     int64_t  timestamp;
     int32_t count;
     float distances[count];
+    float angles[count];
 }
 
 struct RotationSensor
@@ -32,6 +33,18 @@ struct RotationSensor
     float roll;
     float pitch;
     float yaw;
+}
+
+struct OrientationSensor
+{
+    int64_t  timestamp;
+    float matrix[3][3];
+}
+
+struct PoseSensor
+{
+    int64_t  timestamp;
+    float matrix[4][4];
 }
 
 struct VelocitySensor

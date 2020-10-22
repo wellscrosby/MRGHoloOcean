@@ -3,7 +3,7 @@ import uuid
 import pytest
 
 @pytest.mark.parametrize("sensor", ["DVLSensor", "IMUSensor", "LocationSensor", 
-                        "RangeFinderSensor", "RotationSensor", "VelocitySensor"])
+                        "RangeFinderSensor", "RotationSensor", "VelocitySensor", "OrientationSensor", "PoseSensor"])
 def test_sensor(sensor):
     config = {
                 "name": "test",
