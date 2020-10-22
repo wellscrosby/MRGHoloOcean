@@ -1,4 +1,5 @@
-from holodeck.lcm import DVLSensor, IMUSensor, LocationSensor, RangeFinderSensor, RotationSensor, VelocitySensor
+from holodeck.lcm import DVLSensor, IMUSensor, LocationSensor, RangeFinderSensor, RotationSensor, VelocitySensor, OrientationSensor, PoseSensor
+import numpy as np
 import os
 
 class SensorData:
@@ -15,6 +16,8 @@ class SensorData:
         "RangeFinderSensor": RangeFinderSensor,
         "RotationSensor": RotationSensor,
         "VelocitySensor": VelocitySensor,
+        "PoseSensor": PoseSensor,
+        "OrientationSensor": OrientationSensor,
     }
 
     def __init__(self, sensor_type, channel):
@@ -39,12 +42,18 @@ class SensorData:
         elif self.type == "LocationSensor":
             self.sensor.position = value.tolist()
         elif self.type == "RangeFinderSensor":
-            self.sensor.count = len(value)
+            count = len(value)
+            self.sensor.count = count
             self.sensor.distances = value.tolist()
+            self.sensor.angles = np.linspace(0, 360, count, endpoint=False).tolist()
         elif self.type == "RotationSensor":
             self.sensor.roll, self.sensor.pitch, self.sensor.yaw = value
         elif self.type == "VelocitySensor":
             self.sensor.velocity = value.tolist()
+        elif self.type == "PoseSensor":
+            self.sensor.matrix = value.tolist()
+        elif self.type == "OrientationSensor":
+            self.sensor.matrix = value.tolist()
         else:
             raise ValueError("That sensor hasn't been implemented in LCM yet")
 

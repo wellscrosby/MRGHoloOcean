@@ -9,4 +9,6 @@ from .LocationSensor import LocationSensor
 from .RangeFinderSensor import RangeFinderSensor
 from .RotationSensor import RotationSensor
 from .VelocitySensor import VelocitySensor
+from .OrientationSensor import OrientationSensor
+from .PoseSensor import PoseSensor
 from .main import SensorData, gen
