@@ -15,7 +15,7 @@ turtle_config = {
                 }
             ],
             "control_scheme": 0,
-            "location": [-1.5, 1.50, 3.0]
+            "location": [-1.5, -1.50, 3.0]
         }
     ]
 }
@@ -30,7 +30,7 @@ def test_dvl_sensor_straight():
 
     with holodeck.environments.HolodeckEnvironment(scenario=turtle_config,
                                                    binary_path=binary_path,
-                                                   show_viewport=False,
+                                                   show_viewport=True,
                                                    uuid=str(uuid.uuid4())) as env:
         #let it land and then start moving forward
         for _ in range(100):
@@ -69,7 +69,7 @@ def test_dvl_sensor_rotated():
     """
 
     binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
-    turtle_config['agents'][0]['rotation'] = [-90, 0, 0]
+    turtle_config['agents'][0]['rotation'] = [0, 0, 90]
 
     with holodeck.environments.HolodeckEnvironment(scenario=turtle_config,
                                                    binary_path=binary_path,
