@@ -97,7 +97,7 @@ class HolodeckEnvironment:
         self._initial_agent_defs = agent_definitions
         self._spawned_agent_defs = []
         self._lcm_channels = dict()
-        self._tick_lengthms = int( (1 / ticks_per_sec) * 1000 )
+        self._num_ticks = 0
 
         # Start world based on OS
         if start_world:
@@ -365,6 +365,8 @@ class HolodeckEnvironment:
             reward, terminal = self._get_reward_terminal()
             last_state = self._default_state_fn(), reward, terminal, None
 
+        self._num_ticks += 1
+
         if publish:
             self.publish()
 
@@ -415,6 +417,8 @@ class HolodeckEnvironment:
             self._client.acquire()
             state = self._default_state_fn()
 
+        self._num_ticks += 1
+
         if publish:
             self.publish()
 
@@ -425,7 +429,7 @@ class HolodeckEnvironment:
         if self._lcm_channels:
             for agent, sensors in self._lcm_channels.items():
                 for sensor, msg in sensors.items():
-                    msg.set_value(self._tick_lengthms, self._state_dict[agent][sensor])
+                    msg.set_value(int(1000 * self._num_ticks / self._ticks_per_sec), self._state_dict[agent][sensor])
                     self._lcm.publish(msg.channel, msg.sensor.encode())
 
     def _enqueue_command(self, command_to_send):
