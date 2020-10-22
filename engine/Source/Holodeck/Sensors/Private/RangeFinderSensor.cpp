@@ -53,8 +53,8 @@ void URangeFinderSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTyp
 
 		FVector end = GetForwardVector();
 		FVector right = GetRightVector();
-		end = end.RotateAngleAxis(360 * i / LaserCount, GetUpVector());
-		right = right.RotateAngleAxis(360 * i / LaserCount, GetUpVector());
+		end = end.RotateAngleAxis(-360 * i / LaserCount, GetUpVector());
+		right = right.RotateAngleAxis(-360 * i / LaserCount, GetUpVector());
 		end = end.RotateAngleAxis(LaserAngle, right);
 		end = end * LaserMaxDistance;
 		end = start + end;
