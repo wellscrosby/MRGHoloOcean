@@ -1,7 +1,7 @@
 #include "Holodeck.h"
 #include "Conversion.h"
 
-const bool USE_RHS = false;
+const bool USE_RHS = true;
 
 FVector ConvertLinearVector(FVector Vector, ConvertType Type) {
 
@@ -43,6 +43,12 @@ FVector ConvertAngularVector(FVector Vector, ConvertType Type) {
 
 
 FRotator ConvertAngularVector(FRotator Rotator, ConvertType Type) {
+
+	if (USE_RHS) {
+		Rotator.Roll *= -1;
+		Rotator.Yaw *= -1;
+	}
+
 	return Rotator;
 }
 
