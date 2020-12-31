@@ -15,7 +15,7 @@ AHoveringAUV::AHoveringAUV() {
 	// Setup buoyancy properties
 	// Actual volume, we adjust to compensate for added styrofoam later
 	// this->Volume = .01754043;
-	this->Volume = .0325;
+	this->Volume = .0322;
 	// In cm
 	this->CenterBuoyancy = FVector(-0.29, -5.96, -1.85); 
 	// This can be fudged a bit if we don't want to tilt a little sideways!
