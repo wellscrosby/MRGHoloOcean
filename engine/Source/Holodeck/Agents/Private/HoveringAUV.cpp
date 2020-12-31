@@ -13,8 +13,13 @@ AHoveringAUV::AHoveringAUV() {
 	AutoPossessAI = EAutoPossessAI::PlacedInWorld;
 
 	// Setup buoyancy properties
-	this->Volume = 2;
-	this->CenterBuoyancy = FVector(0,0,20);
+	// Actual volume, we adjust to compensate for added styrofoam later
+	// this->Volume = .01754043;
+	this->Volume = .0325;
+	// In cm
+	this->CenterBuoyancy = FVector(-0.29, -5.96, -1.85); 
+	// This can be fudged a bit if we don't want to tilt a little sideways!
+	// this->CenterBuoyancy = FVector(-0.46, -5.90, -1.85); 
 }
 
 void AHoveringAUV::InitializeAgent() {
