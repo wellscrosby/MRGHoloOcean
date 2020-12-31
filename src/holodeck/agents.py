@@ -707,7 +707,7 @@ class AgentDefinition:
         "AndroidAgent": AndroidAgent,
         "HandAgent": HandAgent,
         "TurtleAgent": TurtleAgent,
-        "AuvAgent": AuvAgent,
+        "HoveringAUV": HoveringAUV,
     }
 
     def __init__(self, agent_name, agent_type, sensors=None, starting_loc=(0, 0, 0),
