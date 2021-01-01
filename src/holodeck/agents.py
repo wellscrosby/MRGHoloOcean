@@ -657,22 +657,24 @@ class HoveringAUV(HolodeckAgent):
 
     **Action Space**:
 
-    ``[up_thruster, down_thruster, left_thruster, right_thruster]``
+    ``[Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, 
+        Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]``
     
     -  All are capped by max acceleration
 
     Inherits from :class:`HolodeckAgent`."""
     # constants in HoveringAUV.h in holodeck-engine
-    __MAX_ACCEL = 3
-    __MIN_ACCEL = 0
+    __MAX_ACCEL = 100
+    __MIN_ACCEL = -__MAX_ACCEL
 
     agent_type = "HoveringAUV"
 
     @property
     def control_schemes(self):
+        scheme = "[Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]"
         low = [self.__MIN_ACCEL]*4
         high = [self.__MAX_ACCEL]*4
-        return [("[up_thruster, down_thruster, left_thruster, right_thruster]", ContinuousActionSpace([4], low=low, high=high))]
+        return [(scheme, ContinuousActionSpace([8], low=low, high=high))]
 
     def get_joint_constraints(self, joint_name):
         return None
