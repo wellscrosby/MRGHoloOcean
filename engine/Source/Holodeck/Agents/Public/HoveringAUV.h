@@ -52,6 +52,10 @@ public:
 											FVector(7.39, -18.23, -0.21),
 											FVector(-20.64, -18.23, -0.21),
 											FVector(20.64, -18.23, -0.21) };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = BuoyancySettings)
+		bool Perfect= false;
+
 	void ApplyThrusters();
 
 private:

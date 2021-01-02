@@ -20,21 +20,38 @@ AHoveringAUV::AHoveringAUV() {
 	// Fudged volume to make us barely float
 	// this->Volume = .0322;
 	
-	// Actual COB
 	this->CenterBuoyancy = FVector(-5.96, 0.29, -1.85); 
-	// This can be fudged a bit if we don't want to tilt a little sideways!
-	// this->CenterBuoyancy = FVector(5.9, 0.46, -1.85); 
+	this->CenterMass = FVector(-5.9, 0.46, -2.82);
+	this->MassInKG = 31.02;
 
 	// Apply offset to all of our position vectors
 	this->CenterBuoyancy += offset;
+	this->CenterMass += offset;
 	for(int i=0;i<8;i++){
 		thrusterLocations[i] += offset;
 	}
 }
 
+// Sets all values that we need
 void AHoveringAUV::InitializeAgent() {
 	Super::InitializeAgent();
 	RootMesh = Cast<UStaticMeshComponent>(RootComponent);
+
+	if(Perfect){
+		this->CenterMass = (thrusterLocations[0] + thrusterLocations[2]) / 2;
+		this->CenterMass.Z = thrusterLocations[7].Z;
+		
+		this->CenterBuoyancy = CenterMass;
+		this->CenterBuoyancy.Z += 5;
+
+		this->Volume = MassInKG / WaterDensity;
+	}
+
+	// Set COM (have to do some calculation since it sets an offset)
+	FVector COM_curr = GetActorRotation().UnrotateVector( RootMesh->GetCenterOfMass() - GetActorLocation() );
+	RootMesh->SetCenterOfMass( CenterMass - COM_curr );
+	// Set Mass
+	RootMesh->SetMassOverrideInKg("", MassInKG);
 }
 
 // Called every frame
@@ -49,8 +66,10 @@ void AHoveringAUV::ApplyThrusters(){
     FVector ActorLocation = GetActorLocation();
 	FRotator ActorRotation = GetActorRotation();
 
-	FVector com = ActorRotation.UnrotateVector( RootMesh->GetCenterOfMass() - ActorLocation);
+	FVector com = ActorRotation.UnrotateVector( RootMesh->GetCenterOfMass() - ActorLocation) - offset;
 	UE_LOG(LogTemp, Warning, TEXT("com, %f %f %f"), com.X, com.Y, com.Z );
+	UE_LOG(LogTemp, Warning, TEXT("mass, %f"), RootMesh->GetMass() );
+
 	// Iterate through vertical thrusters
 	for(int i=0;i<4;i++){
 		float force = FMath::Clamp(CommandArray[i], -AUV_MAX_FORCE, AUV_MAX_FORCE);

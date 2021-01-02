@@ -23,6 +23,8 @@ public:
 
 	float Volume;
 	FVector CenterBuoyancy;
+	FVector CenterMass;
+	float MassInKG;
 	
 	void ApplyBuoyantForce();
 };
