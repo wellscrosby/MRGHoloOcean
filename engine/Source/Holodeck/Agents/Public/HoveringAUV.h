@@ -40,6 +40,9 @@ public:
 	// Allows agent to fall up to ~8 meters
 	float GetAccelerationLimit() override { return 400; }
 
+	// The offset of our pivot of the mesh from our coordinate center
+	FVector offset = FVector(-0.7, -2, 32);
+
 	// Location of all thrusters
 	std::vector<FVector> thrusterLocations{ FVector(18.18, 22.14, -4), 
 											FVector(18.18, -22.14, -4),
@@ -47,8 +50,8 @@ public:
 											FVector(-31.43, 22.14, -4),
 											FVector(7.39, 18.23, -0.21),
 											FVector(7.39, -18.23, -0.21),
-											FVector(-20.64, 18.23, -0.21),
-											FVector(-20.64, -18.23, -0.21) };
+											FVector(-20.64, -18.23, -0.21),
+											FVector(20.64, -18.23, -0.21) };
 	void ApplyThrusters();
 
 private:

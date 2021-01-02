@@ -20,10 +20,16 @@ AHoveringAUV::AHoveringAUV() {
 	// Fudged volume to make us barely float
 	// this->Volume = .0322;
 	
-	// In cm
-	this->CenterBuoyancy = FVector(-5.96, -0.29, -1.85); 
+	// Actual COB
+	this->CenterBuoyancy = FVector(-5.96, 0.29, -1.85); 
 	// This can be fudged a bit if we don't want to tilt a little sideways!
-	// this->CenterBuoyancy = FVector(-0.46, -5.90, -1.85); 
+	// this->CenterBuoyancy = FVector(5.9, 0.46, -1.85); 
+
+	// Apply offset to all of our position vectors
+	this->CenterBuoyancy += offset;
+	for(int i=0;i<8;i++){
+		thrusterLocations[i] += offset;
+	}
 }
 
 void AHoveringAUV::InitializeAgent() {
@@ -43,18 +49,31 @@ void AHoveringAUV::ApplyThrusters(){
     FVector ActorLocation = GetActorLocation();
 	FRotator ActorRotation = GetActorRotation();
 
-	// Iterate through all thrusters
-	for(int i=0;i<8;i++){
+	FVector com = ActorRotation.UnrotateVector( RootMesh->GetCenterOfMass() - ActorLocation);
+	UE_LOG(LogTemp, Warning, TEXT("com, %f %f %f"), com.X, com.Y, com.Z );
+	// Iterate through vertical thrusters
+	for(int i=0;i<4;i++){
 		float force = FMath::Clamp(CommandArray[i], -AUV_MAX_FORCE, AUV_MAX_FORCE);
 
 		FVector LocalForce = FVector(0, 0, force);
 		LocalForce = ConvertLinearVector(LocalForce, ClientToUE);
 
 		RootMesh->AddForceAtLocationLocal(LocalForce, thrusterLocations[i]);
-		// TODO: Angled Thrusters 
+	}
 
-		UE_LOG(LogTemp, Warning, TEXT("COMMAND, %d : %f"), i, CommandArray[i] );
-		UE_LOG(LogTemp, Warning, TEXT("Thruster Location, %f %f %f"), thrusterLocations[i].X, thrusterLocations[i].Y, thrusterLocations[i].Z );
+	// Iterate through angled thrusters
+	for(int i=4;i<8;i++){
+		float force = FMath::Clamp(CommandArray[i], -AUV_MAX_FORCE, AUV_MAX_FORCE);
+
+		// 4 + 6 have negative y
+		FVector LocalForce = FVector(0, 0, 0);
+		if(i % 2 == 0) 	
+			LocalForce = FVector(force/FMath::Sqrt(2), -force/FMath::Sqrt(2), 0);
+		else	
+			LocalForce = FVector(force/FMath::Sqrt(2), force/FMath::Sqrt(2), 0);
+		LocalForce = ConvertLinearVector(LocalForce, ClientToUE);
+
+		RootMesh->AddForceAtLocationLocal(LocalForce, thrusterLocations[i]);
 	}
 	
 }
