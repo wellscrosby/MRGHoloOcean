@@ -17,18 +17,19 @@ AHoveringAUV::AHoveringAUV() {
 	this->CenterBuoyancy = FVector(-5.96, 0.29, -1.85); 
 	this->CenterMass = FVector(-5.9, 0.46, -2.82);
 	this->MassInKG = 31.02;
+	this->OffsetToOrigin = FVector(-0.7, -2, 32);
 
-	// Apply offset to all of our position vectors
-	this->CenterBuoyancy += offset;
-	this->CenterMass += offset;
+
+	// Apply OffsetToOrigin to all of our position vectors
+	this->CenterBuoyancy += OffsetToOrigin;
+	this->CenterMass += OffsetToOrigin;
 	for(int i=0;i<8;i++){
-		thrusterLocations[i] += offset;
+		thrusterLocations[i] += OffsetToOrigin;
 	}
 }
 
 // Sets all values that we need
 void AHoveringAUV::InitializeAgent() {
-	Super::InitializeAgent();
 	RootMesh = Cast<UStaticMeshComponent>(RootComponent);
 
 	if(Perfect){
@@ -40,12 +41,7 @@ void AHoveringAUV::InitializeAgent() {
 
 		this->Volume = MassInKG / WaterDensity;
 	}
-
-	// Set COM (have to do some calculation since it sets an offset)
-	FVector COM_curr = GetActorRotation().UnrotateVector( RootMesh->GetCenterOfMass() - GetActorLocation() );
-	RootMesh->SetCenterOfMass( CenterMass - COM_curr );
-	// Set Mass
-	RootMesh->SetMassOverrideInKg("", MassInKG);
+	Super::InitializeAgent();
 }
 
 // Called every frame
@@ -60,9 +56,12 @@ void AHoveringAUV::ApplyThrusters(){
     FVector ActorLocation = GetActorLocation();
 	FRotator ActorRotation = GetActorRotation();
 
-	FVector com = ActorRotation.UnrotateVector( RootMesh->GetCenterOfMass() - ActorLocation) - offset;
-	UE_LOG(LogTemp, Warning, TEXT("com, %f %f %f"), com.X, com.Y, com.Z );
-	UE_LOG(LogTemp, Warning, TEXT("mass, %f"), RootMesh->GetMass() );
+	FVector com = ActorRotation.UnrotateVector( RootMesh->GetCenterOfMass() - ActorLocation) - OffsetToOrigin;
+	// UE_LOG(LogTemp, Warning, TEXT("com, %f %f %f"), com.X, com.Y, com.Z );
+	// UE_LOG(LogTemp, Warning, TEXT("mass, %f"), RootMesh->GetMass() );
+	// UE_LOG(LogTemp, Warning, TEXT("box, %d"), SurfacePoints.Num() );
+	// ShowSurfacePoints();
+	// ShowBoundingBox();
 
 	// Iterate through vertical thrusters
 	for(int i=0;i<4;i++){

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <vector>
+#include "Containers/Array.h"
 #include "GameFramework/Pawn.h"
 #include "HolodeckBuoyantAgent.h"
 #include "HoveringAUV.generated.h"
@@ -40,11 +40,8 @@ public:
 	// Allows agent to fall up to ~8 meters
 	float GetAccelerationLimit() override { return 400; }
 
-	// The offset of our pivot of the mesh from our coordinate center
-	FVector offset = FVector(-0.7, -2, 32);
-
 	// Location of all thrusters
-	std::vector<FVector> thrusterLocations{ FVector(18.18, 22.14, -4), 
+	TArray<FVector> thrusterLocations{ FVector(18.18, 22.14, -4), 
 											FVector(18.18, -22.14, -4),
 											FVector(-31.43, -22.14, -4),
 											FVector(-31.43, 22.14, -4),
