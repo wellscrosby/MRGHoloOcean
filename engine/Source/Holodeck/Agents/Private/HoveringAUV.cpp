@@ -13,13 +13,7 @@ AHoveringAUV::AHoveringAUV() {
 	AIControllerClass = LoadClass<AController>(NULL, TEXT("/Script/Holodeck.HoveringAUVController"), NULL, LOAD_None, NULL);
 	AutoPossessAI = EAutoPossessAI::PlacedInWorld;
 
-	// Actual volume without enclosure air
-	// this->Volume = .01754043;
-	// Actual volume with enclosure air
-	this->Volume = .03554577;
-	// Fudged volume to make us barely float
-	// this->Volume = .0322;
-	
+	this->Volume = .03554577;	
 	this->CenterBuoyancy = FVector(-5.96, 0.29, -1.85); 
 	this->CenterMass = FVector(-5.9, 0.46, -2.82);
 	this->MassInKG = 31.02;
