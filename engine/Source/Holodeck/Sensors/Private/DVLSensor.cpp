@@ -25,5 +25,6 @@ void UDVLSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActo
 		float* FloatBuffer = static_cast<float*>(Buffer);
 		FloatBuffer[0] = Velocity.X;
 		FloatBuffer[1] = Velocity.Y;
+		FloatBuffer[2] = Velocity.Z;
 	}
 }
