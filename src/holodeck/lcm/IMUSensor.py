@@ -12,6 +12,10 @@ import struct
 class IMUSensor(object):
     __slots__ = ["timestamp", "acceleration", "angular_velocity"]
 
+    __typenames__ = ["int64_t", "float", "float"]
+
+    __dimensions__ = [None, [3], [3]]
+
     def __init__(self):
         self.timestamp = 0
         self.acceleration = [ 0.0 for dim0 in range(3) ]
@@ -50,7 +54,7 @@ class IMUSensor(object):
     def _get_hash_recursive(parents):
         if IMUSensor in parents: return 0
         tmphash = (0x2b1e734f2aee4cdf) & 0xffffffffffffffff
-        tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + (tmphash>>63)) & 0xffffffffffffffff
+        tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)
     _packed_fingerprint = None

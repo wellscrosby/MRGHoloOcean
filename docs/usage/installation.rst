@@ -4,7 +4,7 @@
 Installation
 ============
 
-Holodeck is installed in two portions: a client python library (``holodeck``)
+Holodeck-Ocean is installed in two portions: a client python library (``holodeck``)
 is installed first, which then downloads world packages. The python portion is
 very small, while the world packages ("binaries") can be several gigabytes.
 
@@ -17,35 +17,41 @@ Requirements
 - pip3
 - Linux: OpenGL 3+
 
-Install Client via pip
-======================
-
-The latest stable Holodeck package is available in a pip repository:
-
-``pip install holodeck``
-
-.. note::
-   On some Ubuntu systems a dependency of Holodeck (``posix-ipc``) can fail to
-   install if you do not have the ``python3-dev`` package installed.
-
-   .. code-block:: console
-
-      $ apt install python3-dev
-
 Install Client via git
 =======================
 
-To use the latest version of Holodeck, you can install and use Holodeck simply
-by cloning the `BYU-PCCL/holodeck`_ repository, and ensuring it is on your
+To use the latest version of Holodeck-Ocean, you can install and use Holodeck simply
+by cloning the `frostlab/holodeck-ocean`_, and ensuring it is on your
 ``sys.path``.
 
-.. _`BYU-PCCL/holodeck`: https://github.com/BYU-PCCL/holodeck
+.. _`frostlab/holodeck-ocean`: https://bitbucket.org/frostlab/holodeck-ocean/
 
 The ``master`` branch is kept in sync with the pip repository, the ``develop``
 branch is the bleeding edge of development.
 
-If you want to download a specific release of Holodeck, each release is tagged
-in the Git repository.
+To install, simply run
+
+::
+
+   git clone https://bitbucket.org/frostlab/holodeck-ocean/
+   pip install holodeck-ocean/
+
+
+Then to install the oceans package, run the python command 
+
+::
+
+   import holodeck
+   holodeck.install("Ocean", "https://robots.et.byu.edu/jenkins/job/holodeck-ocean-engine/job/master/lastSuccessfulBuild/artifact/Ocean.zip")
+
+
+
+Or as a single console command,
+
+::
+
+   python -c `import holodeck; holodeck.install("Ocean", "https://robots.et.byu.edu/jenkins/job/holodeck-ocean-engine/job/master/lastSuccessfulBuild/artifact/Ocean.zip")`
+
 
 .. _docker:
 

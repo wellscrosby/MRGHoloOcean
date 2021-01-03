@@ -1,11 +1,6 @@
-Welcome to Holodeck's documentation!
-====================================
+Welcome to Holodeck-Ocean's's documentation!
+==============================================
 .. image:: images/sunrise_Moment.jpg
-
-.. note::
-    **Have a question?** Join our Discord_!
-
-.. _Discord: https://discord.gg/Xqqksje
 
 .. toctree::
    :maxdepth: 2
@@ -15,6 +10,7 @@ Welcome to Holodeck's documentation!
    usage/getting-started
    usage/usage
    packages/packages
+   lcm/lcm
    agents/agents
    changelog/changelog
 
@@ -30,6 +26,7 @@ Welcome to Holodeck's documentation!
    holodeck/holodeckclient
    holodeck/packagemanager
    holodeck/sensors
+   holodeck/lcm
    holodeck/shmem
    holodeck/util
    holodeck/exceptions

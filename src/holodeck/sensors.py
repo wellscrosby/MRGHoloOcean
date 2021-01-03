@@ -310,9 +310,9 @@ class OrientationSensor(HolodeckSensor):
 
     ::
 
-       [ [forward_x, forward_y, forward_z],
-         [right_x,   right_y,   right_z  ],
-         [up_x,      up_y,      up_z     ] ]
+       [ [forward_x, right_x, up_x],
+         [forward_y, right_y, up_y],
+         [forward_z, right_z, up_z] ]
 
     """
 
@@ -635,6 +635,28 @@ class DVLSensor(HolodeckSensor):
     def data_shape(self):
         return [3]
 
+class PoseSensor(HolodeckSensor):
+    """Gets the forward, right, and up vector for the agent.
+    Returns a 2D numpy array of
+
+    ::
+
+       [ [R, p],
+         [0, 1] ]
+
+    where R is the rotation matrix (See OrientationSensor) and p is the robot world location (see LocationSensor)
+    """
+
+    sensor_type = "PoseSensor"
+
+    @property
+    def dtype(self):
+        return np.float32
+
+    @property
+    def data_shape(self):
+        return [4, 4]
+
 ######################################################################################
 class SensorDefinition:
     """A class for new sensors and their parameters, to be used for adding new sensors.
@@ -675,6 +697,7 @@ class SensorDefinition:
         "BallLocationSensor": BallLocationSensor,
         "AbuseSensor": AbuseSensor,
         "DVLSensor": DVLSensor,
+        "PoseSensor": PoseSensor,
     }
 
     def get_config_json_string(self):

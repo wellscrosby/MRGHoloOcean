@@ -25,8 +25,8 @@ base_conf = {
             "control_scheme": 0,
             "location": [0.95, -1.75, 0.5],
             "rotation": [1.0, 2.0, 3.0],
-            "location_randomization": [0.6, 0.5, 0.5],
-            "rotation_randomization": [0.4, 0.3, 0.6]
+            "location_randomization": [2, 2, 2],
+            "rotation_randomization": [2, 2, 2]
         }
     ]
 }
