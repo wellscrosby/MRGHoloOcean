@@ -15,4 +15,5 @@ holodeck.egg-info/
 .tox
 .pytest_cache
 pip-wheel-metadata
+**/*.egg-info
 !tests/worlds

@@ -652,38 +652,43 @@ class TurtleAgent(HolodeckAgent):
         np.copyto(self._action_buffer, action)
 
 
-class AuvAgent(HolodeckAgent):
+class HoveringAUV(HolodeckAgent):
     """A simple autonomous underwater vehicle.
 
     **Action Space**:
 
-    ``[up_thruster, down_thruster, left_thruster, right_thruster]``
+    ``[Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, 
+        Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]``
     
     -  All are capped by max acceleration
 
     Inherits from :class:`HolodeckAgent`."""
-    # constants in AuvAgent.h in holodeck-engine
-    __MAX_ACCEL = 3
-    __MIN_ACCEL = 0
+    # constants in HoveringAUV.h in holodeck-engine
+    __MAX_ACCEL = 100
+    __MIN_ACCEL = -__MAX_ACCEL
 
-    agent_type = "AUV"
+    agent_type = "HoveringAUV"
 
     @property
     def control_schemes(self):
+        scheme = "[Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]"
         low = [self.__MIN_ACCEL]*4
         high = [self.__MAX_ACCEL]*4
-        return [("[up_thruster, down_thruster, left_thruster, right_thruster]", ContinuousActionSpace([4], low=low, high=high))]
+        return [(scheme, ContinuousActionSpace([8], low=low, high=high))]
 
     def get_joint_constraints(self, joint_name):
         return None
 
     def __repr__(self):
-        return "AuvAgent " + self.name
+        return "HoveringAUV " + self.name
 
     def __act__(self, action):
         np.copyto(self._action_buffer, np.array(action))
         np.copyto(self._action_buffer, action)
 
+class PerfectHoveringAUV(HoveringAUV):
+    """Identical to the HoveringAUV, just with ideal COM, COB, and volume."""
+    agent_type = "PerfectHoveringAUV"
 
 class AgentDefinition:
     """Represents information needed to initialize agent.
@@ -708,7 +713,8 @@ class AgentDefinition:
         "AndroidAgent": AndroidAgent,
         "HandAgent": HandAgent,
         "TurtleAgent": TurtleAgent,
-        "AuvAgent": AuvAgent
+        "HoveringAUV": HoveringAUV,
+        "PerfectHoveringAUV": PerfectHoveringAUV,
     }
 
     def __init__(self, agent_name, agent_type, sensors=None, starting_loc=(0, 0, 0),
