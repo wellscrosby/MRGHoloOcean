@@ -56,13 +56,6 @@ void AHoveringAUV::ApplyThrusters(){
     FVector ActorLocation = GetActorLocation();
 	FRotator ActorRotation = GetActorRotation();
 
-	FVector com = ActorRotation.UnrotateVector( RootMesh->GetCenterOfMass() - ActorLocation) - OffsetToOrigin;
-	// UE_LOG(LogTemp, Warning, TEXT("com, %f %f %f"), com.X, com.Y, com.Z );
-	// UE_LOG(LogTemp, Warning, TEXT("mass, %f"), RootMesh->GetMass() );
-	// UE_LOG(LogTemp, Warning, TEXT("box, %d"), SurfacePoints.Num() );
-	// ShowSurfacePoints();
-	// ShowBoundingBox();
-
 	// Iterate through vertical thrusters
 	for(int i=0;i<4;i++){
 		float force = FMath::Clamp(CommandArray[i], -AUV_MAX_FORCE, AUV_MAX_FORCE);
@@ -80,9 +73,9 @@ void AHoveringAUV::ApplyThrusters(){
 		// 4 + 6 have negative y
 		FVector LocalForce = FVector(0, 0, 0);
 		if(i % 2 == 0) 	
-			LocalForce = FVector(force/FMath::Sqrt(2), -force/FMath::Sqrt(2), 0);
-		else	
 			LocalForce = FVector(force/FMath::Sqrt(2), force/FMath::Sqrt(2), 0);
+		else	
+			LocalForce = FVector(force/FMath::Sqrt(2), -force/FMath::Sqrt(2), 0);
 		LocalForce = ConvertLinearVector(LocalForce, ClientToUE);
 
 		RootMesh->AddForceAtLocationLocal(LocalForce, thrusterLocations[i]);

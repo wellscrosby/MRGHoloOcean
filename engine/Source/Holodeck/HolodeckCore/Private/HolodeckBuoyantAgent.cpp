@@ -20,7 +20,7 @@ void AHolodeckBuoyantAgent::InitializeAgent(){
 	if(SurfacePoints.Num() == 0){
 		for(int i=0;i<NumSurfacePoints;i++){
 			FVector random = UKismetMathLibrary::RandomPointInBoundingBox(FVector(0,0,0), BoundingBox.GetExtent());
-			SurfacePoints.Add( random );
+			SurfacePoints.Add( random + OffsetToOrigin + CenterVehicle );
 		}
 	}
 	// Otherwise make sure our count is correct (we'll use it later)
@@ -38,7 +38,7 @@ void AHolodeckBuoyantAgent::ApplyBuoyantForce(){
 	FVector* points = SurfacePoints.GetData();
 	int count = 0;
 	for(int i=0;i<NumSurfacePoints;i++){	
-		FVector p_world = ActorLocation + ActorRotation.RotateVector(points[i] + OffsetToOrigin + CenterVehicle);
+		FVector p_world = ActorLocation + ActorRotation.RotateVector(points[i]);
 		if(p_world.Z < SurfaceLevel)
 			count++;
 	}
@@ -64,7 +64,7 @@ void AHolodeckBuoyantAgent::ShowSurfacePoints(){
 	FVector* points = SurfacePoints.GetData();
 
 	for(int i=0;i<NumSurfacePoints;i++){
-		FVector p_world = ActorLocation + ActorRotation.RotateVector(points[i] + OffsetToOrigin + CenterVehicle);
+		FVector p_world = ActorLocation + ActorRotation.RotateVector(points[i]);
 		DrawDebugPoint(GetWorld(), p_world, 5, FColor::Red, false, 0.05);
 	}
 }
