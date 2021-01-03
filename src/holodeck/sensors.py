@@ -617,12 +617,12 @@ class DVLSensor(HolodeckSensor):
 
     ::`
 
-       [velocity_x, velocity_y]
+       [velocity_x, velocity_y, velocity_z]
 
-    The ``configuration`` block (see :ref:`configuration-block`) accepts the
+    In the robot frame. The ``configuration`` block (see :ref:`configuration-block`) accepts the
     following options:
 
-    - ``AcousticDebug``: Show debug traces. (default false)
+    - ``AcousticDebug``: Show debug traces. (default false) (TODO)
     """
 
     sensor_type = "DVLSensor"
@@ -633,7 +633,7 @@ class DVLSensor(HolodeckSensor):
 
     @property
     def data_shape(self):
-        return [2]
+        return [3]
 
 ######################################################################################
 class SensorDefinition:

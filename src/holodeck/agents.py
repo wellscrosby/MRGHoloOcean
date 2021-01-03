@@ -686,6 +686,10 @@ class HoveringAUV(HolodeckAgent):
         np.copyto(self._action_buffer, np.array(action))
         np.copyto(self._action_buffer, action)
 
+class PerfectHoveringAUV(HoveringAUV):
+    """Identical to the HoveringAUV, just with ideal COM, COB, and volume."""
+    agent_type = "PerfectHoveringAUV"
+
 class AgentDefinition:
     """Represents information needed to initialize agent.
 
@@ -710,6 +714,7 @@ class AgentDefinition:
         "HandAgent": HandAgent,
         "TurtleAgent": TurtleAgent,
         "HoveringAUV": HoveringAUV,
+        "PerfectHoveringAUV": PerfectHoveringAUV,
     }
 
     def __init__(self, agent_name, agent_type, sensors=None, starting_loc=(0, 0, 0),
