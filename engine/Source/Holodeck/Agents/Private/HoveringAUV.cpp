@@ -18,14 +18,6 @@ AHoveringAUV::AHoveringAUV() {
 	this->CenterMass = FVector(-5.9, 0.46, -2.82);
 	this->MassInKG = 31.02;
 	this->OffsetToOrigin = FVector(-0.7, -2, 32);
-
-
-	// Apply OffsetToOrigin to all of our position vectors
-	this->CenterBuoyancy += OffsetToOrigin;
-	this->CenterMass += OffsetToOrigin;
-	for(int i=0;i<8;i++){
-		thrusterLocations[i] += OffsetToOrigin;
-	}
 }
 
 // Sets all values that we need
@@ -41,6 +33,12 @@ void AHoveringAUV::InitializeAgent() {
 
 		this->Volume = MassInKG / WaterDensity;
 	}
+
+	// Apply OffsetToOrigin to all of our custom position vectors
+	for(int i=0;i<8;i++){
+		thrusterLocations[i] += OffsetToOrigin;
+	}
+
 	Super::InitializeAgent();
 }
 

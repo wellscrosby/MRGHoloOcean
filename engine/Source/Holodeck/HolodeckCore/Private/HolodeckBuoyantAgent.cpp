@@ -8,7 +8,7 @@ void AHolodeckBuoyantAgent::InitializeAgent(){
 
 	// Set COM (have to do some calculation since it sets an offset)
 	FVector COM_curr = GetActorRotation().UnrotateVector( RootMesh->GetCenterOfMass() - GetActorLocation() );
-	RootMesh->SetCenterOfMass( CenterMass - COM_curr );
+	RootMesh->SetCenterOfMass( CenterMass + OffsetToOrigin - COM_curr );
 	// Set Mass
 	RootMesh->SetMassOverrideInKg("", MassInKG);
 
@@ -20,6 +20,7 @@ void AHolodeckBuoyantAgent::InitializeAgent(){
 	if(SurfacePoints.Num() == 0){
 		for(int i=0;i<NumSurfacePoints;i++){
 			FVector random = UKismetMathLibrary::RandomPointInBoundingBox(FVector(0,0,0), BoundingBox.GetExtent());
+			// We pre-add all offsets to reduce computation during simulation
 			SurfacePoints.Add( random + OffsetToOrigin + CenterVehicle );
 		}
 	}
@@ -49,7 +50,7 @@ void AHolodeckBuoyantAgent::ApplyBuoyantForce(){
 	FVector BuoyantVector = FVector(0, 0, BuoyantForce);
 	BuoyantVector = ConvertLinearVector(BuoyantVector, ClientToUE);
 
-    FVector COB_World = ActorLocation + ActorRotation.RotateVector(CenterBuoyancy);
+    FVector COB_World = ActorLocation + ActorRotation.RotateVector(CenterBuoyancy + OffsetToOrigin);
 	RootMesh->AddForceAtLocation(BuoyantVector, COB_World);
 }
 
