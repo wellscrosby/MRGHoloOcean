@@ -21,9 +21,9 @@ void UOrientationSensor::InitializeSensor() {
 // Called every frame
 void UOrientationSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	if (Parent != nullptr && RootMesh != nullptr) {
-		FVector Forward = RootMesh->GetForwardVector();
-		FVector Right = RootMesh->GetRightVector();
-		FVector Up = RootMesh->GetUpVector();
+		FVector Forward = this->GetForwardVector();
+		FVector Right = this->GetRightVector();
+		FVector Up = this->GetUpVector();
 
 		float* FloatBuffer = static_cast<float*>(Buffer);
 		Forward = ConvertLinearVector(Forward, NoScale);

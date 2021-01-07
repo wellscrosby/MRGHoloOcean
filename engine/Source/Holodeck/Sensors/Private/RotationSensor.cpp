@@ -16,7 +16,7 @@ void URotationSensor::InitializeSensor() {
 
 void URotationSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	if (Parent != nullptr && bOn) {
-		FRotator Rotation = Parent->GetActorRotation();
+		FRotator Rotation = this->GetComponentRotation();
 		Rotation = ConvertAngularVector(Rotation, NoScale);
 		float* FloatBuffer = static_cast<float*>(Buffer);
 		FloatBuffer[0] = Rotation.Roll;

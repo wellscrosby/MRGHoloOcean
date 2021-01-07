@@ -56,10 +56,13 @@ void UAddSensorCommand::Execute() {
 	int LocationY = NumberParams[1];
 	int LocationZ = NumberParams[2];
 
-	// Coordinates from the python side come in roll (x), pitch (y), yaw, (z) order
-	int RotationRoll = NumberParams[3];
-	int RotationPitch = NumberParams[4];
-	int RotationYaw = NumberParams[5];
+	// Note that we have to re-order the parameters since FRotator takes pitch, yaw, roll
+	// but the coordinates from the Python side com in roll, pitch, yaw order
+	FRotator Rotation = FRotator(NumberParams[4], NumberParams[5], NumberParams[3]);
+	Rotation = ConvertAngularVector(Rotation, ClientToUE);
+	int RotationRoll = Rotation.Roll;
+	int RotationPitch = Rotation.Pitch;
+	int RotationYaw = Rotation.Yaw;
 
 	AHolodeckAgent* Agent = GetAgent(AgentName);
 
