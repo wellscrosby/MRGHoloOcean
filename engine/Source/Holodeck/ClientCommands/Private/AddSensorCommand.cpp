@@ -52,17 +52,14 @@ void UAddSensorCommand::Execute() {
 	FString TypeName = StringParams[2].c_str();
 	FString ParmsJson = StringParams[3].c_str();
 	FString SocketName = StringParams[4].c_str();
-	int LocationX = NumberParams[0];
-	int LocationY = NumberParams[1];
-	int LocationZ = NumberParams[2];
+	float LocationX = NumberParams[0];
+	float LocationY = NumberParams[1];
+	float LocationZ = NumberParams[2];
 
 	// Note that we have to re-order the parameters since FRotator takes pitch, yaw, roll
 	// but the coordinates from the Python side com in roll, pitch, yaw order
 	FRotator Rotation = FRotator(NumberParams[4], NumberParams[5], NumberParams[3]);
 	Rotation = ConvertAngularVector(Rotation, ClientToUE);
-	int RotationRoll = Rotation.Roll;
-	int RotationPitch = Rotation.Pitch;
-	int RotationYaw = Rotation.Yaw;
 
 	AHolodeckAgent* Agent = GetAgent(AgentName);
 
@@ -72,7 +69,7 @@ void UAddSensorCommand::Execute() {
 	Sensor->SensorName = SensorName;
 	Sensor->ParseSensorParms(ParmsJson);
 	Sensor->SetRelativeLocation(ConvertLinearVector(FVector(LocationX, LocationY, LocationZ), ClientToUE));
-	Sensor->SetRelativeRotation(FRotator(RotationPitch, RotationYaw, RotationRoll));
+	Sensor->SetRelativeRotation(Rotation);
 
 	if (Sensor && Agent)
 	{
