@@ -21,10 +21,10 @@ void UPoseSensor::InitializeSensor() {
 // Called every frame
 void UPoseSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	if (Parent != nullptr && RootMesh != nullptr) {
-		FVector Forward = RootMesh->GetForwardVector();
-		FVector Right = RootMesh->GetRightVector();
-		FVector Up = RootMesh->GetUpVector();
-		FVector Location = RootMesh->GetComponentLocation();
+		FVector Forward = this->GetForwardVector();
+		FVector Right = this->GetRightVector();
+		FVector Up = this->GetUpVector();
+		FVector Location = this->GetComponentLocation();
 
 		float* FloatBuffer = static_cast<float*>(Buffer);
 		Forward = ConvertLinearVector(Forward, NoScale);
