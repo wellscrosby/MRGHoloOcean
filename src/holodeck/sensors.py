@@ -766,5 +766,6 @@ class SensorFactory:
         # Wanted to make sure this is what we want before making large changes
         result.lcm_msg    = sensor_def.lcm_msg
         result.tick_every = sensor_def.tick_every
+        result.tick_count = sensor_def.tick_every
 
         return result

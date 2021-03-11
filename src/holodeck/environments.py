@@ -209,10 +209,12 @@ class HolodeckEnvironment:
                 # set up sensor rates
                 if self._ticks_per_sec < sensor_config['Hz']:
                     raise ValueError(f"{sensor_config['sensor_name']} is sampled at {sensor_config['Hz']} which is less than ticks_per_sec {self._ticks_per_sec}")
+                
+                # round sensor rate as needed
                 tick_every = self._ticks_per_sec / sensor_config['Hz']
                 if int(tick_every) != tick_every:
                     print(f"{sensor_config['sensor_name']} rate {sensor_config['Hz']} is not a factor of ticks_per_sec {self._ticks_per_sec}, rounding to {self._ticks_per_sec//int(tick_every)}")
-                sensor_config['tick_every'] = tick_every
+                sensor_config['tick_every'] = int(tick_every)
 
                 sensors.append(SensorDefinition(agent['agent_name'],
                                                 agent['agent_type'],
@@ -367,7 +369,9 @@ class HolodeckEnvironment:
             reward, terminal = self._get_reward_terminal()
             last_state = self._default_state_fn(), reward, terminal, None
 
-        self._num_ticks += 1
+            self._tick_sensor()
+            self._num_ticks += 1
+
 
         if publish and self._lcm is not None:
             self.publish()
@@ -419,7 +423,8 @@ class HolodeckEnvironment:
             self._client.acquire()
             state = self._default_state_fn()
 
-        self._num_ticks += 1
+            self._tick_sensor()
+            self._num_ticks += 1
 
         if publish and self._lcm is not None:
             self.publish()
@@ -428,10 +433,15 @@ class HolodeckEnvironment:
 
     def publish(self):
         """Publishes current state to channels chosen by the scenario config."""
+        state = self._get_full_state()
+
+        # iterate through all agents and sensors
         for agent_name, agent in self.agents.items():
             for sensor_name, sensor in agent.sensors.items():
-                if sensor.lcm_msg is not None:
-                    sensor.lcm_msg.set_value(int(1000 * self._num_ticks / self._ticks_per_sec), self._state_dict[agent_name][sensor_name])
+                # check if it's a full state, or single one
+                if sensor.lcm_msg is not None and sensor_name in state[agent_name]:
+                    # send message if it's in the dictionary and if LCM message is turned on
+                    sensor.lcm_msg.set_value(int(1000 * self._num_ticks / self._ticks_per_sec), state[agent_name][sensor_name])
                     self._lcm.publish(sensor.lcm_msg.channel, sensor.lcm_msg.sensor.encode())
 
     def _enqueue_command(self, command_to_send):
@@ -709,16 +719,46 @@ class HolodeckEnvironment:
         # TODO: Surpress exceptions?
         self.__on_exit__()
 
+    def _tick_sensor(self):
+        for agent_name, agent in self.agents.items():
+            for sensor_name, sensor in agent.sensors.items():
+                # if it's not time, tick the sensor
+                if sensor.tick_count != sensor.tick_every:
+                    sensor.tick_count += 1
+                # otherwise remove, it and reset count
+                else:
+                    sensor.tick_count = 1
+    
     def _get_single_state(self):
-
         if self._agent is not None:
-            return self._create_copy(self._state_dict[self._agent.name]) if self._copy_state \
+            state = self._create_copy(self._state_dict[self._agent.name]) if self._copy_state \
                 else self._state_dict[self._agent.name]
+
+            if self._copy_state:
+                for sensor_name, sensor in self.agents[self._agent.name].sensors.items():
+                    # if it's not time, remove element
+                    if sensor.tick_count != sensor.tick_every:
+                        state.pop(sensor_name)
+
+                state['t'] = self._num_ticks / self._ticks_per_sec
+
+            return state
 
         return self._get_full_state()
 
     def _get_full_state(self):
-        return self._create_copy(self._state_dict) if self._copy_state else self._state_dict
+        state = self._create_copy(self._state_dict) if self._copy_state else self._state_dict
+
+        if self._copy_state:
+            for agent_name, agent in self.agents.items():
+                for sensor_name, sensor in agent.sensors.items():
+                    # if it's not time, remove element
+                    if sensor.tick_count != sensor.tick_every:
+                        state[agent_name].pop(sensor_name)
+
+            state['t'] = self._num_ticks / self._ticks_per_sec
+
+        return state
 
     def _get_reward_terminal(self):
         reward = None
