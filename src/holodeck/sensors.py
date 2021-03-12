@@ -303,6 +303,7 @@ class RGBCamera(HolodeckSensor):
 
         command_to_send = RGBCameraRateCommand(self.agent_name, self.name, ticks_per_capture)
         self._client.command_center.enqueue_command(command_to_send)
+        self.tick_every = ticks_per_capture
 
 class OrientationSensor(HolodeckSensor):
     """Gets the forward, right, and up vector for the agent.
@@ -728,6 +729,9 @@ class SensorDefinition:
         self.location = location
         self.rotation = rotation
         self.config = self.type.default_config if config is None else config
+        # hacky way to get RGBCamera to capture lined up with python rate
+        if sensor_type == "RGBCamera":
+            self.config['TicksPerCapture'] = tick_every
         self.existing = existing
 
         if lcm_channel is not None:
@@ -766,6 +770,6 @@ class SensorFactory:
         # Wanted to make sure this is what we want before making large changes
         result.lcm_msg    = sensor_def.lcm_msg
         result.tick_every = sensor_def.tick_every
-        result.tick_count = sensor_def.tick_every
+        result.tick_count = sensor_def.tick_every-1
 
         return result
