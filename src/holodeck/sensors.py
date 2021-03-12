@@ -6,7 +6,7 @@ import holodeck
 
 from holodeck.command import RGBCameraRateCommand, RotateSensorCommand, CustomCommand
 from holodeck.exceptions import HolodeckConfigurationException
-
+from holodeck.lcm import SensorData
 
 class HolodeckSensor:
     """Base class for a sensor
@@ -303,6 +303,7 @@ class RGBCamera(HolodeckSensor):
 
         command_to_send = RGBCameraRateCommand(self.agent_name, self.name, ticks_per_capture)
         self._client.command_center.enqueue_command(command_to_send)
+        self.tick_every = ticks_per_capture
 
 class OrientationSensor(HolodeckSensor):
     """Gets the forward, right, and up vector for the agent.
@@ -714,11 +715,10 @@ class SensorDefinition:
 
     def __init__(self, agent_name, agent_type, sensor_name, sensor_type, 
                  socket="", location=(0, 0, 0), rotation=(0, 0, 0), config=None, 
-                 existing=False, publish=None):
+                 existing=False, lcm_channel=None, tick_every=None):
         self.agent_name = agent_name
         self.agent_type = agent_type
         self.sensor_name = sensor_name
-        self.publish = publish
 
         if isinstance(sensor_type, str):
             self.type = SensorDefinition._sensor_keys_[sensor_type]
@@ -729,8 +729,16 @@ class SensorDefinition:
         self.location = location
         self.rotation = rotation
         self.config = self.type.default_config if config is None else config
+        # hacky way to get RGBCamera to capture lined up with python rate
+        if sensor_type == "RGBCamera":
+            self.config['TicksPerCapture'] = tick_every
         self.existing = existing
 
+        if lcm_channel is not None:
+            self.lcm_msg = SensorData(sensor_type, lcm_channel)
+        else:
+            self.lcm_msg = None
+        self.tick_every = tick_every
 
 
 class SensorFactory:
@@ -755,5 +763,13 @@ class SensorFactory:
         if sensor_def.sensor_name is None:
             sensor_def.sensor_name = SensorFactory._default_name(sensor_def.type)
 
-        return sensor_def.type(client, sensor_def.agent_name, sensor_def.agent_type,
+        result = sensor_def.type(client, sensor_def.agent_name, sensor_def.agent_type,
                                sensor_def.sensor_name, config=sensor_def.config)
+
+        # TODO: Make this part of the constructors rather than hacking it on
+        # Wanted to make sure this is what we want before making large changes
+        result.lcm_msg    = sensor_def.lcm_msg
+        result.tick_every = sensor_def.tick_every
+        result.tick_count = sensor_def.tick_every
+
+        return result

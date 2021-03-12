@@ -96,7 +96,7 @@ class HolodeckEnvironment:
         self._scenario = scenario
         self._initial_agent_defs = agent_definitions
         self._spawned_agent_defs = []
-        self._lcm_channels = dict()
+        self._lcm = None
         self._num_ticks = 0
 
         # Start world based on OS
@@ -199,34 +199,38 @@ class HolodeckEnvironment:
                     'socket': "",
                     'configuration': None,
                     'sensor_name': sensor['sensor_type'],
-                    'channel': sensor['sensor_type'],
                     'existing': False,
-                    'publish': None
+                    'Hz': self._ticks_per_sec,
+                    'lcm_channel': None
                 }
                 # Overwrite the default values with what is defined in the scenario config
                 sensor_config.update(sensor)
+
+                # set up sensor rates
+                if self._ticks_per_sec < sensor_config['Hz']:
+                    raise ValueError(f"{sensor_config['sensor_name']} is sampled at {sensor_config['Hz']} which is less than ticks_per_sec {self._ticks_per_sec}")
+                
+                # round sensor rate as needed
+                tick_every = self._ticks_per_sec / sensor_config['Hz']
+                if int(tick_every) != tick_every:
+                    print(f"{sensor_config['sensor_name']} rate {sensor_config['Hz']} is not a factor of ticks_per_sec {self._ticks_per_sec}, rounding to {self._ticks_per_sec//int(tick_every)}")
+                sensor_config['tick_every'] = int(tick_every)
 
                 sensors.append(SensorDefinition(agent['agent_name'],
                                                 agent['agent_type'],
                                                 sensor_config['sensor_name'],
                                                 sensor_config['sensor_type'],
-                                                publish=sensor_config['publish'],
                                                 socket=sensor_config['socket'],
                                                 location=sensor_config['location'],
                                                 rotation=sensor_config['rotation'],
-                                                config=sensor_config['configuration']))
+                                                config=sensor_config['configuration'],
+                                                tick_every=sensor_config['tick_every'],
+                                                lcm_channel=sensor_config['lcm_channel']))
 
-                # Set up channels to publish to lcm
-                if sensor_config['publish'] == 'lcm':
-                    if not self._lcm_channels:
-                        globals()["lcm"] = __import__("lcm")
-                        self._lcm = lcm.LCM(self._scenario['lcm_provider'])
-                    if agent['agent_name'] in self._lcm_channels:
-                        self._lcm_channels[agent['agent_name']][sensor_config['sensor_name']] = \
-                                                                    SensorData(sensor_config['sensor_type'], sensor_config['channel'])
-                    else:
-                        self._lcm_channels[agent['agent_name']] = \
-                                    { sensor_config['sensor_name'] : SensorData(sensor_config['sensor_type'], sensor_config['channel']) }
+                # Import LCM if needed
+                if sensor_config['lcm_channel'] is not None and self._lcm is None:
+                    globals()["lcm"] = __import__("lcm")
+                    self._lcm = lcm.LCM(self._scenario['lcm_provider'])
             
             # Default values for an agent
             agent_config = {
@@ -365,9 +369,11 @@ class HolodeckEnvironment:
             reward, terminal = self._get_reward_terminal()
             last_state = self._default_state_fn(), reward, terminal, None
 
-        self._num_ticks += 1
+            self._tick_sensor()
+            self._num_ticks += 1
 
-        if publish:
+
+        if publish and self._lcm is not None:
             self.publish()
 
         return last_state
@@ -415,22 +421,29 @@ class HolodeckEnvironment:
 
             self._client.release()
             self._client.acquire()
+
             state = self._default_state_fn()
 
-        self._num_ticks += 1
-
-        if publish:
+            self._tick_sensor()
+            self._num_ticks += 1
+            
+        if publish and self._lcm is not None:
             self.publish()
 
         return state
 
     def publish(self):
         """Publishes current state to channels chosen by the scenario config."""
-        if self._lcm_channels:
-            for agent, sensors in self._lcm_channels.items():
-                for sensor, msg in sensors.items():
-                    msg.set_value(int(1000 * self._num_ticks / self._ticks_per_sec), self._state_dict[agent][sensor])
-                    self._lcm.publish(msg.channel, msg.sensor.encode())
+        state = self._get_full_state()
+
+        # iterate through all agents and sensors
+        for agent_name, agent in self.agents.items():
+            for sensor_name, sensor in agent.sensors.items():
+                # check if it's a full state, or single one
+                if sensor.lcm_msg is not None and sensor_name in state[agent_name]:
+                    # send message if it's in the dictionary and if LCM message is turned on
+                    sensor.lcm_msg.set_value(int(1000 * self._num_ticks / self._ticks_per_sec), state[agent_name][sensor_name])
+                    self._lcm.publish(sensor.lcm_msg.channel, sensor.lcm_msg.sensor.encode())
 
     def _enqueue_command(self, command_to_send):
         self._command_center.enqueue_command(command_to_send)
@@ -515,7 +528,7 @@ class HolodeckEnvironment:
         if prop_type not in available_props:
             raise HolodeckException("{} not an available prop. Available prop types: {}".format(
                 prop_type, available_props))
-        if material not in available_materials and material is not "":
+        if material not in available_materials and material != "":
             raise HolodeckException("{} not an available material. Available material types: {}".format(
                 material, available_materials))
 
@@ -707,16 +720,46 @@ class HolodeckEnvironment:
         # TODO: Surpress exceptions?
         self.__on_exit__()
 
+    def _tick_sensor(self):
+        for agent_name, agent in self.agents.items():
+            for sensor_name, sensor in agent.sensors.items():
+                # if it's not time, tick the sensor
+                if sensor.tick_count != sensor.tick_every:
+                    sensor.tick_count += 1
+                # otherwise remove, it and reset count
+                else:
+                    sensor.tick_count = 1
+    
     def _get_single_state(self):
-
         if self._agent is not None:
-            return self._create_copy(self._state_dict[self._agent.name]) if self._copy_state \
+            state = self._create_copy(self._state_dict[self._agent.name]) if self._copy_state \
                 else self._state_dict[self._agent.name]
+
+            if self._copy_state:
+                for sensor_name, sensor in self.agents[self._agent.name].sensors.items():
+                    # if it's not time, remove element
+                    if sensor.tick_count != sensor.tick_every:
+                        state.pop(sensor_name)
+
+                state['t'] = self._num_ticks / self._ticks_per_sec
+
+            return state
 
         return self._get_full_state()
 
     def _get_full_state(self):
-        return self._create_copy(self._state_dict) if self._copy_state else self._state_dict
+        state = self._create_copy(self._state_dict) if self._copy_state else self._state_dict
+
+        if self._copy_state:
+            for agent_name, agent in self.agents.items():
+                for sensor_name, sensor in agent.sensors.items():
+                    # if it's not time, remove element
+                    if sensor.tick_count != sensor.tick_every:
+                        state[agent_name].pop(sensor_name)
+
+            state['t'] = self._num_ticks / self._ticks_per_sec
+
+        return state
 
     def _get_reward_terminal(self):
         reward = None

@@ -18,7 +18,7 @@ def test_sensor(sensor):
                             {
                                 "sensor_type": sensor,
                                 "publish": "lcm",
-                                "channel": "sensor"
+                                "lcm_channel": "sensor"
                             }
                         ],
                         "control_scheme": 0,
