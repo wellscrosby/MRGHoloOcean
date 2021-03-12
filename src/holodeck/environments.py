@@ -74,8 +74,6 @@ class HolodeckEnvironment:
         if agent_definitions is None:
             agent_definitions = []
 
-        self.last = None
-
         # Initialize variables
 
         if window_size is None:
@@ -368,12 +366,11 @@ class HolodeckEnvironment:
             self._client.release()
             self._client.acquire()
 
-            self._tick_sensor()
-            self._num_ticks += 1
-            
             reward, terminal = self._get_reward_terminal()
             last_state = self._default_state_fn(), reward, terminal, None
 
+            self._tick_sensor()
+            self._num_ticks += 1
 
 
         if publish and self._lcm is not None:
@@ -425,11 +422,11 @@ class HolodeckEnvironment:
             self._client.release()
             self._client.acquire()
 
+            state = self._default_state_fn()
+
             self._tick_sensor()
             self._num_ticks += 1
             
-            state = self._default_state_fn()
-
         if publish and self._lcm is not None:
             self.publish()
 
