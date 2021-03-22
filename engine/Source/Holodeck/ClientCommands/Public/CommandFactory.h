@@ -16,6 +16,8 @@
 #include "AddSensorCommand.h"
 #include "RemoveSensorCommand.h"
 #include "RotateSensorCommand.h"
+#include "SendAcousticMessageCommand.h"
+
 #include "CommandFactory.generated.h"
 
 class AHolodeckGameMode;

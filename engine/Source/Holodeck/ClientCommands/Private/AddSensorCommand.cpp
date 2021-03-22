@@ -45,7 +45,8 @@ void UAddSensorCommand::Execute() {
 										{ "RangeFinderSensor", URangeFinderSensor::StaticClass() },
 										{ "CleanUpTask", UCleanUpTask::StaticClass() },
 										{ "DVLSensor", UDVLSensor::StaticClass() },
-										{ "PoseSensor", UPoseSensor::StaticClass() }, };
+										{ "PoseSensor", UPoseSensor::StaticClass() },
+										{ "AcousticBeaconSensor", UAcousticBeaconSensor::StaticClass() }, };
 
 	FString AgentName = StringParams[0].c_str();
 	FString SensorName = StringParams[1].c_str();
