@@ -15,7 +15,7 @@ import numpy as np
 
 from holodeck.command import CommandCenter, SpawnAgentCommand, RGBCameraRateCommand, \
     TeleportCameraCommand, RenderViewportCommand, RenderQualityCommand, \
-    CustomCommand, DebugDrawCommand
+    CustomCommand, DebugDrawCommand, SendAcousticMessageCommand
 
 from holodeck.exceptions import HolodeckException
 from holodeck.holodeckclient import HolodeckClient
@@ -620,6 +620,14 @@ class HolodeckEnvironment:
             render_quality (:obj:`int`): An integer between 0 = Low Quality and 3 = Epic quality.
         """
         self._enqueue_command(RenderQualityCommand(render_quality))
+
+    def send_acoustic_message(self, agent, sensor, num):
+        """Adjusts the rendering quality of Holodeck.
+        
+        Args:
+            render_quality (:obj:`int`): An integer between 0 = Low Quality and 3 = Epic quality.
+        """
+        self._enqueue_command(SendAcousticMessageCommand(agent, sensor, num))
 
     def set_control_scheme(self, agent_name, control_scheme):
         """Set the control scheme for a specific agent.
