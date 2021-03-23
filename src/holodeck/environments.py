@@ -96,6 +96,7 @@ class HolodeckEnvironment:
         self._scenario = scenario
         self._initial_agent_defs = agent_definitions
         self._spawned_agent_defs = []
+
         self._lcm = None
         self._num_ticks = 0
 
@@ -184,6 +185,9 @@ class HolodeckEnvironment:
         if self._scenario is None:
             return
 
+        # TODO Make list of beacons to use and pass to each beacon
+        # TODO When receiving messages, make sure only 1 is being transmitted at a time
+        # TODO Message to all beacons?
         for agent in self._scenario['agents']:
             sensors = []
             for sensor in agent['sensors']:
@@ -621,14 +625,15 @@ class HolodeckEnvironment:
         """
         self._enqueue_command(RenderQualityCommand(render_quality))
 
-    def send_acoustic_message(self, agent, sensor, num):
+    def send_acoustic_message(self, id_from, id_to, msg_type, msg_data):
         """Adjusts the rendering quality of Holodeck.
         
         Args:
             render_quality (:obj:`int`): An integer between 0 = Low Quality and 3 = Epic quality.
         """
-        self._enqueue_command(SendAcousticMessageCommand(agent, sensor, num))
-
+        # self._enqueue_command(SendAcousticMessageCommand(agent, sensor, num))
+        pass
+    
     def set_control_scheme(self, agent_name, control_scheme):
         """Set the control scheme for a specific agent.
 

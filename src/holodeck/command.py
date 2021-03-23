@@ -430,9 +430,10 @@ class SendAcousticMessageCommand(Command):
         num (:obj:`int`): number of ticks between captures
 
     """
-    def __init__(self, agent_name, sensor_name, num):
+    def __init__(self, from_agent_name, from_sensor_name, to_agent_name, to_sensor_name):
         Command.__init__(self)
         self._command_type = "SendAcousticMessage"
-        self.add_string_parameters(agent_name)
-        self.add_string_parameters(sensor_name)
-        self.add_number_parameters(num)
+        self.add_string_parameters(from_agent_name)
+        self.add_string_parameters(from_sensor_name)
+        self.add_string_parameters(to_agent_name)
+        self.add_string_parameters(to_sensor_name)

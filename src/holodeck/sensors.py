@@ -674,6 +674,33 @@ class AcousticBeaconSensor(HolodeckSensor):
     """
 
     sensor_type = "AcousticBeaconSensor"
+    instances = []
+
+    @classmethod
+    def ids(cls):
+        return [i.id for i in cls.instances]
+
+    @classmethod
+    def status(cls):
+        return [i.status for i in cls.instances]
+
+    def __init__(self, client, agent_name, agent_type, name="RGBCamera",  config=None):
+        self.status = "Waiting"
+        
+        # assign an id
+        # TODO This could posisbly assign a later to be used id
+        # For safety either give all beacons id's or none of them
+        curr_ids = set(i.id for i in self.__class__.instances)
+        if 'id' in config and config['id'] not in curr_ids:
+            self.id = config['id']
+        else:
+            all_ids = set(range(max(curr_ids)))
+            self.id = min( all_ids - curr_ids )
+        
+        # keep running list of all beacons
+        self.__class__.instances.append(self)
+
+        super(AcousticBeaconSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
     @property
     def dtype(self):
@@ -682,6 +709,14 @@ class AcousticBeaconSensor(HolodeckSensor):
     @property
     def data_shape(self):
         return [2]
+
+    def send_message(self, id_to, msg_type, msg_data):
+        # TODO: Figure out how to get access to other beacons here
+        # TODO: Implement
+        pass
+
+    def _received_message(self):
+        return msg_type, msg_data
 
 ######################################################################################
 class SensorDefinition:
