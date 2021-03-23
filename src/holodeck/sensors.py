@@ -43,7 +43,10 @@ class HolodeckSensor:
             :obj:`np.ndarray` of size :obj:`self.data_shape`: Current sensor data
 
         """
-        return self._sensor_data_buffer
+        if self.tick_count == self.tick_every:
+            return self._sensor_data_buffer
+        else:
+            return None
 
     @property
     def dtype(self):
@@ -76,6 +79,9 @@ class HolodeckSensor:
         """
         command_to_send = RotateSensorCommand(self.agent_name, self.name, rotation)
         self._client.command_center.enqueue_command(command_to_send)
+
+    def reset(self):
+        pass
 
 
 class DistanceTask(HolodeckSensor):
@@ -674,15 +680,7 @@ class AcousticBeaconSensor(HolodeckSensor):
     """
 
     sensor_type = "AcousticBeaconSensor"
-    instances = []
-
-    @classmethod
-    def ids(cls):
-        return [i.id for i in cls.instances]
-
-    @classmethod
-    def status(cls):
-        return [i.status for i in cls.instances]
+    instances = dict()
 
     def __init__(self, client, agent_name, agent_type, name="RGBCamera",  config=None):
         self.status = "Waiting"
@@ -693,12 +691,14 @@ class AcousticBeaconSensor(HolodeckSensor):
         curr_ids = set(i.id for i in self.__class__.instances)
         if 'id' in config and config['id'] not in curr_ids:
             self.id = config['id']
+        elif len(curr_ids) == 0:
+            self.id = 0
         else:
-            all_ids = set(range(max(curr_ids)))
+            all_ids = set(range(max(curr_ids)+2))
             self.id = min( all_ids - curr_ids )
         
         # keep running list of all beacons
-        self.__class__.instances.append(self)
+        self.__class__.instances[self.id] = self
 
         super(AcousticBeaconSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
@@ -708,15 +708,71 @@ class AcousticBeaconSensor(HolodeckSensor):
 
     @property
     def data_shape(self):
-        return [2]
+        return [4]
 
     def send_message(self, id_to, msg_type, msg_data):
-        # TODO: Figure out how to get access to other beacons here
-        # TODO: Implement
-        pass
+        if id_to == -1 or id_to == "all":
+            for i in self.__class__.instances.keys():
+                self.send_message(i, msg_type, msg_data)
 
-    def _received_message(self):
-        return msg_type, msg_data
+        else:
+            beacon = self.__class__.instances[id_to]
+            self._enqueue_command(SendAcousticMessageCommand(self.agent_name, self.name, 
+                                                            beacon.agent_name, beacon.name))
+
+            self.status = "Sending"
+
+            beacon.msg_data = msg_data
+            beacon.msg_type = msg_type
+
+    @property
+    def sensor_data(self):
+        if ~np.any(np.isnan(self._sensor_data_buffer)):
+            # reset all sending beacons
+            sending = [i for i, val in self.__class__.instances.items() if val.status == "Sending"]
+            for i in sending:
+                self.__class__.instances[i].status = "Waiting"
+
+            # make sure exactly one person is sending messages
+            if len(sending) != 1:
+                data =  None
+            # otherwise parse through type
+            else:
+                data = {"data": self.msg_data, "type": self.msg_type}
+                if self.msg_type == "OWAY":
+                    pass
+                elif self.msg_type == "OWAYU":
+                    data |= {"theta": np.copy(self._sensor_data_buffer[0:2])}
+                elif self.msg_type == "MSG_REQ":
+                    self.send_message(sending[0], "MSG_RESP", None)
+                elif self.msg_type == "MSG_RESP":
+                    pass
+                elif self.msg_type == "MSG_REQU":
+                    self.send_message(sending[0], "MSG_RESPU", None)
+                    data |= {"theta": np.copy(self._sensor_data_buffer[0:2])}
+                elif self.msg_type == "MSG_RESPU":
+                    data |= {"theta": np.copy(self._sensor_data_buffer[0:2]), 
+                                 "r": np.copy(self._sensor_data_buffer[2])}
+                elif self.msg_type == "MSG_REQX":
+                    self.send_message(sending[0], "MSG_RESPU", None)
+                    data |= {"theta": np.copy(self._sensor_data_buffer[0:2]), 
+                                 "z": np.copy(self._sensor_data_buffer[3])}
+                elif self.msg_type == "MSG_RESPX":
+                    data |= {"theta": np.copy(self._sensor_data_buffer[0:2]), 
+                                 "r": np.copy(self._sensor_data_buffer[2]),
+                                 "z": np.copy(self._sensor_data_buffer[3])}
+
+            # reset buffer
+            self.msg_data = None
+            self.msg_type = None
+
+            return data
+
+        else:
+            return None
+
+    def reset(self):
+        self.__class__.instances = []
 
 ######################################################################################
 class SensorDefinition:
