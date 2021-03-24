@@ -22,8 +22,7 @@ void UAcousticBeaconSensor::TickSensorComponent(float DeltaTime, ELevelTick Tick
 			FTransform SensortoWorld = this->GetComponentTransform();
 			FVector fromLocation = fromSensor->GetComponentLocation();
 			FVector fromLocationLocal = UKismetMathLibrary::InverseTransformLocation(SensortoWorld, fromLocation);
-			// x and z are backwards due to difference of LHS/RHS system
-			fromLocationLocal = -ConvertLinearVector(fromLocationLocal, UEToClient);
+			fromLocationLocal = ConvertLinearVector(fromLocationLocal, UEToClient);
 
 			// calculate angles
 			WaitBuffer[0] = UKismetMathLibrary::Atan2(fromLocationLocal.Y, fromLocationLocal.X);
