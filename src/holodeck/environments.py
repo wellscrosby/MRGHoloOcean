@@ -752,8 +752,10 @@ class HolodeckEnvironment:
                 state = dict()
                 for sensor_name, sensor in self.agents[self._agent.name].sensors.items():
                     data = sensor.sensor_data
-                    if data is not None:
+                    if isinstance(data, np.ndarray):
                         state[sensor_name] = np.copy(data)
+                    elif data is not None:
+                        state[sensor_name] = data
 
                 state['t'] = self._num_ticks / self._ticks_per_sec
 
@@ -772,8 +774,10 @@ class HolodeckEnvironment:
                 state[agent_name] = dict()
                 for sensor_name, sensor in agent.sensors.items():
                     data = sensor.sensor_data
-                    if data is not None:
+                    if isinstance(data, np.ndarray):
                         state[agent_name][sensor_name] = np.copy(data)
+                    elif data is not None:
+                        state[agent_name][sensor_name] = data
 
             state['t'] = self._num_ticks / self._ticks_per_sec
 

@@ -713,9 +713,9 @@ class AcousticBeaconSensor(HolodeckSensor):
     @property
     def status(self):
         if len(self.sending_to) == 0:
-            return "Waiting"
+            return "Idle"
         else:
-            return "Sending"
+            return "Transmitting"
 
     def send_message(self, id_to, msg_type, msg_data):
         # Clean out id_to parameters
@@ -726,7 +726,7 @@ class AcousticBeaconSensor(HolodeckSensor):
             id_to = [id_to]
 
         # Don't transmit if a message is still waiting to be received
-        if self.status == "Sending":
+        if self.status == "Transmitting":
             print(f"Beacon {self.id} is still transmitting")
         # otherwise transmit
         else:
@@ -744,7 +744,7 @@ class AcousticBeaconSensor(HolodeckSensor):
     def sensor_data(self):
         if ~np.any(np.isnan(self._sensor_data_buffer)):
             # get all beacons sending messages
-            sending = [i for i, val in self.__class__.instances.items() if val.status == "Sending"]
+            sending = [i for i, val in self.__class__.instances.items() if val.status == "Transmitting"]
 
             # make sure exactly one person is sending messages
             if len(sending) != 1:
@@ -761,29 +761,26 @@ class AcousticBeaconSensor(HolodeckSensor):
                 data = {"type": self.msg_type}
                 if self.msg_data is not None:
                     data['data'] = self.msg_data
+                data = [self.msg_type, self.msg_data]
 
                 if self.msg_type == "OWAY":
                     pass
                 elif self.msg_type == "OWAYU":
-                    data.update( {"angle": np.copy(self._sensor_data_buffer[0:2])} )
+                    data.extend(self._sensor_data_buffer[0:2])
                 elif self.msg_type == "MSG_REQ":
                     self.send_message(sending[0], "MSG_RESP", None)
                 elif self.msg_type == "MSG_RESP":
                     pass
                 elif self.msg_type == "MSG_REQU":
                     self.send_message(sending[0], "MSG_RESPU", None)
-                    data.update( {"angle": np.copy(self._sensor_data_buffer[0:2])} )
+                    data.extend(self._sensor_data_buffer[0:2])
                 elif self.msg_type == "MSG_RESPU":
-                    data.update( {"angle": np.copy(self._sensor_data_buffer[0:2]), 
-                                 "r": self._sensor_data_buffer[2]} )
+                    data.extend(self._sensor_data_buffer[0:3])
                 elif self.msg_type == "MSG_REQX":
                     self.send_message(sending[0], "MSG_RESPX", None)
-                    data.update( {"angle": np.copy(self._sensor_data_buffer[0:2]), 
-                                 "z": self._sensor_data_buffer[3]} )
+                    data.extend(self._sensor_data_buffer[[0,1,3]])
                 elif self.msg_type == "MSG_RESPX":
-                    data.update( {"angle": np.copy(self._sensor_data_buffer[0:2]), 
-                                 "r": self._sensor_data_buffer[2],
-                                 "z": self._sensor_data_buffer[3]} )
+                    data.extend(self._sensor_data_buffer)
 
             # reset buffer
             self.msg_data = None
