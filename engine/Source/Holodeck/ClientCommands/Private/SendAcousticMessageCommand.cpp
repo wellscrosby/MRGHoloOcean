@@ -7,28 +7,31 @@ void USendAcousticMessageCommand::Execute() {
 
 	UE_LOG(LogHolodeck, Log, TEXT("SendAcousticMessageCommand::Execute"));
 
-	verifyf(StringParams.size() == 2 && NumberParams.size() == 1, TEXT("USendAcousticMessageCommand::Execute: Invalid Arguments"));
-
+	// Verify things and get everything set up 
+	verifyf(StringParams.size() == 4 && NumberParams.size() == 0, TEXT("USendAcousticMessageCommand::Execute: Invalid Arguments"));
 	AHolodeckGameMode* GameTarget = static_cast<AHolodeckGameMode*>(Target);
-
 	verifyf(GameTarget != nullptr, TEXT("%s UCommand::Target is not a UHolodeckGameMode*."), *FString(__func__));
-
 	UWorld* World = Target->GetWorld();
 	verify(World);
 
-	FString AgentName = StringParams[0].c_str();
-	float num = NumberParams[0];
+	// Get sensor it came from
+	FString fromAgentName = StringParams[0].c_str();
+	FString fromSensorName = StringParams[1].c_str();
 
-	verifyf(num > 0, TEXT("%s Invalid ticks per capture provided!"), *FString(__func__));
+	AHolodeckAgent* fromAgent = GetAgent(fromAgentName);
+	verifyf(fromAgent, TEXT("%s Could not find agent %s"), *FString(__func__), *fromAgentName);
+	verifyf(fromAgent->SensorMap.Contains(fromSensorName), TEXT("%s Sensor %s not found on agent %s"), *FString(__func__), *fromSensorName, *fromAgentName);
+	UAcousticBeaconSensor* fromSensor = (UAcousticBeaconSensor*)fromAgent->SensorMap[fromSensorName];
 
-	AHolodeckAgent* Agent = GetAgent(AgentName);
+	// Get sensor where it's going
+	FString toAgentName = StringParams[2].c_str();
+	FString toSensorName = StringParams[3].c_str();
 
-	verifyf(Agent, TEXT("%s Could not find agent %s"), *FString(__func__), *AgentName);
+	AHolodeckAgent* toAgent = GetAgent(toAgentName);
+	verifyf(toAgent, TEXT("%s Could not find agent %s"), *FString(__func__), *toAgentName);
+	verifyf(toAgent->SensorMap.Contains(toSensorName), TEXT("%s Sensor %s not found on agent %s"), *FString(__func__), *toSensorName, *toAgentName);
+	UAcousticBeaconSensor* toSensor = (UAcousticBeaconSensor*)toAgent->SensorMap[toSensorName];
 
-	FString SensorName = StringParams[1].c_str();
-
-	verifyf(Agent->SensorMap.Contains(SensorName), TEXT("%s Sensor %s not found on agent %s"), *FString(__func__), *SensorName, *AgentName);
-
-	UAcousticBeaconSensor* Camera = (UAcousticBeaconSensor*)Agent->SensorMap[SensorName];
-	Camera->num = num;
+	// Send the message
+	toSensor->fromSensor = fromSensor;
 }
