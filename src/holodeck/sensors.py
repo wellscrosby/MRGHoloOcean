@@ -4,7 +4,7 @@ import json
 import numpy as np
 import holodeck
 
-from holodeck.command import RGBCameraRateCommand, RotateSensorCommand, CustomCommand
+from holodeck.command import RGBCameraRateCommand, RotateSensorCommand, CustomCommand, SendAcousticMessageCommand
 from holodeck.exceptions import HolodeckConfigurationException
 from holodeck.lcm import SensorData
 
@@ -688,7 +688,7 @@ class AcousticBeaconSensor(HolodeckSensor):
         # assign an id
         # TODO This could posisbly assign a later to be used id
         # For safety either give all beacons id's or none of them
-        curr_ids = set(i.id for i in self.__class__.instances)
+        curr_ids = set(i.id for i in self.__class__.instances.values())
         if 'id' in config and config['id'] not in curr_ids:
             self.id = config['id']
         elif len(curr_ids) == 0:
@@ -717,8 +717,8 @@ class AcousticBeaconSensor(HolodeckSensor):
 
         else:
             beacon = self.__class__.instances[id_to]
-            self._enqueue_command(SendAcousticMessageCommand(self.agent_name, self.name, 
-                                                            beacon.agent_name, beacon.name))
+            command = SendAcousticMessageCommand(self.agent_name, self.name, beacon.agent_name, beacon.name)
+            self._client.command_center.enqueue_command(command)
 
             self.status = "Sending"
 
@@ -727,6 +727,8 @@ class AcousticBeaconSensor(HolodeckSensor):
 
     @property
     def sensor_data(self):
+        return self._sensor_data_buffer
+
         if ~np.any(np.isnan(self._sensor_data_buffer)):
             # reset all sending beacons
             sending = [i for i, val in self.__class__.instances.items() if val.status == "Sending"]
