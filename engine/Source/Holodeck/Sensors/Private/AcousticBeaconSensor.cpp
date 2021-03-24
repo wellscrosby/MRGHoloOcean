@@ -40,7 +40,7 @@ void UAcousticBeaconSensor::TickSensorComponent(float DeltaTime, ELevelTick Tick
 			fromSensor = NULL;
 
 			// figure out how long to receive that message
-			WaitTicks = std::roundl(WaitBuffer[2] / (DeltaTime * SpeedOfSound));
+			WaitTicks = roundl(WaitBuffer[2] / (DeltaTime * SpeedOfSound));
 		}
 		// if we're waiting for message
 		if(WaitTicks > 0){
