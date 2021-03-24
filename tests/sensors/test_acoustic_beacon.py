@@ -3,8 +3,7 @@ import uuid
 import numpy as np
 import pytest
 
-
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def config():
     scenario = {
         "name": "PerfectAUV",
@@ -87,7 +86,6 @@ def test_timing(config, num):
         # send a message
         env.send_acoustic_message(0, 2, "OWAY", "my_message")
         state = env.tick()
-
 
         for _ in range(num_ticks):
             state = env.tick()
