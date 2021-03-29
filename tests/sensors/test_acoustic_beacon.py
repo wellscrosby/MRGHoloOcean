@@ -64,7 +64,7 @@ def test_sending(config):
         state = env.tick()
 
         assert 'One' in state
-        assert state['One'] == ["OWAY", "my_message"]
+        assert state['One'] == ["OWAY", 0, "my_message"]
 
 
 @pytest.mark.parametrize('num', range(5))
@@ -91,7 +91,7 @@ def test_timing(config, num):
             state = env.tick()
 
         assert "Two" in state
-        assert state["Two"] == ["OWAY", "my_message"]
+        assert state["Two"] == ["OWAY", 0, "my_message"]
 
 
 @pytest.mark.parametrize('num', range(5))
@@ -123,8 +123,8 @@ def test_distance(config, num):
 
         assert "Zero" in state
         # TODO determine what we want it to send back in these scenarios
-        assert state["Zero"][0:2] == ["MSG_RESPU", None]
-        assert np.isclose(state["Zero"][4], dist)
+        assert state["Zero"][0:3] == ["MSG_RESPU", 2, None]
+        assert np.isclose(state["Zero"][5], dist)
 
 
 def test_all_to_one(config):
@@ -196,7 +196,7 @@ def test_azimuth(config, data):
         env.send_acoustic_message(2, 0, "OWAYU", "my_message")
         state = env.tick()
 
-        assert np.isclose(state['Zero'][2], angle)
+        assert np.isclose(state['Zero'][3], angle)
 
 
 @pytest.mark.parametrize('data', zip([[1,0], [1,1], [1,-1], [-1,-1]],
@@ -217,4 +217,4 @@ def test_elevation(config, data):
         env.send_acoustic_message(2, 0, "OWAYU", "my_message")
         state = env.tick()
 
-        assert np.isclose(state['Zero'][3], angle)
+        assert np.isclose(state['Zero'][4], angle)

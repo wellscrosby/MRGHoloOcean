@@ -758,10 +758,7 @@ class AcousticBeaconSensor(HolodeckSensor):
                 # stop sending to this beacon
                 self.__class__.instances[sending[0]].sending_to.remove(self.id)
 
-                data = {"type": self.msg_type}
-                if self.msg_data is not None:
-                    data['data'] = self.msg_data
-                data = [self.msg_type, self.msg_data]
+                data = [self.msg_type, sending[0], self.msg_data]
 
                 if self.msg_type == "OWAY":
                     pass
