@@ -1,4 +1,4 @@
-from holodeck.lcm import DVLSensor, IMUSensor, LocationSensor, RangeFinderSensor, RotationSensor, VelocitySensor, OrientationSensor, PoseSensor
+from holodeck.lcm import DVLSensor, IMUSensor, LocationSensor, RangeFinderSensor, RotationSensor, VelocitySensor, OrientationSensor, PoseSensor, AcousticBeaconSensor
 import numpy as np
 import os
 
@@ -18,6 +18,7 @@ class SensorData:
         "VelocitySensor": VelocitySensor,
         "PoseSensor": PoseSensor,
         "OrientationSensor": OrientationSensor,
+        "AcousticBeaconSensor": AcousticBeaconSensor,
     }
 
     def __init__(self, sensor_type, channel):
@@ -54,6 +55,14 @@ class SensorData:
             self.sensor.matrix = value.tolist()
         elif self.type == "OrientationSensor":
             self.sensor.matrix = value.tolist()
+        elif self.type == "AcousticBeaconSensor":
+            self.sensor.msg_type    = value[0]
+            self.sensor.from_beacon = value[1]
+            # TODO Eventually somehow handle data passed through in value[2]
+            self.sensor.azimuth   = value[3] if value[0] not in ["OWAY", "MSG_REQ", "MSG_RESP"] else np.NaN
+            self.sensor.elevation = value[4] if value[0] not in ["OWAY", "MSG_REQ", "MSG_RESP"] else np.NaN
+            self.sensor.range     = value[5] if value[0] in ["MSG_RESPU", "MSG_RESPX"] else np.NaN
+            self.sensor.z         = value[-1] if value[0] in ["MSG_REQX", "MSG_RESPX"] else np.NaN
         else:
             raise ValueError("That sensor hasn't been implemented in LCM yet")
 

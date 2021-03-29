@@ -11,4 +11,5 @@ from .RotationSensor import RotationSensor
 from .VelocitySensor import VelocitySensor
 from .OrientationSensor import OrientationSensor
 from .PoseSensor import PoseSensor
+from .AcousticBeaconSensor import AcousticBeaconSensor
 from .main import SensorData, gen

@@ -50,7 +50,6 @@ class IMUSensor(object):
         return self
     _decode_one = staticmethod(_decode_one)
 
-    _hash = None
     def _get_hash_recursive(parents):
         if IMUSensor in parents: return 0
         tmphash = (0x2b1e734f2aee4cdf) & 0xffffffffffffffff
@@ -64,4 +63,8 @@ class IMUSensor(object):
             IMUSensor._packed_fingerprint = struct.pack(">Q", IMUSensor._get_hash_recursive([]))
         return IMUSensor._packed_fingerprint
     _get_packed_fingerprint = staticmethod(_get_packed_fingerprint)
+
+    def get_hash(self):
+        """Get the LCM hash of the struct"""
+        return struct.unpack(">Q", IMUSensor._get_packed_fingerprint())[0]
 

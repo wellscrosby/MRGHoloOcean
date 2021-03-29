@@ -778,6 +778,8 @@ class AcousticBeaconSensor(HolodeckSensor):
                     data.extend(self._sensor_data_buffer[[0,1,3]])
                 elif self.msg_type == "MSG_RESPX":
                     data.extend(self._sensor_data_buffer)
+                else:
+                    raise ValueError("Invalid Acoustic MSG type")
 
             # reset buffer
             self.msg_data = None

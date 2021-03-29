@@ -52,3 +52,15 @@ struct VelocitySensor
     int64_t  timestamp;
     float velocity[3];
 }
+
+struct AcousticBeaconSensor
+{
+    int64_t  timestamp;
+
+    string msg_type;
+    int32_t from_beacon;
+    float azimuth;
+    float elevation;
+    float range;
+    float z;
+}

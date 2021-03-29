@@ -51,7 +51,6 @@ class RangeFinderSensor(object):
         return self
     _decode_one = staticmethod(_decode_one)
 
-    _hash = None
     def _get_hash_recursive(parents):
         if RangeFinderSensor in parents: return 0
         tmphash = (0x6fe5dbaa3d529ab8) & 0xffffffffffffffff
@@ -65,4 +64,8 @@ class RangeFinderSensor(object):
             RangeFinderSensor._packed_fingerprint = struct.pack(">Q", RangeFinderSensor._get_hash_recursive([]))
         return RangeFinderSensor._packed_fingerprint
     _get_packed_fingerprint = staticmethod(_get_packed_fingerprint)
+
+    def get_hash(self):
+        """Get the LCM hash of the struct"""
+        return struct.unpack(">Q", RangeFinderSensor._get_packed_fingerprint())[0]
 

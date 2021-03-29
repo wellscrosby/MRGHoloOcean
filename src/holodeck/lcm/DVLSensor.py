@@ -47,7 +47,6 @@ class DVLSensor(object):
         return self
     _decode_one = staticmethod(_decode_one)
 
-    _hash = None
     def _get_hash_recursive(parents):
         if DVLSensor in parents: return 0
         tmphash = (0x13111cc3baf33cad) & 0xffffffffffffffff
@@ -61,4 +60,8 @@ class DVLSensor(object):
             DVLSensor._packed_fingerprint = struct.pack(">Q", DVLSensor._get_hash_recursive([]))
         return DVLSensor._packed_fingerprint
     _get_packed_fingerprint = staticmethod(_get_packed_fingerprint)
+
+    def get_hash(self):
+        """Get the LCM hash of the struct"""
+        return struct.unpack(">Q", DVLSensor._get_packed_fingerprint())[0]
 

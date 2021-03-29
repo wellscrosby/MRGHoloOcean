@@ -47,7 +47,6 @@ class VelocitySensor(object):
         return self
     _decode_one = staticmethod(_decode_one)
 
-    _hash = None
     def _get_hash_recursive(parents):
         if VelocitySensor in parents: return 0
         tmphash = (0x13111cc3baf33cae) & 0xffffffffffffffff
@@ -61,4 +60,8 @@ class VelocitySensor(object):
             VelocitySensor._packed_fingerprint = struct.pack(">Q", VelocitySensor._get_hash_recursive([]))
         return VelocitySensor._packed_fingerprint
     _get_packed_fingerprint = staticmethod(_get_packed_fingerprint)
+
+    def get_hash(self):
+        """Get the LCM hash of the struct"""
+        return struct.unpack(">Q", VelocitySensor._get_packed_fingerprint())[0]
 
