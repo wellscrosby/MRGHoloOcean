@@ -417,3 +417,23 @@ class CustomCommand(Command):
         self.add_string_parameters(name)
         self.add_number_parameters(num_params)
         self.add_string_parameters(string_params)
+
+
+######################## HOLODECK-OCEAN CUSTOM COMMANDS ###########################
+
+class SendAcousticMessageCommand(Command):
+    """Set the number of ticks between captures of the RGB camera.
+
+    Args:
+        agent_name (:obj:`str`): name of the agent to modify
+        sensor_name (:obj:`str`): name of the sensor to modify
+        num (:obj:`int`): number of ticks between captures
+
+    """
+    def __init__(self, from_agent_name, from_sensor_name, to_agent_name, to_sensor_name):
+        Command.__init__(self)
+        self._command_type = "SendAcousticMessage"
+        self.add_string_parameters(from_agent_name)
+        self.add_string_parameters(from_sensor_name)
+        self.add_string_parameters(to_agent_name)
+        self.add_string_parameters(to_sensor_name)

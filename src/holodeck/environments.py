@@ -15,13 +15,15 @@ import numpy as np
 
 from holodeck.command import CommandCenter, SpawnAgentCommand, RGBCameraRateCommand, \
     TeleportCameraCommand, RenderViewportCommand, RenderQualityCommand, \
-    CustomCommand, DebugDrawCommand
+    CustomCommand, DebugDrawCommand, SendAcousticMessageCommand
 
 from holodeck.exceptions import HolodeckException
 from holodeck.holodeckclient import HolodeckClient
 from holodeck.agents import AgentDefinition, SensorDefinition, AgentFactory
 from holodeck.weather import WeatherController
 from holodeck.lcm import SensorData
+
+from holodeck.sensors import AcousticBeaconSensor
 
 class HolodeckEnvironment:
     """Proxy for communicating with a Holodeck world
@@ -96,6 +98,7 @@ class HolodeckEnvironment:
         self._scenario = scenario
         self._initial_agent_defs = agent_definitions
         self._spawned_agent_defs = []
+
         self._lcm = None
         self._num_ticks = 0
 
@@ -184,6 +187,9 @@ class HolodeckEnvironment:
         if self._scenario is None:
             return
 
+        # TODO Make list of beacons to use and pass to each beacon
+        # TODO When receiving messages, make sure only 1 is being transmitted at a time
+        # TODO Message to all beacons?
         for agent in self._scenario['agents']:
             sensors = []
             for sensor in agent['sensors']:
@@ -307,6 +313,12 @@ class HolodeckEnvironment:
         self._reset_ptr[0] = True
         for agent in self.agents.values():
             agent.clear_action()
+
+        # reset all sensors
+        for agent_name, agent in self.agents.items():
+            for sensor_name, sensor in agent.sensors.items():
+                sensor.reset()
+
         self.tick()  # Must tick once to send reset before sending spawning commands
         self.tick()  # Bad fix to potential race condition. See issue BYU-PCCL/holodeck#224
         self.tick()
@@ -374,7 +386,7 @@ class HolodeckEnvironment:
 
 
         if publish and self._lcm is not None:
-            self.publish()
+            self.publish(last_state)
 
         return last_state
 
@@ -428,13 +440,15 @@ class HolodeckEnvironment:
             self._num_ticks += 1
             
         if publish and self._lcm is not None:
-            self.publish()
+            self.publish(state)
 
         return state
 
-    def publish(self):
+    def publish(self, state):
         """Publishes current state to channels chosen by the scenario config."""
-        state = self._get_full_state()
+        # if it was a partial state
+        if self._agent.name not in state:
+            state = {self._agent.name: state}
 
         # iterate through all agents and sensors
         for agent_name, agent in self.agents.items():
@@ -621,6 +635,7 @@ class HolodeckEnvironment:
         """
         self._enqueue_command(RenderQualityCommand(render_quality))
 
+    
     def set_control_scheme(self, agent_name, control_scheme):
         """Set the control scheme for a specific agent.
 
@@ -732,32 +747,42 @@ class HolodeckEnvironment:
     
     def _get_single_state(self):
         if self._agent is not None:
-            state = self._create_copy(self._state_dict[self._agent.name]) if self._copy_state \
-                else self._state_dict[self._agent.name]
-
+            # rebuild state dictionary to drop/change data as needed
             if self._copy_state:
+                state = dict()
                 for sensor_name, sensor in self.agents[self._agent.name].sensors.items():
-                    # if it's not time, remove element
-                    if sensor.tick_count != sensor.tick_every:
-                        state.pop(sensor_name)
+                    data = sensor.sensor_data
+                    if isinstance(data, np.ndarray):
+                        state[sensor_name] = np.copy(data)
+                    elif data is not None:
+                        state[sensor_name] = data
 
                 state['t'] = self._num_ticks / self._ticks_per_sec
+
+            else:
+                state = self._state_dict[self._agent.name]
 
             return state
 
         return self._get_full_state()
 
     def _get_full_state(self):
-        state = self._create_copy(self._state_dict) if self._copy_state else self._state_dict
-
+        # rebuild state dictionary to drop/change data as needed
         if self._copy_state:
+            state = dict()
             for agent_name, agent in self.agents.items():
+                state[agent_name] = dict()
                 for sensor_name, sensor in agent.sensors.items():
-                    # if it's not time, remove element
-                    if sensor.tick_count != sensor.tick_every:
-                        state[agent_name].pop(sensor_name)
+                    data = sensor.sensor_data
+                    if isinstance(data, np.ndarray):
+                        state[agent_name][sensor_name] = np.copy(data)
+                    elif data is not None:
+                        state[agent_name][sensor_name] = data
 
             state['t'] = self._num_ticks / self._ticks_per_sec
+
+        else:
+            state = self._state_dict
 
         return state
 
@@ -781,3 +806,26 @@ class HolodeckEnvironment:
                     copy[k] = np.copy(v)
             return copy
         return None  # Not implemented for other types
+
+
+######################## ACOUSTIC BEACON HELPERS ###########################
+
+    def send_acoustic_message(self, id_from, id_to, msg_type, msg_data):
+        """Adjusts the rendering quality of Holodeck.
+        
+        Args:
+            render_quality (:obj:`int`): An integer between 0 = Low Quality and 3 = Epic quality.
+        """
+        AcousticBeaconSensor.instances[id_from].send_message(id_to, msg_type, msg_data)
+
+    @property
+    def beacons(self):
+        return AcousticBeaconSensor.instances
+
+    @property
+    def beacons_id(self):
+        return list(AcousticBeaconSensor.instances.keys())
+
+    @property
+    def beacons_status(self):
+        return [i.status for i in AcousticBeaconSensor.instances.values()]

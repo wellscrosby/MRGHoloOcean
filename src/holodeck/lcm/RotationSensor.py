@@ -47,7 +47,6 @@ class RotationSensor(object):
         return self
     _decode_one = staticmethod(_decode_one)
 
-    _hash = None
     def _get_hash_recursive(parents):
         if RotationSensor in parents: return 0
         tmphash = (0xa57d6ed5ba175b17) & 0xffffffffffffffff
@@ -61,4 +60,8 @@ class RotationSensor(object):
             RotationSensor._packed_fingerprint = struct.pack(">Q", RotationSensor._get_hash_recursive([]))
         return RotationSensor._packed_fingerprint
     _get_packed_fingerprint = staticmethod(_get_packed_fingerprint)
+
+    def get_hash(self):
+        """Get the LCM hash of the struct"""
+        return struct.unpack(">Q", RotationSensor._get_packed_fingerprint())[0]
 

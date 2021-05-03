@@ -47,7 +47,6 @@ class LocationSensor(object):
         return self
     _decode_one = staticmethod(_decode_one)
 
-    _hash = None
     def _get_hash_recursive(parents):
         if LocationSensor in parents: return 0
         tmphash = (0x211cfac3b0dd5486) & 0xffffffffffffffff
@@ -61,4 +60,8 @@ class LocationSensor(object):
             LocationSensor._packed_fingerprint = struct.pack(">Q", LocationSensor._get_hash_recursive([]))
         return LocationSensor._packed_fingerprint
     _get_packed_fingerprint = staticmethod(_get_packed_fingerprint)
+
+    def get_hash(self):
+        """Get the LCM hash of the struct"""
+        return struct.unpack(">Q", LocationSensor._get_packed_fingerprint())[0]
 

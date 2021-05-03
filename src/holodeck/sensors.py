@@ -4,7 +4,7 @@ import json
 import numpy as np
 import holodeck
 
-from holodeck.command import RGBCameraRateCommand, RotateSensorCommand, CustomCommand
+from holodeck.command import RGBCameraRateCommand, RotateSensorCommand, CustomCommand, SendAcousticMessageCommand
 from holodeck.exceptions import HolodeckConfigurationException
 from holodeck.lcm import SensorData
 
@@ -43,7 +43,10 @@ class HolodeckSensor:
             :obj:`np.ndarray` of size :obj:`self.data_shape`: Current sensor data
 
         """
-        return self._sensor_data_buffer
+        if self.tick_count == self.tick_every:
+            return self._sensor_data_buffer
+        else:
+            return None
 
     @property
     def dtype(self):
@@ -76,6 +79,9 @@ class HolodeckSensor:
         """
         command_to_send = RotateSensorCommand(self.agent_name, self.name, rotation)
         self._client.command_center.enqueue_command(command_to_send)
+
+    def reset(self):
+        pass
 
 
 class DistanceTask(HolodeckSensor):
@@ -658,6 +664,135 @@ class PoseSensor(HolodeckSensor):
     def data_shape(self):
         return [4, 4]
 
+class AcousticBeaconSensor(HolodeckSensor):
+    """Doppler Velocity Log Sensor.
+
+    Returns a 1D numpy array of
+
+    ::`
+
+       [velocity_x, velocity_y, velocity_z]
+
+    In the robot frame. The ``configuration`` block (see :ref:`configuration-block`) accepts the
+    following options:
+
+    - ``AcousticDebug``: Show debug traces. (default false) (TODO)
+    """
+
+    sensor_type = "AcousticBeaconSensor"
+    instances = dict()
+
+    def __init__(self, client, agent_name, agent_type, name="RGBCamera",  config=None):
+        self.sending_to = []
+        
+        # assign an id
+        # TODO This could posisbly assign a later to be used id
+        # For safety either give all beacons id's or none of them
+        curr_ids = set(i.id for i in self.__class__.instances.values())
+        if 'id' in config and config['id'] not in curr_ids:
+            self.id = config['id']
+        elif len(curr_ids) == 0:
+            self.id = 0
+        else:
+            all_ids = set(range(max(curr_ids)+2))
+            self.id = min( all_ids - curr_ids )
+        
+        # keep running list of all beacons
+        self.__class__.instances[self.id] = self
+
+        super(AcousticBeaconSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+
+    @property
+    def dtype(self):
+        return np.float32
+
+    @property
+    def data_shape(self):
+        return [4]
+
+    @property
+    def status(self):
+        if len(self.sending_to) == 0:
+            return "Idle"
+        else:
+            return "Transmitting"
+
+    def send_message(self, id_to, msg_type, msg_data):
+        # Clean out id_to parameters
+        if id_to == -1 or id_to == "all":
+            id_to = list(self.__class__.instances.keys())
+            id_to.remove(self.id)
+        if isinstance(id_to, int):
+            id_to = [id_to]
+
+        # Don't transmit if a message is still waiting to be received
+        if self.status == "Transmitting":
+            print(f"Beacon {self.id} is still transmitting")
+        # otherwise transmit
+        else:
+            for i in id_to:
+                beacon = self.__class__.instances[i]
+                command = SendAcousticMessageCommand(self.agent_name, self.name, beacon.agent_name, beacon.name)
+                self._client.command_center.enqueue_command(command)
+
+                self.sending_to.append(i)
+
+                beacon.msg_data = msg_data
+                beacon.msg_type = msg_type
+
+    @property
+    def sensor_data(self):
+        if ~np.any(np.isnan(self._sensor_data_buffer)):
+            # get all beacons sending messages
+            sending = [i for i, val in self.__class__.instances.items() if val.status == "Transmitting"]
+
+            # make sure exactly one person is sending messages
+            if len(sending) != 1:
+                data =  None
+                # reset all sending beacons since they got muddled
+                for i in sending:
+                    self.__class__.instances[i].sending_to = []
+
+            # otherwise parse through type
+            else:
+                # stop sending to this beacon
+                self.__class__.instances[sending[0]].sending_to.remove(self.id)
+
+                data = [self.msg_type, sending[0], self.msg_data]
+
+                if self.msg_type == "OWAY":
+                    pass
+                elif self.msg_type == "OWAYU":
+                    data.extend(self._sensor_data_buffer[0:2])
+                elif self.msg_type == "MSG_REQ":
+                    self.send_message(sending[0], "MSG_RESP", None)
+                elif self.msg_type == "MSG_RESP":
+                    pass
+                elif self.msg_type == "MSG_REQU":
+                    self.send_message(sending[0], "MSG_RESPU", None)
+                    data.extend(self._sensor_data_buffer[0:2])
+                elif self.msg_type == "MSG_RESPU":
+                    data.extend(self._sensor_data_buffer[0:3])
+                elif self.msg_type == "MSG_REQX":
+                    self.send_message(sending[0], "MSG_RESPX", None)
+                    data.extend(self._sensor_data_buffer[[0,1,3]])
+                elif self.msg_type == "MSG_RESPX":
+                    data.extend(self._sensor_data_buffer)
+                else:
+                    raise ValueError("Invalid Acoustic MSG type")
+
+            # reset buffer
+            self.msg_data = None
+            self.msg_type = None
+
+            return data
+
+        else:
+            return None
+
+    def reset(self):
+        self.__class__.instances = dict()
+
 ######################################################################################
 class SensorDefinition:
     """A class for new sensors and their parameters, to be used for adding new sensors.
@@ -699,6 +834,7 @@ class SensorDefinition:
         "AbuseSensor": AbuseSensor,
         "DVLSensor": DVLSensor,
         "PoseSensor": PoseSensor,
+        "AcousticBeaconSensor": AcousticBeaconSensor,
     }
 
     def get_config_json_string(self):
