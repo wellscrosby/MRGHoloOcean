@@ -24,6 +24,7 @@
 #include "CleanUpTask.h"
 #include "DVLSensor.h"
 #include "PoseSensor.h"
+#include "AcousticBeaconSensor.h"
 
 #include "Command.h"
 #include "AddSensorCommand.generated.h"
