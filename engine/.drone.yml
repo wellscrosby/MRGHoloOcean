@@ -16,7 +16,7 @@ steps:
   # privileged: true
   commands:
   # TODO Figure out how to clone using gitea credentials
-  - git clone git@bitbucket.org:frostlab/holodeck-ocean-worlds.git
+  - git clone https://bitbucket.org/frostlab/holodeck-ocean-worlds.git
   # - git clone https://github.com/BYU-PCCL/holodeck-configs
   # - chmod 777 -R .
   - bash Build/ContinuousIntegration/package_ue4_project.sh
