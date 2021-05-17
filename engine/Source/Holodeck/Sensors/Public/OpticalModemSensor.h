@@ -21,6 +21,9 @@ public:
 
 protected:
 	int GetNumItems() override { return 1; };
+
+    int GetItemSize() override { return 1; }
+
     void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere)
