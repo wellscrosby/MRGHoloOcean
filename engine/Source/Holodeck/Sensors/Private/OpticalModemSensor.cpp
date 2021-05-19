@@ -19,11 +19,14 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 	if (Parent != nullptr && bOn) {
 		// if someone starting transmitting
 		if (fromSensor) {
-			float* FloatBuffer = static_cast<float*>(Buffer);
-			bool canSend = this->CanTransmit();
-			FloatBuffer[0] = canSend;
+			bool* BoolBuffer = static_cast<bool*>(Buffer);
+			BoolBuffer[0] = this->CanTransmit();
 		}
 	}
+
+    if (LaserDebug) {
+        DrawDebugCone(GetWorld(), GetComponentLocation(), GetForwardVector(), MaxDistance * 100, FMath::DegreesToRadians(LaserAngle), FMath::DegreesToRadians(LaserAngle), DebugNumSides, FColor::Green, false, .01, ECC_WorldStatic, 1.F);
+    }
 }
 	
 bool UOpticalModemSensor::CanTransmit() {
@@ -36,7 +39,7 @@ bool UOpticalModemSensor::CanTransmit() {
     float dist = UKismetMathLibrary::Sqrt(FMath::Square(fromLocationLocal.X) + FMath::Square(fromLocationLocal.Y) + FMath::Square(fromLocationLocal.Z));
 
     //Max guaranteed range of modem is 50 meters
-    if (dist > 50) {
+    if (dist > MaxDistance) {
         return false;
     }
     else {
@@ -54,7 +57,7 @@ bool UOpticalModemSensor::CanTransmit() {
 
             FVector end = fromLocation;
             
-            end = end * LaserMaxDistance;
+            end = end * MaxDistance;
             end = start + end;
 
             FCollisionQueryParams QueryParams = FCollisionQueryParams();

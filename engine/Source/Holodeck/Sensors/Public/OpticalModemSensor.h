@@ -26,8 +26,17 @@ protected:
 
     void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+    UPROPERTY(EditAnywhere)
+	int LaserAngle = 60;
+
 	UPROPERTY(EditAnywhere)
-	int LaserMaxDistance = 1000;
+	float MaxDistance = 50;
+
+	UPROPERTY(EditAnywhere)
+	bool LaserDebug = true;
+
+    UPROPERTY(EditAnywhere)
+    int DebugNumSides = 50;
 
 
 private:
