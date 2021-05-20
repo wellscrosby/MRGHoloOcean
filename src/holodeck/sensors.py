@@ -682,7 +682,7 @@ class AcousticBeaconSensor(HolodeckSensor):
     sensor_type = "AcousticBeaconSensor"
     instances = dict()
 
-    def __init__(self, client, agent_name, agent_type, name="RGBCamera",  config=None):
+    def __init__(self, client, agent_name, agent_type, name="AcousticBeaconSensor",  config=None):
         self.sending_to = []
         
         # assign an id
@@ -793,6 +793,43 @@ class AcousticBeaconSensor(HolodeckSensor):
     def reset(self):
         self.__class__.instances = dict()
 
+class OpticalModemSensor(HolodeckSensor):
+    sensor_type = "OpticalModemSensor"
+    instances = dict()
+
+    def __init__(self, client, agent_name, agent_type, name="OpticalModemSensor",  config=None):
+        self.sending_to = []
+        
+        # assign an id
+        # TODO This could posisbly assign a later to be used id
+        # For safety either give all beacons id's or none of them
+        curr_ids = set(i.id for i in self.__class__.instances.values())
+        if 'id' in config and config['id'] not in curr_ids:
+            self.id = config['id']
+        elif len(curr_ids) == 0:
+            self.id = 0
+        else:
+            all_ids = set(range(max(curr_ids)+2))
+            self.id = min( all_ids - curr_ids )
+        
+        # keep running list of all beacons
+        self.__class__.instances[self.id] = self
+
+        super(OpticalModemSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+
+    def __init__(self, client, agent_name, agent_type, name, config):
+        super().__init__(client, agent_name=agent_name, agent_type=agent_type, name=name, config=config)
+
+    @property
+    def dtype(self):
+        return bool
+
+    @property
+    def data_shape(self):
+        return [1]
+
+    
+        
 ######################################################################################
 class SensorDefinition:
     """A class for new sensors and their parameters, to be used for adding new sensors.
@@ -835,6 +872,7 @@ class SensorDefinition:
         "DVLSensor": DVLSensor,
         "PoseSensor": PoseSensor,
         "AcousticBeaconSensor": AcousticBeaconSensor,
+        "OpticalModemSensor": OpticalModemSensor,
     }
 
     def get_config_json_string(self):

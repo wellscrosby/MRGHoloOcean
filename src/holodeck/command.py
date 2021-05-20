@@ -437,3 +437,14 @@ class SendAcousticMessageCommand(Command):
         self.add_string_parameters(from_sensor_name)
         self.add_string_parameters(to_agent_name)
         self.add_string_parameters(to_sensor_name)
+
+class SendOpticalMessageCommand(Command):
+    """Send information through OpticalModem.
+    """
+    def __init__(self, from_agent_name, from_sensor_name, to_agent_name, to_sensor_name):
+        Command.__init__(self)
+        self.command_type = "SendOpticalMessage"
+        self.add_string_parameters(from_agent_name)
+        self.add_string_parameters(from_sensor_name)
+        self.add_string_parameters(to_agent_name)
+        self.add_string_parameters(to_sensor_name)
