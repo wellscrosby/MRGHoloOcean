@@ -14,7 +14,6 @@ void UOpticalModemSensor::InitializeSensor() {
 }
 
 void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
-	// bool canSend = UOpticalModemSensor::CanTransmit();
 	//check if your parent pointer is valid, and if the sensor is on. Then get the velocity and buffer, then send the data to it. 
 	if (Parent != nullptr && bOn) {
 		// if someone starting transmitting
