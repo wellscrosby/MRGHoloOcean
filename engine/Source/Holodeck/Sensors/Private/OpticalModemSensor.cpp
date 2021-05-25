@@ -85,15 +85,15 @@ bool UOpticalModemSensor::CanTransmit() {
 
 
 bool UOpticalModemSensor::IsSensorOriented(FVector localToSensor) {
-    if (-60 <= FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Y)) && 
-      FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Y))<= 60) {
+    if (30 <= FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Y)) && 
+      FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Y)) <= 150) {
 
-        if (-60 <= FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Z)) && 
-          FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Z))<= 60) {
+        if (30 <= FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Z)) && 
+          FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Z))<= 150) {
 
-            if (-60 <= FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.Z, localToSensor.Y)) && 
-              FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.Z, localToSensor.Y))<= 60) {
-                  return true;
+            if (30 <= FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.Y, localToSensor.Z)) && 
+              FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.Y, localToSensor.Z))<= 150) {
+                return true;
             }
             else {
                 return false;
