@@ -1,5 +1,6 @@
 #include "Holodeck.h"
 #include "OpticalModemSensor.h"
+#include "Json.h"
 
 UOpticalModemSensor::UOpticalModemSensor() {
     PrimaryComponentTick.bCanEverTick = true;
@@ -8,27 +9,32 @@ UOpticalModemSensor::UOpticalModemSensor() {
 
 void UOpticalModemSensor::InitializeSensor() {
 	Super::InitializeSensor();
-
 	//You need to get the pointer to the object the sensor is attached to. 
 	Parent = Cast<UPrimitiveComponent>(this->GetAttachParent());
 }
 
 void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	//check if your parent pointer is valid, and if the sensor is on. Then get the velocity and buffer, then send the data to it. 
-	if (Parent != nullptr && bOn) {
+    int* IntBuffer = static_cast<int*>(Buffer);
+    if (Parent != nullptr && bOn) {
 		// if someone starting transmitting
 		if (fromSensor) {
-			bool* BoolBuffer = static_cast<bool*>(Buffer);
-			BoolBuffer[0] = this->CanTransmit();
+			IntBuffer[0] = this->CanTransmit(); //Returns 1 or 0 for true and false respectively
 		}
+        else {
+            IntBuffer[0] = -2; //indicates no fromSensor
+        }
 	}
+    else {
+        IntBuffer[0] = -1; //indicates not on or no parent
+    }
 
     if (LaserDebug) {
-        DrawDebugCone(GetWorld(), GetComponentLocation(), GetForwardVector(), MaxDistance * 100, FMath::DegreesToRadians(LaserAngle), FMath::DegreesToRadians(LaserAngle), DebugNumSides, FColor::Green, false, .01, ECC_WorldStatic, 1.F);
+        DrawDebugCone(GetWorld(), GetComponentLocation(), GetForwardVector(), MaxDistance * 100, FMath::DegreesToRadians(LaserAngle), FMath::DegreesToRadians(LaserAngle), DebugNumSides, DebugColor, false, .01, ECC_WorldStatic, 1.F);
     }
 }
 	
-bool UOpticalModemSensor::CanTransmit() {
+int UOpticalModemSensor::CanTransmit() {
     // get coordinates of other sensor in local frame
     FTransform SensortoWorld = this->GetComponentTransform();
     FVector fromLocation = fromSensor->GetComponentLocation();
@@ -39,7 +45,7 @@ bool UOpticalModemSensor::CanTransmit() {
 
     //Max guaranteed range of modem is 50 meters
     if (dist > MaxDistance) {
-        return false;
+        return 0;
     }
     else {
         FTransform FromSensortoWorld = fromSensor->GetComponentTransform();
@@ -69,30 +75,30 @@ bool UOpticalModemSensor::CanTransmit() {
             float range = (TraceResult ? Hit.Distance / 100 : 50);  // centimeter to meters
 
             if (dist == range) {
-                return true;
+                return 1;
             }
             else {
-                return false;
+                return 0;
             }
         }
         else {
-            return false;
+            return 0;
         }
 
-        
+        return 0;
     }
 }
 
 
 bool UOpticalModemSensor::IsSensorOriented(FVector localToSensor) {
-    if (30 <= FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Y)) && 
-      FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Y)) <= 150) {
+    if (90 - LaserAngle <= FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Y)) && 
+      FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Y)) <= 90 + LaserAngle) {
 
-        if (30 <= FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Z)) && 
-          FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Z))<= 150) {
+        if (90 - LaserAngle <= FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Z)) && 
+          FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Z))<= 90 + LaserAngle) {
 
-            if (30 <= FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.Y, localToSensor.Z)) && 
-              FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.Y, localToSensor.Z))<= 150) {
+            if (90 - LaserAngle <= FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.Y, localToSensor.Z)) && 
+              FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.Y, localToSensor.Z))<= 90 + LaserAngle) {
                 return true;
             }
             else {
@@ -108,3 +114,52 @@ bool UOpticalModemSensor::IsSensorOriented(FVector localToSensor) {
     }
 }
 
+void UOpticalModemSensor::ParseSensorParms(FString ParmsJson) {
+	Super::ParseSensorParms(ParmsJson);
+
+	TSharedPtr<FJsonObject> JsonParsed;
+	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ParmsJson);
+	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
+
+		if (JsonParsed->HasTypedField<EJson::Number>("MaxDistance")) {
+			MaxDistance = JsonParsed->GetIntegerField("MaxDistance");
+		}
+
+		if (JsonParsed->HasTypedField<EJson::Number>("LaserAngle")) {
+			LaserAngle = JsonParsed->GetIntegerField("LaserAngle");
+		}
+
+		if (JsonParsed->HasTypedField<EJson::Number>("DebugNumSides")) {
+			DebugNumSides = JsonParsed->GetIntegerField("DebugNumSides");
+		}
+
+		if (JsonParsed->HasTypedField<EJson::Boolean>("LaserDebug")) {
+			LaserDebug = JsonParsed->GetBoolField("LaserDebug");
+		}
+        if (JsonParsed->HasTypedField<EJson::String>("DebugColor")) {
+            FillColorMap();
+			DebugColor = ColorMap[JsonParsed->GetStringField("DebugColor")];
+		}
+	}
+	else {
+		UE_LOG(LogHolodeck, Fatal, TEXT("URangeFinderSensor::ParseSensorParms:: Unable to parse json."));
+	}
+}
+
+void UOpticalModemSensor::FillColorMap() {
+    ColorMap.Add("Black", FColor::Black);
+    ColorMap.Add("Blue", FColor::Blue);
+    ColorMap.Add("Cyan", FColor::Cyan);
+    ColorMap.Add("Emerald", FColor::Emerald);
+    ColorMap.Add("Green", FColor::Green);
+    ColorMap.Add("Magenta", FColor::Magenta);
+    ColorMap.Add("Orange", FColor::Orange);
+    ColorMap.Add("Purple", FColor::Purple);
+    ColorMap.Add("Red", FColor::Red);
+    ColorMap.Add("Silver", FColor::Silver);
+    ColorMap.Add("Transparent", FColor::Transparent);
+    ColorMap.Add("Turquoise", FColor::Turquoise);
+    ColorMap.Add("White", FColor::White);
+    ColorMap.Add("Yellow", FColor::Yellow);
+    ColorMap.Add("Random", FColor::MakeRandomColor());
+}
