@@ -617,6 +617,49 @@ class AbuseSensor(HolodeckSensor):
 ######################## HOLODECK-OCEAN CUSTOM SENSORS ###########################
 #Make sure to also add your new sensor to SensorDefintion below
 
+class SonarSensor(HolodeckSensor):
+    """Simulates an imaging sonar.
+
+    **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the following
+    options:
+
+    - ``BinsRange``: Number of range bins of resulting image
+    - ``BinsAzimuth``: Number of azimuth bins of resulting image
+    # TODO - Should these actually be resolution #s? Or both?
+    - ``OctreeMax``: Starting size of octree elements
+    - ``OctreeMin``: Leaf size of octree elements
+
+    """
+
+    sensor_type = "SonarSensor"
+
+    def __init__(self, client, agent_name, agent_type, name="SonarSensor", config=None):
+
+        self.config = {} if config is None else config
+
+        b_range   = 300
+        b_azimuth = 128
+
+        if "BinsRange" in self.config:
+            b_range = self.config["BinsRange"]
+
+        if "BinsAzimuth" in self.config:
+            b_azimuth = self.config["BinsAzimuth"]
+
+        self.shape = (b_range, b_azimuth)
+
+        super(SonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+
+    @property
+    def dtype(self):
+        return np.float32
+
+    @property
+    def data_shape(self):
+        return self.shape
+
 class DVLSensor(HolodeckSensor):
     """Doppler Velocity Log Sensor.
 
@@ -835,6 +878,7 @@ class SensorDefinition:
         "DVLSensor": DVLSensor,
         "PoseSensor": PoseSensor,
         "AcousticBeaconSensor": AcousticBeaconSensor,
+        "SonarSensor": SonarSensor,
     }
 
     def get_config_json_string(self):
