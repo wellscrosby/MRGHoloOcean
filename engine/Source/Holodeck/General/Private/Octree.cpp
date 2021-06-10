@@ -27,9 +27,9 @@ void Octree::makeOctree(FVector center, float size, UWorld* World, TArray<Octree
     * There's a bug in UE4 4.22 where if you're sweep has length less than KINDA_SMALL_NUMBER it doesn't do anything
     * https://answers.unrealengine.com/questions/887018/422-spheretraceforobjects-node-is-not-working-anym.html
     * This was fixed in 4.24, but until we update to it, we offset the end by the smallest # possible, and use bFindInitialOverlaps, bStartPenetrating to make sure we only get overlaps at the start.
-    * This shouldn't effect speed if there's an overlap, but may make empty searches a smidge slower.
+    * This shouldn't effect octree generation speed if there's an overlap, but may make empty searches a smidge slower.
     */
-    static FVector offset = FVector(KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER) / sqrt(2.9);
+    static FVector offset = 10*FVector(KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER) / sqrt(2.9);
     bool occup = World->SweepSingleByChannel(hit, center, center+offset, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, FCollisionShape::MakeBox(FVector(size/2)), params);
     occup = hit.bStartPenetrating;
 
@@ -67,6 +67,9 @@ void Octree::makeOctree(FVector center, float size, UWorld* World, TArray<Octree
             parent.Add(child);
         }
 	}
+    else{
+        // DrawDebugBox(World, center, FVector(size/2), FColor::Red, true, 2, ECC_WorldStatic, .5f);
+    }
 
 }
 
