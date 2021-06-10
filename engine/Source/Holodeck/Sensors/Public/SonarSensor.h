@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "HolodeckCore/Public/HolodeckSensor.h"
+#include "GenericPlatform/GenericPlatformMath.h"
 #include "Json.h"
+#include "Octree.h"
 #include "SonarSensor.generated.h"
 
 /**
@@ -45,10 +47,10 @@ protected:
 	int BinsAzimuth = 128;
 
 	UPROPERTY(EditAnywhere)
-	int OctreeMax = 256;
+	float OctreeMax = 256;
 
 	UPROPERTY(EditAnywhere)
-	int OctreeMin = 8;
+	float OctreeMin = 8;
 
 private:
 	/*
@@ -56,4 +58,9 @@ private:
 	 * After initialization, Parent contains a pointer to whatever the sensor is attached to.
 	 */
 	AActor* Parent;
+
+	// holds our implementation of Octrees
+	static TArray<Octree*> octree;
+	static FVector EnvMin;
+	static FVector EnvMax;
 };
