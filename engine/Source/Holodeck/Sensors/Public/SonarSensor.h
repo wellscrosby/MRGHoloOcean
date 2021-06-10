@@ -7,6 +7,7 @@
 #include "GenericPlatform/GenericPlatformMath.h"
 #include "Json.h"
 #include "Octree.h"
+#include "HAL/FileManagerGeneric.h"
 #include "SonarSensor.generated.h"
 
 /**

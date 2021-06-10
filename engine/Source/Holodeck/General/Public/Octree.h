@@ -23,9 +23,9 @@ class Octree
 	private:
 	    static FHitResult hit;
         static TArray<FVector> corners;
+        static FCollisionQueryParams params;
 
     public:
-        static FCollisionQueryParams params;
         Octree(){};
 		Octree(FVector loc) : loc(loc) {};
 		~Octree(){

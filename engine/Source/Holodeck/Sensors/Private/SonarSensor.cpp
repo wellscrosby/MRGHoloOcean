@@ -70,7 +70,10 @@ void USonarSensor::InitializeSensor() {
 	// Initialize octree if it hasn't been yet
 	// TODO: We may start this before adding in all actors to be ignored
 	if(octree.Num() == 0){
-		FString filename = FPaths::ProjectDir() + "/octree_" + FString::SanitizeFloat(OctreeMax, 6) + "_" + FString::SanitizeFloat(OctreeMin, 6) + ".json";
+		FString file_path = FPaths::ProjectDir() + "/" + GetWorld()->GetMapName();
+		FFileManagerGeneric().MakeDirectory(*file_path);
+
+		FString filename = file_path + "/octree_" + FString::SanitizeFloat(OctreeMax, 4) + "_" + FString::SanitizeFloat(OctreeMin, 4) + ".json";
 
 		// Clean environment size
 		FVector min = FVector(FGenericPlatformMath::Min(EnvMin.X, EnvMax.X), FGenericPlatformMath::Min(EnvMin.Y, EnvMax.Y), FGenericPlatformMath::Min(EnvMin.Z, EnvMax.Z));
@@ -100,8 +103,6 @@ void USonarSensor::InitializeSensor() {
 }
 
 void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
-	UE_LOG(LogHolodeck, Warning, TEXT("EnvMin %s"), *EnvMin.ToString());
-	UE_LOG(LogHolodeck, Warning, TEXT("EnvMax %s"), *EnvMax.ToString());
 	float* FloatBuffer = static_cast<float*>(Buffer);
 
 	for (int i = 0; i < BinsRange*BinsAzimuth; i++) {
