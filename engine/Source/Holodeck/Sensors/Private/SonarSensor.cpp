@@ -11,6 +11,18 @@ USonarSensor::USonarSensor() {
 	SensorName = "SonarSensor";
 }
 
+void USonarSensor::BeginDestroy() {
+	Super::BeginDestroy();
+
+	// TODO: This may cause issues if we remove a sonar, but are still using others
+	// unlikely, but could happen
+	if(octree.Num() != 0){
+		for(Octree* t : octree){
+			delete t;
+		}
+	}
+}
+
 // Allows sensor parameters to be set programmatically from client.
 void USonarSensor::ParseSensorParms(FString ParmsJson) {
 	Super::ParseSensorParms(ParmsJson);

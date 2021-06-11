@@ -39,6 +39,11 @@ public:
 	*/
 	virtual void ParseSensorParms(FString ParmsJson) override;
 
+	/*
+	* Cleans up octree
+	*/
+	virtual void BeginDestroy() override;
+
 protected:
 	//See HolodeckSensor for the documentation of these overridden functions.
 	int GetNumItems() override { return BinsRange*BinsAzimuth; };
