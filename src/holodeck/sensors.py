@@ -4,7 +4,7 @@ import json
 import numpy as np
 import holodeck
 
-from holodeck.command import RGBCameraRateCommand, RotateSensorCommand, CustomCommand, SendAcousticMessageCommand
+from holodeck.command import RGBCameraRateCommand, RotateSensorCommand, CustomCommand, SendAcousticMessageCommand, SendOpticalMessageCommand
 from holodeck.exceptions import HolodeckConfigurationException
 from holodeck.lcm import SensorData
 
@@ -686,7 +686,7 @@ class AcousticBeaconSensor(HolodeckSensor):
         self.sending_to = []
         
         # assign an id
-        # TODO This could posisbly assign a later to be used id
+        # TODO This could possibly assign a later to be used id
         # For safety either give all beacons id's or none of them
         curr_ids = set(i.id for i in self.__class__.instances.values())
         if 'id' in config and config['id'] not in curr_ids:
@@ -794,6 +794,18 @@ class AcousticBeaconSensor(HolodeckSensor):
         self.__class__.instances = dict()
 
 class OpticalModemSensor(HolodeckSensor):
+    """Handles communication between agents using an optical modem.
+
+    **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the
+    following options:
+
+    - ``MaxDistance``: Max Distance in meters of OpticalModem. (default 50)
+    - ``DebugNumSides``: Number of sides on the debug cone. (default 72)
+    - ``LaserAngle``: Angle of lasers from origin. Measured in degrees. (default 60)
+    - ``LaserDebug``: Show debug traces. (default false)
+    """
     sensor_type = "OpticalModemSensor"
     instances = dict()
 
@@ -801,7 +813,7 @@ class OpticalModemSensor(HolodeckSensor):
         self.sending_to = []
         
         # assign an id
-        # TODO This could posisbly assign a later to be used id
+        # TODO This could possibly assign a later to be used id
         # For safety either give all beacons id's or none of them
         curr_ids = set(i.id for i in self.__class__.instances.values())
         if 'id' in config and config['id'] not in curr_ids:
@@ -817,16 +829,46 @@ class OpticalModemSensor(HolodeckSensor):
 
         super(OpticalModemSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
-    def __init__(self, client, agent_name, agent_type, name, config):
-        super().__init__(client, agent_name=agent_name, agent_type=agent_type, name=name, config=config)
+    def send_message(self, id_to, msg_type, msg_data):
+         # Clean out id_to parameters
+        if id_to == -1 or id_to == "all":
+            id_to = list(self.__class__.instances.keys())
+            id_to.remove(self.id)
+        if isinstance(id_to, int):
+            id_to = [id_to]
+
+        for i in id_to:
+            modem = self.__class__.instances[i]
+            command = SendOpticalMessageCommand(self.agent_name, self.name, modem.agent_name, modem.name)
+            self._client.command_center.enqueue_command(command)
+            #self.sending_to.append(i)
+
+            modem.msg_data = msg_data
+            modem.msg_type = msg_type
+        
+
+    @property
+    def sensor_data(self):
+        
+        if self._sensor_data_buffer[0] > 0:
+            #data = [self.msg_type, sending[0], self.msg_data]
+            data = ["type", self._sensor_data_buffer[0], self._sensor_data_buffer[1:]]
+        else:
+            data = None
+
+        # reset buffer
+        self.msg_data = None
+        self.msg_type = None
+
+        return data
 
     @property
     def dtype(self):
-        return bool
+        return np.int8
 
     @property
     def data_shape(self):
-        return [1]
+        return [4]
 
     
         
