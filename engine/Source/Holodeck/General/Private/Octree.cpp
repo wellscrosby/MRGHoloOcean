@@ -33,7 +33,7 @@ void Octree::makeOctree(FVector center, float size, UWorld* World, TArray<Octree
     bool occup = World->SweepSingleByChannel(hit, center, center+offset, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, FCollisionShape::MakeBox(FVector(size/2)), params);
     occup = hit.bStartPenetrating;
 
-    static int cornerSize = .1;
+    static float cornerSize = .1;
 
     // if it's occupied
 	if(occup){

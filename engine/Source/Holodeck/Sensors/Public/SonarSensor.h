@@ -4,10 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "HolodeckCore/Public/HolodeckSensor.h"
+
 #include "GenericPlatform/GenericPlatformMath.h"
-#include "Json.h"
 #include "Octree.h"
+#include "Kismet/KismetMathLibrary.h"
+
+#include "Json.h"
 #include "HAL/FileManagerGeneric.h"
+
 #include "SonarSensor.generated.h"
 
 /**
@@ -42,6 +46,18 @@ protected:
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere)
+	int MaxRange = 3000;
+
+	UPROPERTY(EditAnywhere)
+	int MinRange = 300;
+
+	UPROPERTY(EditAnywhere)
+	int Azimuth = 130;
+
+	UPROPERTY(EditAnywhere)
+	int Elevation = 20;
+
+	UPROPERTY(EditAnywhere)
 	int BinsRange = 300;
 
 	UPROPERTY(EditAnywhere)
@@ -52,6 +68,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float OctreeMin = 8;
+
+	UPROPERTY(EditAnywhere)
+	bool ViewDebug = false;
 
 private:
 	/*
@@ -64,4 +83,14 @@ private:
 	static TArray<Octree*> octree;
 	static FVector EnvMin;
 	static FVector EnvMax;
+	float RangeRes;
+	float AzimuthRes;
+
+	float minAzimuth;
+	float maxAzimuth;
+	float minElev;
+	float maxElev;
+
+	bool inRange(Octree* tree);
+	void leafsInRange(Octree* tree, TArray<Octree*>& leafs);
 };
