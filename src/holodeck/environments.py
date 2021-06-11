@@ -838,6 +838,9 @@ class HolodeckEnvironment:
     def send_optical_message(self, id_from, id_to, msg_type, msg_data):
         """Sends data between various instances of OpticalModemSensor
 
+        Args:
+            id_from (:obj: `int`): The integer ID of the transmitting modem.
+            id_to (:obj: `int`): The integer ID of the receiving modem.
         """
 
         OpticalModemSensor.instances[id_from].send_message(id_to, msg_type, msg_data)
