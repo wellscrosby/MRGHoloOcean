@@ -14,7 +14,7 @@ public:
     UOpticalModemSensor();
 
     virtual void InitializeSensor() override;
-    UOpticalModemSensor* fromSensor = NULL;
+    UOpticalModemSensor* fromSensor = nullptr;
 
 virtual void ParseSensorParms(FString ParmsJson) override;
 
@@ -34,7 +34,7 @@ protected:
 	int LaserAngle = 60;
 
 	UPROPERTY(EditAnywhere)
-	bool LaserDebug = true;
+	bool LaserDebug = false;
 
     UPROPERTY(EditAnywhere)
     int DebugNumSides = 72;  //Default so that each side is 5 degrees
@@ -47,7 +47,7 @@ private:
 
     UPrimitiveComponent* Parent;
     bool IsSensorOriented(FVector localToSensor);
-    int CanTransmit();
+    int* CanTransmit();
     TMap<FString, FColor> ColorMap;
     void FillColorMap();
 };

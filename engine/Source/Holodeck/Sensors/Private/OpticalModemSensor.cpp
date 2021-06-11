@@ -19,7 +19,11 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
     if (Parent != nullptr && bOn) {
 		// if someone starting transmitting
 		if (fromSensor) {
-			IntBuffer[0] = this->CanTransmit(); //Returns 1 or 0 for true and false respectively
+            int* temp = this->CanTransmit();
+			IntBuffer[0] = temp[0]; //Returns 1 or 0 for true and false respectively
+            for (int i = 0; i < 3; i++) {
+                IntBuffer[i+1] = temp[i];
+    }
 		}
         else {
             IntBuffer[0] = -2; //indicates no fromSensor
@@ -28,13 +32,17 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
     else {
         IntBuffer[0] = -1; //indicates not on or no parent
     }
+    
 
     if (LaserDebug) {
         DrawDebugCone(GetWorld(), GetComponentLocation(), GetForwardVector(), MaxDistance * 100, FMath::DegreesToRadians(LaserAngle), FMath::DegreesToRadians(LaserAngle), DebugNumSides, DebugColor, false, .01, ECC_WorldStatic, 1.F);
     }
 }
 	
-int UOpticalModemSensor::CanTransmit() {
+int* UOpticalModemSensor::CanTransmit() {
+
+    static int dataOut [3] = {1,1,1};
+
     // get coordinates of other sensor in local frame
     FTransform SensortoWorld = this->GetComponentTransform();
     FVector fromLocation = fromSensor->GetComponentLocation();
@@ -42,10 +50,12 @@ int UOpticalModemSensor::CanTransmit() {
     fromLocationLocal = ConvertLinearVector(fromLocationLocal, UEToClient);
 
     float dist = UKismetMathLibrary::Sqrt(FMath::Square(fromLocationLocal.X) + FMath::Square(fromLocationLocal.Y) + FMath::Square(fromLocationLocal.Z));
+    UE_LOG(LogHolodeck, Log, TEXT("dist = %f  MaxDistance = %f"), dist, MaxDistance);
 
     //Max guaranteed range of modem is 50 meters
     if (dist > MaxDistance) {
-        return 0;
+        // return 0;
+        dataOut[0] = 0;
     }
     else {
         FTransform FromSensortoWorld = fromSensor->GetComponentTransform();
@@ -73,20 +83,24 @@ int UOpticalModemSensor::CanTransmit() {
             bool TraceResult = GetWorld()->LineTraceSingleByChannel(Hit, start, end, ECollisionChannel::ECC_Visibility, QueryParams);
             
             float range = (TraceResult ? Hit.Distance / 100 : 50);  // centimeter to meters
+            UE_LOG(LogHolodeck, Log, TEXT("range = %f"),range);
 
             if (dist == range) {
-                return 1;
+                // return 1;
+                dataOut[2] = 2;
             }
             else {
-                return 0;
+                // return 0;
+                dataOut[2] = 0;
             }
         }
         else {
-            return 0;
+            // return 0;
+            dataOut[1] = 0;
         }
-
-        return 0;
     }
+
+    return dataOut;
 }
 
 
