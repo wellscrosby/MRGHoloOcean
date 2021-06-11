@@ -143,11 +143,14 @@ bool USonarSensor::inRange(Octree* tree){
 
 	// if it's a leaf, make sure it's exactly in
 	if(tree->leafs.Num() == 0){
+		// save impact normal that we happen to compute here for later
+		tree->normalImpact = locLocal / tree->locSpherical.X;
+
 		return ( MinRange < tree->locSpherical.X && tree->locSpherical.X < MaxRange &&
 				minAzimuth < tree->locSpherical.Y && tree->locSpherical.Y < maxAzimuth &&
 				minElev < tree->locSpherical.Z && tree->locSpherical.Z < maxElev);
 	}
-	// if it's not a leaf, give it some leeway, there may be a leaf that's still in
+	// if it's not a leaf, give it some leeway, there may be a leaf in it that's still in
 	else{
 		return ( tree->locSpherical.X < MaxRange*1.1 &&
 				-90 < tree->locSpherical.Y && tree->locSpherical.Y < 90 &&
@@ -185,24 +188,40 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 		leafsInRange(t, leafs);
 	}
 
-	// SORT THEM INTO THE PROPER BINS
+	// SORT THEM & RUN CALCULATIONS
+	TArray<int32> count;
+	count.Init(0, BinsRange*BinsAzimuth);
+	TArray<float> result;
+	result.Init(0, BinsRange*BinsAzimuth);
 	for( Octree* l : leafs){
-		if(ViewDebug){
-			DrawDebugPoint(GetWorld(), l->loc, 4.f, FColor::Red, false, .1f);
+		// find what bin they must go in
+		int32 rBin = (int)(l->locSpherical[0] / RangeRes);
+		int32 aBin = (int)(l->locSpherical[1] / AzimuthRes);
+		int32 idx = rBin*BinsAzimuth + aBin;
+
+		// compute contribution
+		float val = FVector::DotProduct(l->normal, l->normalImpact);
+		if(val > 0){
+			// TODO: use sigmoid here?
+			result[idx] += val;
+			count[idx]++;
 		}
 	}
-	UE_LOG(LogHolodeck, Warning, TEXT("Found: %d leafs"), leafs.Num());
 
-	// RUN CALCULATIONS
+	// TODO: Introduce noise?
 
-
+	// MOVE THEM INTO BUFFER
 	for (int i = 0; i < BinsRange*BinsAzimuth; i++) {
-		FloatBuffer[i] = leafs.Num();
+		if(count[i] != 0){
+			FloatBuffer[i] = result[i] / count[i];
+		}
 	}
-
 
 	// draw outlines of our region
 	if(ViewDebug){
+		for( Octree* l : leafs){
+			DrawDebugPoint(GetWorld(), l->loc, 4.f, FColor::Red, false, .1f);
+		}
 		FTransform tran = this->GetComponentTransform();
 		
 		// range lines
