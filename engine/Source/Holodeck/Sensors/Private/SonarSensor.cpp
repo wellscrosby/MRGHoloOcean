@@ -32,19 +32,19 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
 
 		if (JsonParsed->HasTypedField<EJson::Number>("MaxRange")) {
-			MaxRange = JsonParsed->GetIntegerField("MaxRange")*100;
+			MaxRange = JsonParsed->GetNumberField("MaxRange")*100;
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("MinRange")) {
-			MinRange = JsonParsed->GetIntegerField("MinRange")*100;
+			MinRange = JsonParsed->GetNumberField("MinRange")*100;
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("Azimuth")) {
-			Azimuth = JsonParsed->GetIntegerField("Azimuth");
+			Azimuth = JsonParsed->GetNumberField("Azimuth");
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("Elevation")) {
-			Elevation = JsonParsed->GetIntegerField("Elevation");
+			Elevation = JsonParsed->GetNumberField("Elevation");
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("BinsRange")) {
@@ -155,12 +155,16 @@ bool USonarSensor::inRange(Octree* tree){
 
 	// if it's a leaf, make sure it's exactly in
 	if(tree->leafs.Num() == 0){
-		// save impact normal that we happen to compute here for later
-		tree->normalImpact = locLocal / tree->locSpherical.X;
+		bool in = ( MinRange < tree->locSpherical.X && tree->locSpherical.X < MaxRange &&
+					minAzimuth < tree->locSpherical.Y && tree->locSpherical.Y < maxAzimuth &&
+					minElev < tree->locSpherical.Z && tree->locSpherical.Z < maxElev);
 
-		return ( MinRange < tree->locSpherical.X && tree->locSpherical.X < MaxRange &&
-				minAzimuth < tree->locSpherical.Y && tree->locSpherical.Y < maxAzimuth &&
-				minElev < tree->locSpherical.Z && tree->locSpherical.Z < maxElev);
+		// save impact normal that we happen to compute here for later
+		if(in){
+			tree->normalImpact = -locLocal / tree->locSpherical.X;
+		}
+		
+		return in;
 	}
 	// if it's not a leaf, give it some leeway, there may be a leaf in it that's still in
 	else{
@@ -207,8 +211,8 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 	result.Init(0, BinsRange*BinsAzimuth);
 	for( Octree* l : leafs){
 		// find what bin they must go in
-		int32 rBin = (int)(l->locSpherical[0] / RangeRes);
-		int32 aBin = (int)(l->locSpherical[1] / AzimuthRes);
+		int32 rBin = (int)((l->locSpherical[0] - MinRange) / RangeRes);
+		int32 aBin = (int)((l->locSpherical[1] - minAzimuth)/ AzimuthRes);
 		int32 idx = rBin*BinsAzimuth + aBin;
 
 		// compute contribution
@@ -217,6 +221,9 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			// TODO: use sigmoid here?
 			result[idx] += val;
 			count[idx]++;
+			if(ViewDebug){
+				DrawDebugPoint(GetWorld(), l->loc, 4.f, FColor::Red, false, .1f);
+			}
 		}
 	}
 
@@ -226,6 +233,9 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 	for (int i = 0; i < BinsRange*BinsAzimuth; i++) {
 		if(count[i] != 0){
 			FloatBuffer[i] = result[i] / count[i];
+		}
+		else{
+			FloatBuffer[i] = 0;
 		}
 	}
 

@@ -51,16 +51,16 @@ protected:
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere)
-	int MaxRange = 3000;
+	float MaxRange = 3000;
 
 	UPROPERTY(EditAnywhere)
-	int MinRange = 300;
+	float MinRange = 300;
 
 	UPROPERTY(EditAnywhere)
-	int Azimuth = 130;
+	float Azimuth = 130;
 
 	UPROPERTY(EditAnywhere)
-	int Elevation = 20;
+	float Elevation = 20;
 
 	UPROPERTY(EditAnywhere)
 	int BinsRange = 300;
