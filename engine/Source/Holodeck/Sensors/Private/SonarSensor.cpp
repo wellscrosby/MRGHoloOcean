@@ -221,9 +221,6 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			// TODO: use sigmoid here?
 			result[idx] += val;
 			count[idx]++;
-			if(ViewDebug){
-				DrawDebugPoint(GetWorld(), l->loc, 4.f, FColor::Red, false, .1f);
-			}
 		}
 	}
 
