@@ -142,47 +142,50 @@ void USonarSensor::InitializeSensor() {
 	maxAzimuth = Azimuth/2;
 	minElev = 90 - Elevation/2;
 	maxElev = 90 + Elevation/2;
+
+	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(Azimuth, Elevation)/2);
+	sqrt2 = UKismetMathLibrary::Sqrt(2);
 }
 
-bool USonarSensor::inRange(Octree* tree){
+bool USonarSensor::inRange(Octree* tree, float size){
 	FTransform SensortoWorld = this->GetComponentTransform();
-	FVector locLocal = UKismetMathLibrary::InverseTransformLocation(SensortoWorld, tree->loc);
+	// if it's not a leaf, we use a bigger search area
+	float offset = 0;
+	if(tree->leafs.Num() != 0){
+		offset = (size/2)*sqrt2/sinOffset;
+		SensortoWorld.AddToTranslation( -this->GetForwardVector()*offset );
+		offset += size;
+	}
 
+	// transform to spherical coordinates
+	FVector locLocal = UKismetMathLibrary::InverseTransformLocation(SensortoWorld, tree->loc);
 	tree->locSpherical.X = locLocal.Size();
 	// UnitCartesianToSpherical?
 	tree->locSpherical.Y = UKismetMathLibrary::DegAtan2(-locLocal.Y, locLocal.X);
 	tree->locSpherical.Z = UKismetMathLibrary::DegAtan2(FVector2D(locLocal.X, locLocal.Y).Size(), locLocal.Z);
 
-	// if it's a leaf, make sure it's exactly in
-	if(tree->leafs.Num() == 0){
-		bool in = ( MinRange < tree->locSpherical.X && tree->locSpherical.X < MaxRange &&
-					minAzimuth < tree->locSpherical.Y && tree->locSpherical.Y < maxAzimuth &&
-					minElev < tree->locSpherical.Z && tree->locSpherical.Z < maxElev);
+	// check if it's in
+	bool in = ( MinRange   < tree->locSpherical.X && tree->locSpherical.X < MaxRange+offset &&
+				minAzimuth < tree->locSpherical.Y && tree->locSpherical.Y < maxAzimuth &&
+				minElev    < tree->locSpherical.Z && tree->locSpherical.Z < maxElev);
 
-		// save impact normal that we happen to compute here for later
-		if(in){
-			tree->normalImpact = -locLocal / tree->locSpherical.X;
-		}
-		
-		return in;
+	// save impact normal that we happen to compute here for later
+	if(in && tree->leafs.Num() == 0){
+		tree->normalImpact = -locLocal / tree->locSpherical.X;
 	}
-	// if it's not a leaf, give it some leeway, there may be a leaf in it that's still in
-	else{
-		return ( tree->locSpherical.X < MaxRange*1.1 &&
-				-90 < tree->locSpherical.Y && tree->locSpherical.Y < 90 &&
-				0 < tree->locSpherical.Z && tree->locSpherical.Z < 180);
-	}
+	
+	return in;
 }	
 
-void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& leafs){
-	bool in = inRange(tree);
+void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& leafs, float size){
+	bool in = inRange(tree, size);
 	if(in){
 		if(tree->leafs.Num() == 0){
 			leafs.Add(tree);
 		}
 		else{
 			for(Octree* l : tree->leafs){
-				leafsInRange(l, leafs);
+				leafsInRange(l, leafs, size/2);
 			}
 		}
 	}
@@ -201,7 +204,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 
 	// FILTER TO GET THE LEAFS WE WANT
 	for( Octree* t : octree){
-		leafsInRange(t, leafs);
+		leafsInRange(t, leafs, OctreeMax);
 	}
 
 	// SORT THEM & RUN CALCULATIONS

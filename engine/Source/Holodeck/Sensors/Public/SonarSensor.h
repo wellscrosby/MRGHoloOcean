@@ -95,7 +95,9 @@ private:
 	float maxAzimuth;
 	float minElev;
 	float maxElev;
+	float sinOffset;
+	float sqrt2;
 
-	bool inRange(Octree* tree);
-	void leafsInRange(Octree* tree, TArray<Octree*>& leafs);
+	bool inRange(Octree* tree, float size);
+	void leafsInRange(Octree* tree, TArray<Octree*>& leafs, float size);
 };
