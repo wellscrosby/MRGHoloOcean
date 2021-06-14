@@ -8,6 +8,7 @@
 #include "GenericPlatform/GenericPlatformMath.h"
 #include "Octree.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Async/ParallelFor.h"
 
 #include "Json.h"
 #include "HAL/FileManagerGeneric.h"

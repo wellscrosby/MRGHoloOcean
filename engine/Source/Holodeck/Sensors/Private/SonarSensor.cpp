@@ -20,6 +20,7 @@ void USonarSensor::BeginDestroy() {
 		for(Octree* t : octree){
 			delete t;
 		}
+		octree.Empty();
 	}
 }
 
@@ -152,29 +153,29 @@ bool USonarSensor::inRange(Octree* tree, float size){
 	// if it's not a leaf, we use a bigger search area
 	float offset = 0;
 	if(tree->leafs.Num() != 0){
-		offset = (size/2)*sqrt2/sinOffset;
+		float radius = (size/2)*sqrt2;
+		offset = radius/sinOffset;
 		SensortoWorld.AddToTranslation( -this->GetForwardVector()*offset );
-		offset += size;
+		offset += radius;
 	}
 
 	// transform to spherical coordinates
-	FVector locLocal = UKismetMathLibrary::InverseTransformLocation(SensortoWorld, tree->loc);
-	tree->locSpherical.X = locLocal.Size();
-	// UnitCartesianToSpherical?
+	FVector locLocal = SensortoWorld.InverseTransformPositionNoScale(tree->loc);
+
+	// check if azimuth is in
 	tree->locSpherical.Y = UKismetMathLibrary::DegAtan2(-locLocal.Y, locLocal.X);
+	if(minAzimuth > tree->locSpherical.Y || tree->locSpherical.Y > maxAzimuth) return false;
+
+	// check if it's in range
+	tree->locSpherical.X = locLocal.Size();
+	if(MinRange > tree->locSpherical.X || tree->locSpherical.X > MaxRange+offset) return false; 
+
+	// check if elevation is in
 	tree->locSpherical.Z = UKismetMathLibrary::DegAtan2(FVector2D(locLocal.X, locLocal.Y).Size(), locLocal.Z);
-
-	// check if it's in
-	bool in = ( MinRange   < tree->locSpherical.X && tree->locSpherical.X < MaxRange+offset &&
-				minAzimuth < tree->locSpherical.Y && tree->locSpherical.Y < maxAzimuth &&
-				minElev    < tree->locSpherical.Z && tree->locSpherical.Z < maxElev);
-
-	// save impact normal that we happen to compute here for later
-	if(in && tree->leafs.Num() == 0){
-		tree->normalImpact = -locLocal / tree->locSpherical.X;
-	}
+	if(minElev > tree->locSpherical.Z || tree->locSpherical.Z > maxElev) return false;
 	
-	return in;
+	// otherwise it's in!
+	return true;
 }	
 
 void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& leafs, float size){
@@ -199,7 +200,7 @@ FVector spherToEuc(float r, float theta, float phi, FTransform SensortoWorld){
 }
 
 void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
-	float* FloatBuffer = static_cast<float*>(Buffer);
+	float* result = static_cast<float*>(Buffer);
 	TArray<Octree*> leafs;
 
 	// FILTER TO GET THE LEAFS WE WANT
@@ -210,32 +211,35 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 	// SORT THEM & RUN CALCULATIONS
 	TArray<int32> count;
 	count.Init(0, BinsRange*BinsAzimuth);
-	TArray<float> result;
-	result.Init(0, BinsRange*BinsAzimuth);
 	for( Octree* l : leafs){
 		// find what bin they must go in
 		int32 rBin = (int)((l->locSpherical[0] - MinRange) / RangeRes);
 		int32 aBin = (int)((l->locSpherical[1] - minAzimuth)/ AzimuthRes);
 		int32 idx = rBin*BinsAzimuth + aBin;
 
+		// Compute impact normal
+		FVector normalImpact = this->GetComponentLocation() - l->loc; 
+		normalImpact /= normalImpact.Size();
+
 		// compute contribution
-		float val = FVector::DotProduct(l->normal, l->normalImpact);
+		float val = FVector::DotProduct(l->normal, normalImpact);
 		if(val > 0){
 			// TODO: use sigmoid here?
 			result[idx] += val;
-			count[idx]++;
+			count.GetData()[idx]++;
 		}
 	}
 
 	// TODO: Introduce noise?
 
 	// MOVE THEM INTO BUFFER
+	// Tried ParallelFor here, slowed it down. Might be beneficial for larger things though?
 	for (int i = 0; i < BinsRange*BinsAzimuth; i++) {
 		if(count[i] != 0){
-			FloatBuffer[i] = result[i] / count[i];
+			result[i] /= count.GetData()[i];
 		}
 		else{
-			FloatBuffer[i] = 0;
+			result[i] = 0;
 		}
 	}
 

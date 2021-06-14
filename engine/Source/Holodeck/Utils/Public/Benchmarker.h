@@ -43,6 +43,8 @@ public:
 	  */
 	FString Stat();
 
+	float CalcMs();
+
 private:
 	bool first_pass;
 	float alpha;
