@@ -178,6 +178,11 @@ void USonarSensor::InitializeSensor() {
 	sqrt2 = UKismetMathLibrary::Sqrt(2);
 
 	leafs.Reserve(10000);
+	tempLeafs.Reserve(octree.Num());
+	for(int i=0;i<octree.Num();i++){
+		tempLeafs.Add(TArray<Octree*>());
+		tempLeafs[i].Reserve(1000);
+	}
 }
 
 bool USonarSensor::inRange(Octree* tree, float size){
@@ -238,8 +243,12 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 	// FILTER TO GET THE LEAFS WE WANT
 	Benchmarker time;
 	time.Start();
-	for( Octree* t : octree){
-		leafsInRange(t, leafs, OctreeMax);
+	// for( Octree* t : octree){
+	ParallelFor(octree.Num(), [&](int32 i){
+		leafsInRange(octree.GetData()[i], tempLeafs[i], OctreeMax);
+	});
+	for(auto& tl : tempLeafs){
+		leafs += tl;
 	}
 	time.End();
 	UE_LOG(LogHolodeck, Warning, TEXT("Sorting took \t %f ms"), time.CalcMs())
@@ -248,7 +257,6 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 	time.Start();
 	TArray<int32> count;
 	count.Init(0, BinsRange*BinsAzimuth);
-	// for( Octree* l : leafs){
 	ParallelFor(leafs.Num(), [&](int32 i){
 		Octree* l = leafs.GetData()[i];
 		// find what bin they must go in
@@ -315,4 +323,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 	}
 	
 	leafs.Reset();
+	for(auto& tl: tempLeafs){
+		tl.Reset();
+	}
 }

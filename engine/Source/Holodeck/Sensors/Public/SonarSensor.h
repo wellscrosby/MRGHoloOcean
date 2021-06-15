@@ -101,6 +101,7 @@ private:
 	float sqrt2;
 
 	TArray<Octree*> leafs;
+	TArray<TArray<Octree*>> tempLeafs;
 
 	bool inRange(Octree* tree, float size);
 	void leafsInRange(Octree* tree, TArray<Octree*>& leafs, float size);
