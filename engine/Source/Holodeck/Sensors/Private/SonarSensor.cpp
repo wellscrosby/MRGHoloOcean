@@ -8,6 +8,35 @@ TArray<Octree*> USonarSensor::octree;
 FVector USonarSensor::EnvMin = FVector(0);
 FVector USonarSensor::EnvMax = FVector(0);
 
+float ATan2Approx(float y, float x)
+{
+    //http://pubs.opengroup.org/onlinepubs/009695399/functions/atan2.html
+    //Volkan SALMA
+
+    const float ONEQTR_PI = Pi / 4.0;
+	const float THRQTR_PI = 3.0 * Pi / 4.0;
+	float r, angle;
+	float abs_y = fabs(y) + 1e-10f;      // kludge to prevent 0/0 condition
+	if ( x < 0.0f )
+	{
+		r = (x + abs_y) / (abs_y - x);
+		angle = THRQTR_PI;
+	}
+	else
+	{
+		r = (x - abs_y) / (x + abs_y);
+		angle = ONEQTR_PI;
+	}
+	angle += (0.1963f * r * r - 0.9817f) * r;
+	angle *= 180/Pi;
+	if ( y < 0.0f )
+		return( -angle );     // negate if in quad III or IV
+	else
+		return( angle );
+
+
+}
+
 USonarSensor::USonarSensor() {
 	SensorName = "SonarSensor";
 }
@@ -156,25 +185,26 @@ bool USonarSensor::inRange(Octree* tree, float size){
 	// if it's not a leaf, we use a bigger search area
 	float offset = 0;
 	if(tree->leafs.Num() != 0){
-		float radius = (size/2)*sqrt2;
+		float radius = size/sqrt2;
 		offset = radius/sinOffset;
 		SensortoWorld.AddToTranslation( -this->GetForwardVector()*offset );
 		offset += radius;
 	}
 
-	// transform to spherical coordinates
-	FVector locLocal = SensortoWorld.InverseTransformPositionNoScale(tree->loc);
-
-	// check if azimuth is in
-	tree->locSpherical.Y = UKismetMathLibrary::DegAtan2(-locLocal.Y, locLocal.X);
-	if(minAzimuth > tree->locSpherical.Y || tree->locSpherical.Y > maxAzimuth) return false;
+	// transform location to sensor frame
+	// FVector locLocal = SensortoWorld.InverseTransformPositionNoScale(tree->loc);
+	FVector locLocal = SensortoWorld.GetRotation().UnrotateVector(tree->loc-SensortoWorld.GetTranslation());
 
 	// check if it's in range
 	tree->locSpherical.X = locLocal.Size();
 	if(MinRange > tree->locSpherical.X || tree->locSpherical.X > MaxRange+offset) return false; 
 
+	// check if azimuth is in
+	tree->locSpherical.Y = ATan2Approx(-locLocal.Y, locLocal.X);
+	if(minAzimuth > tree->locSpherical.Y || tree->locSpherical.Y > maxAzimuth) return false;
+
 	// check if elevation is in
-	tree->locSpherical.Z = UKismetMathLibrary::DegAtan2(FVector2D(locLocal.X, locLocal.Y).Size(), locLocal.Z);
+	tree->locSpherical.Z = ATan2Approx(FVector2D(locLocal.X, locLocal.Y).Size(), locLocal.Z);
 	if(minElev > tree->locSpherical.Z || tree->locSpherical.Z > maxElev) return false;
 	
 	// otherwise it's in!
@@ -218,7 +248,9 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 	time.Start();
 	TArray<int32> count;
 	count.Init(0, BinsRange*BinsAzimuth);
-	for( Octree* l : leafs){
+	// for( Octree* l : leafs){
+	ParallelFor(leafs.Num(), [&](int32 i){
+		Octree* l = leafs.GetData()[i];
 		// find what bin they must go in
 		int32 rBin = (int)((l->locSpherical[0] - MinRange) / RangeRes);
 		int32 aBin = (int)((l->locSpherical[1] - minAzimuth)/ AzimuthRes);
@@ -235,8 +267,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			result[idx] += val;
 			count.GetData()[idx]++;
 		}
-	}
-	leafs.Reset();
+	});
 	time.End();
 	UE_LOG(LogHolodeck, Warning, TEXT("Computing took \t %f ms"), time.CalcMs());
 
@@ -255,6 +286,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 	}
 	time.End();
 	UE_LOG(LogHolodeck, Warning, TEXT("Dividing took \t %f ms"), time.CalcMs());
+	UE_LOG(LogHolodeck, Warning, TEXT("Total Leafs: \t %d"), leafs.Num());
 
 	// draw outlines of our region
 	if(ViewDebug){
@@ -280,6 +312,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 		DrawDebugLine(GetWorld(), spherToEuc(MinRange, maxAzimuth, minElev, tran), spherToEuc(MinRange, maxAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
 		DrawDebugLine(GetWorld(), spherToEuc(MaxRange, minAzimuth, minElev, tran), spherToEuc(MaxRange, minAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
 		DrawDebugLine(GetWorld(), spherToEuc(MaxRange, maxAzimuth, minElev, tran), spherToEuc(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
-
 	}
+	
+	leafs.Reset();
 }

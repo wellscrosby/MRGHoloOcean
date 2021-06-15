@@ -15,6 +15,7 @@
 
 #include "SonarSensor.generated.h"
 
+#define Pi 3.1415926535897932384626433832795
 /**
  * USonarSensor
  */
