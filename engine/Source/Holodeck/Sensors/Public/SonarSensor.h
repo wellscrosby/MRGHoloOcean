@@ -99,6 +99,8 @@ private:
 	float sinOffset;
 	float sqrt2;
 
+	TArray<Octree*> leafs;
+
 	bool inRange(Octree* tree, float size);
 	void leafsInRange(Octree* tree, TArray<Octree*>& leafs, float size);
 };

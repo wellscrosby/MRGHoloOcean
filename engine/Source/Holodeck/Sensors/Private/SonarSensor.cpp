@@ -1,6 +1,7 @@
 // MIT License (c) 2019 BYU PCCL see LICENSE file
 
 #include "Holodeck.h"
+#include "Benchmarker.h"
 #include "SonarSensor.h"
 
 TArray<Octree*> USonarSensor::octree;
@@ -146,6 +147,8 @@ void USonarSensor::InitializeSensor() {
 
 	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(Azimuth, Elevation)/2);
 	sqrt2 = UKismetMathLibrary::Sqrt(2);
+
+	leafs.Reserve(10000);
 }
 
 bool USonarSensor::inRange(Octree* tree, float size){
@@ -201,14 +204,18 @@ FVector spherToEuc(float r, float theta, float phi, FTransform SensortoWorld){
 
 void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	float* result = static_cast<float*>(Buffer);
-	TArray<Octree*> leafs;
 
 	// FILTER TO GET THE LEAFS WE WANT
+	Benchmarker time;
+	time.Start();
 	for( Octree* t : octree){
 		leafsInRange(t, leafs, OctreeMax);
 	}
+	time.End();
+	UE_LOG(LogHolodeck, Warning, TEXT("Sorting took \t %f ms"), time.CalcMs())
 
 	// SORT THEM & RUN CALCULATIONS
+	time.Start();
 	TArray<int32> count;
 	count.Init(0, BinsRange*BinsAzimuth);
 	for( Octree* l : leafs){
@@ -229,10 +236,14 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			count.GetData()[idx]++;
 		}
 	}
+	leafs.Reset();
+	time.End();
+	UE_LOG(LogHolodeck, Warning, TEXT("Computing took \t %f ms"), time.CalcMs());
 
 	// TODO: Introduce noise?
 
 	// MOVE THEM INTO BUFFER
+	time.Start();
 	// Tried ParallelFor here, slowed it down. Might be beneficial for larger things though?
 	for (int i = 0; i < BinsRange*BinsAzimuth; i++) {
 		if(count[i] != 0){
@@ -242,6 +253,8 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			result[i] = 0;
 		}
 	}
+	time.End();
+	UE_LOG(LogHolodeck, Warning, TEXT("Dividing took \t %f ms"), time.CalcMs());
 
 	// draw outlines of our region
 	if(ViewDebug){
