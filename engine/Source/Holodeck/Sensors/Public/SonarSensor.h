@@ -79,6 +79,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	bool ViewDebug = false;
 
+	UPROPERTY(EditAnywhere)
+	int TicksPerCapture = 1;
+
 private:
 	/*
 	 * Parent
@@ -90,9 +93,10 @@ private:
 	static TArray<Octree*> octree;
 	static FVector EnvMin;
 	static FVector EnvMax;
+
+	// various computations we want to cache
 	float RangeRes;
 	float AzimuthRes;
-
 	float minAzimuth;
 	float maxAzimuth;
 	float minElev;
@@ -100,8 +104,12 @@ private:
 	float sinOffset;
 	float sqrt2;
 
+	// initialize + reserve vectors once
 	TArray<Octree*> leafs;
 	TArray<TArray<Octree*>> tempLeafs;
+
+	// use for skipping frames
+	int TickCounter = 0;
 
 	bool inRange(Octree* tree, float size);
 	void leafsInRange(Octree* tree, TArray<Octree*>& leafs, float size);

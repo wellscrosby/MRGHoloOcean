@@ -98,6 +98,10 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 			ViewDebug = JsonParsed->GetBoolField("ViewDebug");
 		}
 
+		if (JsonParsed->HasTypedField<EJson::Number>("TicksPerCapture")) {
+			TicksPerCapture = JsonParsed->GetIntegerField("TicksPerCapture");
+		}
+
 		// TODO: Move Environment size to environment settings instead of in sonar settings
 		if (JsonParsed->HasTypedField<EJson::Array>("EnvMin")) {
 			if(EnvMin == FVector(0)){
@@ -245,92 +249,96 @@ FVector spherToEuc(float r, float theta, float phi, FTransform SensortoWorld){
 }
 
 void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
-	float* result = static_cast<float*>(Buffer);
+	TickCounter++;
+	if(TickCounter == TicksPerCapture){
+		float* result = static_cast<float*>(Buffer);
 
-	// FILTER TO GET THE LEAFS WE WANT
-	Benchmarker time;
-	time.Start();
-	// for( Octree* t : octree){
-	ParallelFor(octree.Num(), [&](int32 i){
-		leafsInRange(octree.GetData()[i], tempLeafs.GetData()[i], OctreeMax);
-	});
-	for(auto& tl : tempLeafs){
-		leafs += tl;
-	}
-	time.End();
-	UE_LOG(LogHolodeck, Warning, TEXT("Sorting took \t %f ms"), time.CalcMs())
-
-	// SORT THEM & RUN CALCULATIONS
-	time.Start();
-	TArray<int32> count;
-	count.Init(0, BinsRange*BinsAzimuth);
-	ParallelFor(leafs.Num(), [&](int32 i){
-		Octree* l = leafs.GetData()[i];
-		// find what bin they must go in
-		int32 rBin = (int)((l->locSpherical[0] - MinRange) / RangeRes);
-		int32 aBin = (int)((l->locSpherical[1] - minAzimuth)/ AzimuthRes);
-		int32 idx = rBin*BinsAzimuth + aBin;
-
-		// Compute impact normal
-		FVector normalImpact = this->GetComponentLocation() - l->loc; 
-		normalImpact /= normalImpact.Size();
-
-		// compute contribution
-		float val = FVector::DotProduct(l->normal, normalImpact);
-		if(val > 0){
-			// TODO: use sigmoid here?
-			result[idx] += val;
-			count.GetData()[idx]++;
+		// FILTER TO GET THE LEAFS WE WANT
+		Benchmarker time;
+		time.Start();
+		ParallelFor(octree.Num(), [&](int32 i){
+			leafsInRange(octree.GetData()[i], tempLeafs.GetData()[i], OctreeMax);
+		});
+		for(auto& tl : tempLeafs){
+			leafs += tl;
 		}
-	});
-	time.End();
-	UE_LOG(LogHolodeck, Warning, TEXT("Computing took \t %f ms"), time.CalcMs());
+		time.End();
+		UE_LOG(LogHolodeck, Warning, TEXT("Sorting took \t %f ms"), time.CalcMs())
 
-	// TODO: Introduce noise?
+		// SORT THEM & RUN CALCULATIONS
+		time.Start();
+		TArray<int32> count;
+		count.Init(0, BinsRange*BinsAzimuth);
+		ParallelFor(leafs.Num(), [&](int32 i){
+			Octree* l = leafs.GetData()[i];
+			// find what bin they must go in
+			int32 rBin = (int)((l->locSpherical[0] - MinRange) / RangeRes);
+			int32 aBin = (int)((l->locSpherical[1] - minAzimuth)/ AzimuthRes);
+			int32 idx = rBin*BinsAzimuth + aBin;
 
-	// MOVE THEM INTO BUFFER
-	time.Start();
-	// Tried ParallelFor here, slowed it down. Might be beneficial for larger things though?
-	for (int i = 0; i < BinsRange*BinsAzimuth; i++) {
-		if(count[i] != 0){
-			result[i] /= count.GetData()[i];
-		}
-		else{
-			result[i] = 0;
-		}
-	}
-	time.End();
-	UE_LOG(LogHolodeck, Warning, TEXT("Dividing took \t %f ms"), time.CalcMs());
-	UE_LOG(LogHolodeck, Warning, TEXT("Total Leafs: \t %d"), leafs.Num());
+			// Compute impact normal
+			FVector normalImpact = this->GetComponentLocation() - l->loc; 
+			normalImpact /= normalImpact.Size();
 
-	// draw outlines of our region
-	if(ViewDebug){
-		for( Octree* l : leafs){
-			DrawDebugPoint(GetWorld(), l->loc, 4.f, FColor::Red, false, .1f);
+			// compute contribution
+			float val = FVector::DotProduct(l->normal, normalImpact);
+			if(val > 0){
+				// TODO: use sigmoid here?
+				result[idx] += val;
+				count.GetData()[idx]++;
+			}
+		});
+		time.End();
+		UE_LOG(LogHolodeck, Warning, TEXT("Computing took \t %f ms"), time.CalcMs());
+
+		// TODO: Introduce noise?
+
+		// MOVE THEM INTO BUFFER
+		time.Start();
+		for (int i = 0; i < BinsRange*BinsAzimuth; i++) {
+			if(count[i] != 0){
+				result[i] /= count.GetData()[i];
+			}
+			else{
+				result[i] = 0;
+			}
 		}
-		FTransform tran = this->GetComponentTransform();
+		time.End();
+		UE_LOG(LogHolodeck, Warning, TEXT("Dividing took \t %f ms"), time.CalcMs());
+		UE_LOG(LogHolodeck, Warning, TEXT("Total Leafs: \t %d"), leafs.Num());
+		UE_LOG(LogHolodeck, Warning, TEXT("TicksPerCapture: \t %d"), TicksPerCapture);
+
+		// draw outlines of our region
+		if(ViewDebug){
+			for( Octree* l : leafs){
+				DrawDebugPoint(GetWorld(), l->loc, 4.f, FColor::Red, false, .1f);
+			}
+			FTransform tran = this->GetComponentTransform();
+			
+			// range lines
+			DrawDebugLine(GetWorld(), spherToEuc(MinRange, minAzimuth, minElev, tran), spherToEuc(MaxRange, minAzimuth, minElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
+			DrawDebugLine(GetWorld(), spherToEuc(MinRange, minAzimuth, maxElev, tran), spherToEuc(MaxRange, minAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
+			DrawDebugLine(GetWorld(), spherToEuc(MinRange, maxAzimuth, minElev, tran), spherToEuc(MaxRange, maxAzimuth, minElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
+			DrawDebugLine(GetWorld(), spherToEuc(MinRange, maxAzimuth, maxElev, tran), spherToEuc(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
+
+			// azimuth lines (should be arcs, we're being lazy)
+			DrawDebugLine(GetWorld(), spherToEuc(MinRange, minAzimuth, minElev, tran), spherToEuc(MinRange, maxAzimuth, minElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
+			DrawDebugLine(GetWorld(), spherToEuc(MinRange, minAzimuth, maxElev, tran), spherToEuc(MinRange, maxAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
+			DrawDebugLine(GetWorld(), spherToEuc(MaxRange, minAzimuth, minElev, tran), spherToEuc(MaxRange, maxAzimuth, minElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
+			DrawDebugLine(GetWorld(), spherToEuc(MaxRange, minAzimuth, maxElev, tran), spherToEuc(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
+
+			// elevation lines (should be arcs, we're being lazy)
+			DrawDebugLine(GetWorld(), spherToEuc(MinRange, minAzimuth, minElev, tran), spherToEuc(MinRange, minAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
+			DrawDebugLine(GetWorld(), spherToEuc(MinRange, maxAzimuth, minElev, tran), spherToEuc(MinRange, maxAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
+			DrawDebugLine(GetWorld(), spherToEuc(MaxRange, minAzimuth, minElev, tran), spherToEuc(MaxRange, minAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
+			DrawDebugLine(GetWorld(), spherToEuc(MaxRange, maxAzimuth, minElev, tran), spherToEuc(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
+		}
 		
-		// range lines
-		DrawDebugLine(GetWorld(), spherToEuc(MinRange, minAzimuth, minElev, tran), spherToEuc(MaxRange, minAzimuth, minElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
-		DrawDebugLine(GetWorld(), spherToEuc(MinRange, minAzimuth, maxElev, tran), spherToEuc(MaxRange, minAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
-		DrawDebugLine(GetWorld(), spherToEuc(MinRange, maxAzimuth, minElev, tran), spherToEuc(MaxRange, maxAzimuth, minElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
-		DrawDebugLine(GetWorld(), spherToEuc(MinRange, maxAzimuth, maxElev, tran), spherToEuc(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
+		leafs.Reset();
+		for(auto& tl: tempLeafs){
+			tl.Reset();
+		}
 
-		// azimuth lines (should be arcs, we're being lazy)
-		DrawDebugLine(GetWorld(), spherToEuc(MinRange, minAzimuth, minElev, tran), spherToEuc(MinRange, maxAzimuth, minElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
-		DrawDebugLine(GetWorld(), spherToEuc(MinRange, minAzimuth, maxElev, tran), spherToEuc(MinRange, maxAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
-		DrawDebugLine(GetWorld(), spherToEuc(MaxRange, minAzimuth, minElev, tran), spherToEuc(MaxRange, maxAzimuth, minElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
-		DrawDebugLine(GetWorld(), spherToEuc(MaxRange, minAzimuth, maxElev, tran), spherToEuc(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
-
-		// elevation lines (should be arcs, we're being lazy)
-		DrawDebugLine(GetWorld(), spherToEuc(MinRange, minAzimuth, minElev, tran), spherToEuc(MinRange, minAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
-		DrawDebugLine(GetWorld(), spherToEuc(MinRange, maxAzimuth, minElev, tran), spherToEuc(MinRange, maxAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
-		DrawDebugLine(GetWorld(), spherToEuc(MaxRange, minAzimuth, minElev, tran), spherToEuc(MaxRange, minAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
-		DrawDebugLine(GetWorld(), spherToEuc(MaxRange, maxAzimuth, minElev, tran), spherToEuc(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
-	}
-	
-	leafs.Reset();
-	for(auto& tl: tempLeafs){
-		tl.Reset();
+		TickCounter = 0;
 	}
 }
