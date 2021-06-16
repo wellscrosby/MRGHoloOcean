@@ -134,6 +134,13 @@ void USonarSensor::InitializeSensor() {
 	// Initialize octree if it hasn't been yet
 	// TODO: We may start this before adding in all actors to be ignored
 	if(octree.Num() == 0){
+		// Clean up max size so it's a multiple fo minSize
+		float temp = OctreeMin;
+		while(temp <= OctreeMax){
+			temp *= 2;
+		}
+		OctreeMax = temp;
+
 		FString file_path = FPaths::ProjectDir() + "/" + GetWorld()->GetMapName();
 		FFileManagerGeneric().MakeDirectory(*file_path);
 
@@ -245,7 +252,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 	time.Start();
 	// for( Octree* t : octree){
 	ParallelFor(octree.Num(), [&](int32 i){
-		leafsInRange(octree.GetData()[i], tempLeafs[i], OctreeMax);
+		leafsInRange(octree.GetData()[i], tempLeafs.GetData()[i], OctreeMax);
 	});
 	for(auto& tl : tempLeafs){
 		leafs += tl;
