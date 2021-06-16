@@ -311,6 +311,7 @@ class RGBCamera(HolodeckSensor):
         self._client.command_center.enqueue_command(command_to_send)
         self.tick_every = ticks_per_capture
 
+
 class OrientationSensor(HolodeckSensor):
     """Gets the forward, right, and up vector for the agent.
     Returns a 2D numpy array of
@@ -910,7 +911,7 @@ class SensorDefinition:
         self.rotation = rotation
         self.config = self.type.default_config if config is None else config
         # hacky way to get RGBCamera to capture lined up with python rate
-        if sensor_type == "RGBCamera":
+        if sensor_type in ["RGBCamera", "SonarSensor"]:
             self.config['TicksPerCapture'] = tick_every
         self.existing = existing
 
