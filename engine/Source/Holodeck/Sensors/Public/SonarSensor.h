@@ -107,7 +107,8 @@ private:
 	// initialize + reserve vectors once
 	TArray<Octree*> leafs;
 	TArray<TArray<Octree*>> tempLeafs;
-
+	int32* count;
+	
 	// use for skipping frames
 	int TickCounter = 0;
 

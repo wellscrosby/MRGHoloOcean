@@ -33,8 +33,6 @@ float ATan2Approx(float y, float x)
 		return( -angle );     // negate if in quad III or IV
 	else
 		return( angle );
-
-
 }
 
 USonarSensor::USonarSensor() {
@@ -52,6 +50,7 @@ void USonarSensor::BeginDestroy() {
 		}
 		octree.Empty();
 	}
+	delete[] count;
 }
 
 // Allows sensor parameters to be set programmatically from client.
@@ -188,12 +187,15 @@ void USonarSensor::InitializeSensor() {
 	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(Azimuth, Elevation)/2);
 	sqrt2 = UKismetMathLibrary::Sqrt(2);
 
+	// setup leaves for later
+	// TODO: calculate what these values should be
 	leafs.Reserve(10000);
 	tempLeafs.Reserve(octree.Num());
 	for(int i=0;i<octree.Num();i++){
 		tempLeafs.Add(TArray<Octree*>());
 		tempLeafs[i].Reserve(1000);
 	}
+	count = new int32[BinsRange*BinsAzimuth]();
 }
 
 bool USonarSensor::inRange(Octree* tree, float size){
@@ -252,6 +254,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 	TickCounter++;
 	if(TickCounter == TicksPerCapture){
 		float* result = static_cast<float*>(Buffer);
+		std::fill(result, result+BinsRange*BinsAzimuth, 0);
 
 		// FILTER TO GET THE LEAFS WE WANT
 		// Benchmarker time;
@@ -267,7 +270,6 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 
 		// SORT THEM & RUN CALCULATIONS
 		// time.Start();
-		int32* count = new int32[BinsRange*BinsAzimuth]();
 		FVector compLoc = this->GetComponentLocation();
 		ParallelFor(leafs.Num(), [&](int32 i){
 			Octree* l = leafs.GetData()[i];
@@ -330,12 +332,13 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			DrawDebugLine(GetWorld(), spherToEuc(MaxRange, minAzimuth, minElev, tran), spherToEuc(MaxRange, minAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
 			DrawDebugLine(GetWorld(), spherToEuc(MaxRange, maxAzimuth, minElev, tran), spherToEuc(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, .01, ECC_WorldStatic, 1.f);
 		}
-		
+
+		// Reset everything for next timestep
+		TickCounter = 0;
+		std::fill(count, count+BinsRange*BinsAzimuth, 0);
 		leafs.Reset();
 		for(auto& tl: tempLeafs){
 			tl.Reset();
 		}
-
-		TickCounter = 0;
 	}
 }
