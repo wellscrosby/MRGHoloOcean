@@ -31,7 +31,7 @@ protected:
     
     //Debug Variables
     UPROPERTY(EditAnywhere)
-	int LaserAngle = 60;
+	float LaserAngle = 60;
 
 	UPROPERTY(EditAnywhere)
 	bool LaserDebug = false;
@@ -46,7 +46,7 @@ protected:
 private:
 
     UPrimitiveComponent* Parent;
-    bool IsSensorOriented(FVector localToSensor);
+    bool IsSensorOriented(UOpticalModemSensor* Sensor, FVector localToSensor);
     int* CanTransmit();
     TMap<FString, FColor> ColorMap;
     void FillColorMap();

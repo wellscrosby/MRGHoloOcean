@@ -36,6 +36,7 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 
     if (LaserDebug) {
         DrawDebugCone(GetWorld(), GetComponentLocation(), GetForwardVector(), MaxDistance * 100, FMath::DegreesToRadians(LaserAngle), FMath::DegreesToRadians(LaserAngle), DebugNumSides, DebugColor, false, .01, ECC_WorldStatic, 1.F);
+        DrawDebugLine(GetWorld(), GetComponentLocation(), GetForwardVector() * MaxDistance * 100, DebugColor,false, .01,ECC_WorldStatic, 1.F);
     }
 }
 	
@@ -44,13 +45,14 @@ int* UOpticalModemSensor::CanTransmit() {
     static int dataOut [3] = {1,1,1};
 
     // get coordinates of other sensor in local frame
-    FTransform SensortoWorld = this->GetComponentTransform();
-    FVector fromLocation = fromSensor->GetComponentLocation();
-    FVector fromLocationLocal = UKismetMathLibrary::InverseTransformLocation(SensortoWorld, fromLocation);
-    fromLocationLocal = ConvertLinearVector(fromLocationLocal, UEToClient);
+    FVector sendingSensor = this->GetComponentLocation();
+    FVector receiveSensor = fromSensor->GetComponentLocation();
+    FVector sendToReceive = receiveSensor - sendingSensor;
+    FVector receiveToSend = sendingSensor - receiveSensor;
 
-    float dist = UKismetMathLibrary::Sqrt(FMath::Square(fromLocationLocal.X) + FMath::Square(fromLocationLocal.Y) + FMath::Square(fromLocationLocal.Z));
+    float dist = sendToReceive.Size() / 100;
     UE_LOG(LogHolodeck, Log, TEXT("dist = %f  MaxDistance = %f"), dist, MaxDistance);
+    UE_LOG(LogHolodeck, Log, TEXT("SensorLocation = %s  ParentLocation = %s"), *sendingSensor.ToString(), *Parent->GetComponentLocation().ToString())
 
     //Max guaranteed range of modem is 50 meters
     if (dist > MaxDistance) {
@@ -58,33 +60,23 @@ int* UOpticalModemSensor::CanTransmit() {
         dataOut[0] = 0;
     }
     else {
-        FTransform FromSensortoWorld = fromSensor->GetComponentTransform();
-        FVector toLocation = this->GetComponentLocation();
-        FVector fromSensorLocal = UKismetMathLibrary::InverseTransformLocation(FromSensortoWorld, toLocation);
-        fromSensorLocal = ConvertLinearVector(fromLocationLocal, UEToClient);
         // Calculate if sensors are facing each other within 120 degrees
         //--> Difference in angle needs to be -60 < x < 60 
         //--> Check both sensors to make sure both are in acceptable orientations
 
-        if (IsSensorOriented(fromLocationLocal) && IsSensorOriented(fromSensorLocal)) {
+        if (IsSensorOriented(this, sendToReceive) && IsSensorOriented(fromSensor, receiveToSend)) {
             // Calculate if rangefinder and dist are equal or not.
-            FVector start = GetComponentLocation();
-
-            FVector end = fromLocation;
-            
-            end = end * MaxDistance;
-            end = start + end;
 
             FCollisionQueryParams QueryParams = FCollisionQueryParams();
-            QueryParams.AddIgnoredActor(Cast<AActor>(Parent));
+            QueryParams.AddIgnoredComponent(Parent);
 
             FHitResult Hit = FHitResult();
 
-            bool TraceResult = GetWorld()->LineTraceSingleByChannel(Hit, start, end, ECollisionChannel::ECC_Visibility, QueryParams);
+            bool TraceResult = GetWorld()->LineTraceSingleByChannel(Hit, sendingSensor, receiveSensor, ECollisionChannel::ECC_Visibility, QueryParams);
+           
+            float range = (TraceResult && Hit.GetComponent() == fromSensor->Parent ? dist : Hit.Distance);
+            UE_LOG(LogHolodeck, Log, TEXT("range = %f  object = %s"), range, *Hit.GetActor()->GetName());
             
-            float range = (TraceResult ? Hit.Distance / 100 : 50);  // centimeter to meters
-            UE_LOG(LogHolodeck, Log, TEXT("range = %f"),range);
-
             if (dist == range) {
                 // return 1;
                 dataOut[2] = 2;
@@ -104,24 +96,12 @@ int* UOpticalModemSensor::CanTransmit() {
 }
 
 
-bool UOpticalModemSensor::IsSensorOriented(FVector localToSensor) {
-    if (90 - LaserAngle <= FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Y)) && 
-      FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Y)) <= 90 + LaserAngle) {
+bool UOpticalModemSensor::IsSensorOriented(UOpticalModemSensor* Sensor, FVector localToSensor) {
+    float angle = FMath::RadiansToDegrees(UKismetMathLibrary::Acos(UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(Sensor->GetForwardVector()), UKismetMathLibrary::Normal(localToSensor))));
+    UE_LOG(LogHolodeck, Log, TEXT("angle = %f"),angle);
 
-        if (90 - LaserAngle <= FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Z)) && 
-          FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.X, localToSensor.Z))<= 90 + LaserAngle) {
-
-            if (90 - LaserAngle <= FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.Y, localToSensor.Z)) && 
-              FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(localToSensor.Y, localToSensor.Z))<= 90 + LaserAngle) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-        else {
-            return false;
-        }
+    if (-1 *LaserAngle < angle && angle < LaserAngle) {
+        return true;
     }
     else {
         return false;
