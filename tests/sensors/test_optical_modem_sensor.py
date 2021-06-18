@@ -1,6 +1,6 @@
 import holodeck
 import uuid
-import copy from deepcopy
+from deepcopy import copy
 from holodeck.command import SendOpticalMessageCommand
 from holodeck import sensors
 
