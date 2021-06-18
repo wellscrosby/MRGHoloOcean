@@ -169,7 +169,7 @@ uav_config_v3 = {
     ]
 }
 def test_not_oriented():
-"Tests to make sure that two sensors that are not within max distance do not transmit."
+    "Tests to make sure that two sensors that are not within max distance do not transmit."
     
     binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
 
@@ -233,7 +233,7 @@ uav_config_v4 = {
 }
 
 def test_obstructed_view():
-"""Tests to ensure that modem is unable to transmit when there is an obstruction between modems."""
+    """Tests to ensure that modem is unable to transmit when there is an obstruction between modems."""
     binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
 
     with holodeck.environments.HolodeckEnvironment(scenario=uav_config_v4,
