@@ -213,15 +213,15 @@ bool USonarSensor::inRange(Octree* tree, float size){
 
 	// check if it's in range
 	tree->locSpherical.X = locLocal.Size();
-	if(MinRange > tree->locSpherical.X || tree->locSpherical.X > MaxRange+offset) return false; 
+	if(MinRange >= tree->locSpherical.X || tree->locSpherical.X >= MaxRange+offset) return false; 
 
 	// check if azimuth is in
 	tree->locSpherical.Y = ATan2Approx(-locLocal.Y, locLocal.X);
-	if(minAzimuth > tree->locSpherical.Y || tree->locSpherical.Y > maxAzimuth) return false;
+	if(minAzimuth >= tree->locSpherical.Y || tree->locSpherical.Y >= maxAzimuth) return false;
 
 	// check if elevation is in
 	tree->locSpherical.Z = ATan2Approx(FVector2D(locLocal.X, locLocal.Y).Size(), locLocal.Z);
-	if(minElev > tree->locSpherical.Z || tree->locSpherical.Z > maxElev) return false;
+	if(minElev >= tree->locSpherical.Z || tree->locSpherical.Z >= maxElev) return false;
 	
 	// otherwise it's in!
 	return true;
@@ -254,21 +254,21 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 		float* result = static_cast<float*>(Buffer);
 
 		// FILTER TO GET THE LEAFS WE WANT
-		Benchmarker time;
-		time.Start();
+		// Benchmarker time;
+		// time.Start();
 		ParallelFor(octree.Num(), [&](int32 i){
 			leafsInRange(octree.GetData()[i], tempLeafs.GetData()[i], OctreeMax);
 		});
 		for(auto& tl : tempLeafs){
 			leafs += tl;
 		}
-		time.End();
-		UE_LOG(LogHolodeck, Warning, TEXT("Sorting took \t %f ms"), time.CalcMs())
+		// time.End();
+		// UE_LOG(LogHolodeck, Warning, TEXT("PARALLEL, RAW Sort took \t %f ms"), time.CalcMs())
 
 		// SORT THEM & RUN CALCULATIONS
-		time.Start();
-		TArray<int32> count;
-		count.Init(0, BinsRange*BinsAzimuth);
+		// time.Start();
+		int32* count = new int32[BinsRange*BinsAzimuth]();
+		FVector compLoc = this->GetComponentLocation();
 		ParallelFor(leafs.Num(), [&](int32 i){
 			Octree* l = leafs.GetData()[i];
 			// find what bin they must go in
@@ -277,7 +277,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			int32 idx = rBin*BinsAzimuth + aBin;
 
 			// Compute impact normal
-			FVector normalImpact = this->GetComponentLocation() - l->loc; 
+			FVector normalImpact = compLoc - l->loc; 
 			normalImpact /= normalImpact.Size();
 
 			// compute contribution
@@ -285,28 +285,25 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			if(val > 0){
 				// TODO: use sigmoid here?
 				result[idx] += val;
-				count.GetData()[idx]++;
+				++count[idx];
 			}
 		});
-		time.End();
-		UE_LOG(LogHolodeck, Warning, TEXT("Computing took \t %f ms"), time.CalcMs());
-
-		// TODO: Introduce noise?
-
+		// time.End();
+		// UE_LOG(LogHolodeck, Warning, TEXT("Computing took \t %f ms"), time.CalcMs())
+		
 		// MOVE THEM INTO BUFFER
-		time.Start();
+		// time.Start();
 		for (int i = 0; i < BinsRange*BinsAzimuth; i++) {
 			if(count[i] != 0){
-				result[i] /= count.GetData()[i];
+				result[i] /= count[i];
 			}
 			else{
 				result[i] = 0;
 			}
 		}
-		time.End();
-		UE_LOG(LogHolodeck, Warning, TEXT("Dividing took \t %f ms"), time.CalcMs());
-		UE_LOG(LogHolodeck, Warning, TEXT("Total Leafs: \t %d"), leafs.Num());
-		UE_LOG(LogHolodeck, Warning, TEXT("TicksPerCapture: \t %d"), TicksPerCapture);
+		// time.End();
+		// UE_LOG(LogHolodeck, Warning, TEXT("Dividing took \t %f ms"), time.CalcMs());
+		// UE_LOG(LogHolodeck, Warning, TEXT("Total Leafs: \t %d"), leafs.Num());
 
 		// draw outlines of our region
 		if(ViewDebug){
