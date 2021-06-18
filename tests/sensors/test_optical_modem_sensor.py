@@ -2,6 +2,7 @@ import holodeck
 import uuid
 from holodeck.command import SendOpticalMessageCommand
 from holodeck import sensors
+import copy
 
 from tests.utils.equality import almost_equal
 
