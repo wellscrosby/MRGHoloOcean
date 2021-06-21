@@ -148,7 +148,7 @@ TArray<Octree*> Octree::fromJson(FString filename){
     // load file to a string
     FString jsonString;
     FFileHelper::LoadFileToString(jsonString,*filename);
-    char* source = TCHAR_TO_ANSI(*filename);
+    char* source = StringCast<ANSICHAR>(*filename).Get();
 
     char* endptr;
     gason::JsonValue json;
