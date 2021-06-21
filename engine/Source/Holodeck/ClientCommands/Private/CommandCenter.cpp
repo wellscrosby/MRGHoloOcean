@@ -54,9 +54,9 @@ void UCommandCenter::Init(UHolodeckServer* const ParameterServer, AHolodeckGameM
 
 int UCommandCenter::ReadCommandBuffer() {
 	char *Endptr;
-	JsonValue Value;
-	JsonAllocator Allocator;
-	int Status = jsonParse(Buffer, &Endptr, &Value, Allocator);
+	gason::JsonValue Value;
+	gason::JsonAllocator Allocator;
+	int Status = gason::jsonParse(Buffer, &Endptr, &Value, Allocator);
 	if (Status != JSON_OK) {
 		UE_LOG(LogHolodeck, Error, TEXT("Unable to parse command buffer as a json file"));
 	} else {
@@ -65,12 +65,12 @@ int UCommandCenter::ReadCommandBuffer() {
 	return Status;
 }
 
-void UCommandCenter::ExtractCommandsFromJson(const JsonValue &Input){
-	if (Input.getTag() == JSON_OBJECT) {
-		JsonIterator Iter = begin(Input);
+void UCommandCenter::ExtractCommandsFromJson(const gason::JsonValue &Input){
+	if (Input.getTag() == gason::JSON_OBJECT) {
+		gason::JsonIterator Iter = begin(Input);
 		//check if this is actually the array of commands, and then extract the commands from it.
-		if (Iter->value.getTag() == JSON_ARRAY)
-			for (JsonNode* ArrayIter : Iter->value)
+		if (Iter->value.getTag() == gason::JSON_ARRAY)
+			for (gason::JsonNode* ArrayIter : Iter->value)
 				GetCommand(ArrayIter->value);
 		else
 			UE_LOG(LogHolodeck, Warning, TEXT("Command Buffer didn't contain the format of JSON we expected. Unable to process command."));
@@ -79,18 +79,18 @@ void UCommandCenter::ExtractCommandsFromJson(const JsonValue &Input){
 	}
 }
 
-void UCommandCenter::GetCommand(const JsonValue &Input) {
-	JsonIterator Iter = begin(Input);
+void UCommandCenter::GetCommand(const gason::JsonValue &Input) {
+	gason::JsonIterator Iter = begin(Input);
 	std::string CommandName = Iter->value.toString();
 	FString CommandFString = UTF8_TO_TCHAR(CommandName.c_str());
 	std::vector<std::string> StringParameters;
 	std::vector<float> FloatParameters;
 	Iter.p = Iter->next;
-	if (Iter->value.getTag() == JSON_ARRAY) {
+	if (Iter->value.getTag() == gason::JSON_ARRAY) {
 		//We are now inside the array
-		for (JsonNode* ArrayIter : Iter->value) {
-			JsonIterator ObjIter = begin(ArrayIter->value);
-			if (ObjIter->value.getTag() == JSON_NUMBER)
+		for (gason::JsonNode* ArrayIter : Iter->value) {
+			gason::JsonIterator ObjIter = begin(ArrayIter->value);
+			if (ObjIter->value.getTag() == gason::JSON_NUMBER)
 				FloatParameters.push_back(ObjIter->value.toNumber());
 			else
 				StringParameters.push_back(ObjIter->value.toString());

@@ -5,8 +5,9 @@
 #include "CoreMinimal.h"
 #include "Engine/World.h"
 #include "Misc/FileHelper.h"
-#include "Dom/JsonObject.h"
 #include "DrawDebugHelpers.h"
+#include "gason.h"
+#include "jsonbuilder.h"
 
 // #include "Octree.generated.h"
 
@@ -41,9 +42,8 @@ class Octree
         static TArray<Octree*> fromJson(FString filename);
 
         // helpers for loading/saving
-        static TArray<TSharedPtr<FJsonValue>> vecToJson(FVector vec);
-        TSharedPtr<FJsonObject> toJson();
-        static void fromJson(TSharedPtr<FJsonObject> json, TArray<Octree*>& parent);
+        void toJson(gason::JSonBuilder& doc);
+        static void fromJson(gason::JsonValue json, TArray<Octree*>& parent);
 		
         // ignore actors
         static void ignoreActor(const AActor * InIgnoreActor){
