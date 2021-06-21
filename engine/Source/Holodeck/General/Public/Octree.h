@@ -6,9 +6,11 @@
 #include "Engine/World.h"
 #include "Misc/FileHelper.h"
 #include "DrawDebugHelpers.h"
-#include "Containers/StringConv.h"
 #include "gason.h"
 #include "jsonbuilder.h"
+#include <string>
+#include <fstream>
+#include <streambuf>
 
 // #include "Octree.generated.h"
 

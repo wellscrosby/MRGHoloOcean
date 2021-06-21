@@ -57,7 +57,7 @@ int UCommandCenter::ReadCommandBuffer() {
 	gason::JsonValue Value;
 	gason::JsonAllocator Allocator;
 	int Status = gason::jsonParse(Buffer, &Endptr, &Value, Allocator);
-	if (Status != JSON_OK) {
+	if (Status != gason::JSON_PARSE_OK) {
 		UE_LOG(LogHolodeck, Error, TEXT("Unable to parse command buffer as a json file"));
 	} else {
 		ExtractCommandsFromJson(Value);

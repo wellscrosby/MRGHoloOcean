@@ -114,6 +114,8 @@ void Octree::toJson(TArray<Octree*>& trees, FString filename){
     FILE* fp = fopen(TCHAR_TO_ANSI(*filename), "w+t");
     fwrite(buffer, strlen(buffer), 1, fp);
     fclose(fp);
+
+    delete[] buffer;
 }
 
 void Octree::toJson(gason::JSonBuilder& doc){
@@ -146,9 +148,10 @@ TArray<Octree*> Octree::fromJson(FString filename){
     TArray<Octree*> trees;
 
     // load file to a string
-    FString jsonString;
-    FFileHelper::LoadFileToString(jsonString,*filename);
-    char* source = StringCast<ANSICHAR>(*filename).Get();
+    std::ifstream t(*filename);
+    std::string str((std::istreambuf_iterator<char>(t)),
+                    std::istreambuf_iterator<char>());
+    char* source = &str[0];
 
     char* endptr;
     gason::JsonValue json;
@@ -171,7 +174,7 @@ void Octree::fromJson(gason::JsonValue json, TArray<Octree*>& parent){
     for(gason::JsonNode* o : json){
         if(o->key[0] == 'p'){
             gason::JsonNode* arr = o->value.toNode();
-            child->loc = {arr->value.toNumber(), arr->next->value.toNumber(), arr->next->next->value.toNumber()};
+            child->loc = FVector(arr->value.toNumber(), arr->next->value.toNumber(), arr->next->next->value.toNumber());
         }
         if(o->key[0] == 'l'){
             for(gason::JsonNode* l : o->value){
@@ -180,7 +183,7 @@ void Octree::fromJson(gason::JsonValue json, TArray<Octree*>& parent){
         }
         if(o->key[0] == 'n'){
             gason::JsonNode* arr = o->value.toNode();
-            child->normal = {arr->value.toNumber(), arr->next->value.toNumber(), arr->next->next->value.toNumber()};
+            child->normal = FVector(arr->value.toNumber(), arr->next->value.toNumber(), arr->next->next->value.toNumber());
         }
     }
 

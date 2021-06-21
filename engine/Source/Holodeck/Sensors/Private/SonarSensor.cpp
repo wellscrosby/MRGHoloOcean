@@ -157,9 +157,11 @@ void USonarSensor::InitializeSensor() {
 
 		// check if it's been made yet
 		if(FPaths::FileExists(filename)){
+			UE_LOG(LogHolodeck, Warning, TEXT("SonarSensor::Loading Octree.."));
 			octree = Octree::fromJson(filename);
 		}
 		else{
+			UE_LOG(LogHolodeck, Warning, TEXT("SonarSensor::Making Octree.."));
 			// Otherwise, make the octrees
 			FVector nCells = (EnvMax - EnvMin) / OctreeMax;
 			for(int i = 0; i < nCells.X; i++) {
@@ -171,6 +173,7 @@ void USonarSensor::InitializeSensor() {
 				}
 			}
 			// save for next time
+			UE_LOG(LogHolodeck, Warning, TEXT("SonarSensor::Saving Octree.."));
 			Octree::toJson(octree, filename);
 		}
 	}
