@@ -54,9 +54,10 @@ def test_transmittable():
     "Tests to make sure that two sensors that can transmit to each other actually transmit."
     
     binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    global uav_config_v1
+    cfg = copy.deepcopy(uav_config_v1)
 
-
-    with holodeck.environments.HolodeckEnvironment(scenario=uav_config_v1,
+    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -118,9 +119,10 @@ def test_within_max_distance():
     "Tests to make sure that two sensors that are not within max distance do not transmit."
     
     binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    global uav_config_v2
+    cfg = copy.deepcopy(uav_config_v2)
 
-
-    with holodeck.environments.HolodeckEnvironment(scenario=uav_config_v2,
+    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -175,9 +177,10 @@ def test_not_oriented():
     "Tests to make sure that two sensors that are not within max distance do not transmit."
     
     binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    global uav_config_v3
+    cfg = copy.deepcopy(uav_config_v3)
 
-
-    with holodeck.environments.HolodeckEnvironment(scenario=uav_config_v3,
+    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -238,8 +241,10 @@ uav_config_v4 = {
 def test_obstructed_view():
     """Tests to ensure that modem is unable to transmit when there is an obstruction between modems."""
     binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    global uav_config_v4
+    cfg = copy.deepcopy(uav_config_v4)
 
-    with holodeck.environments.HolodeckEnvironment(scenario=uav_config_v4,
+    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
