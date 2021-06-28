@@ -169,7 +169,7 @@ TArray<Octree*> Octree::fromJson(FString filename){
     return trees;
 }
 
-void Octree::fromJson(gason::JsonValue json, TArray<Octree*>& parent){
+void Octree::fromJson(gason::JsonValue& json, TArray<Octree*>& parent){
     Octree* child = new Octree;
     for(gason::JsonNode* o : json){
         if(o->key[0] == 'p'){

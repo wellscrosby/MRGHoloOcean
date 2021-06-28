@@ -46,7 +46,7 @@ class Octree
 
         // helpers for loading/saving
         void toJson(gason::JSonBuilder& doc);
-        static void fromJson(gason::JsonValue json, TArray<Octree*>& parent);
+        static void fromJson(gason::JsonValue& json, TArray<Octree*>& parent);
 		
         // ignore actors
         static void ignoreActor(const AActor * InIgnoreActor){
