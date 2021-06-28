@@ -86,11 +86,11 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("OctreeMax")) {
-			OctreeMax = JsonParsed->GetNumberField("OctreeMax")*100;
+			OctreeMax = (int) (JsonParsed->GetNumberField("OctreeMax")*100);
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("OctreeMin")) {
-			OctreeMin = JsonParsed->GetNumberField("OctreeMin")*100;
+			OctreeMin = (int) (JsonParsed->GetNumberField("OctreeMin")*100);
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Boolean>("ViewDebug")) {
@@ -147,11 +147,11 @@ void USonarSensor::InitializeSensor() {
 		FString file_path = FPaths::ProjectDir() + "/" + GetWorld()->GetMapName();
 		FFileManagerGeneric().MakeDirectory(*file_path);
 
-		FString filename = file_path + "/octree_" + FString::SanitizeFloat(OctreeMax, 4) + "_" + FString::SanitizeFloat(OctreeMin, 4) + ".json";
+		FString filename = file_path + "/octree_" + FString::FromInt(OctreeMax) + "_" + FString::FromInt(OctreeMin) + ".json";
 
 		// Clean environment size
-		FVector min = FVector(FGenericPlatformMath::Min(EnvMin.X, EnvMax.X), FGenericPlatformMath::Min(EnvMin.Y, EnvMax.Y), FGenericPlatformMath::Min(EnvMin.Z, EnvMax.Z));
-		FVector max = FVector(FGenericPlatformMath::Max(EnvMin.X, EnvMax.X), FGenericPlatformMath::Max(EnvMin.Y, EnvMax.Y), FGenericPlatformMath::Max(EnvMin.Z, EnvMax.Z));
+		FVector min = FVector((int)FGenericPlatformMath::Min(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Min(EnvMin.Y, EnvMax.Y), (int)FGenericPlatformMath::Min(EnvMin.Z, EnvMax.Z));
+		FVector max = FVector((int)FGenericPlatformMath::Max(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Max(EnvMin.Y, EnvMax.Y), (int)FGenericPlatformMath::Max(EnvMin.Z, EnvMax.Z));
 		EnvMin = min;
 		EnvMax = max;
 
