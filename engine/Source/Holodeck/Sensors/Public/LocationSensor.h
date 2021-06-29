@@ -5,6 +5,8 @@
 
 #include "HolodeckSensor.h"
 
+#include "MultivariateNormal.h"
+
 #include "LocationSensor.generated.h"
 
 /**
@@ -29,6 +31,11 @@ public:
 	*/
 	virtual void InitializeSensor() override;
 
+	/**
+	* Allows parameters to be set dynamically
+	*/
+	virtual void ParseSensorParms(FString ParmsJson) override;
+
 protected:
 	//See HolodeckSensor for the documentation of these overridden functions.
 	int GetNumItems() override { return 3; };
@@ -41,4 +48,5 @@ private:
 	 * After initialization, Parent contains a pointer to whatever the sensor is attached to.
 	 */
 	USceneComponent* Parent;
+	MultivariateNormal<3> mvn;
 };
