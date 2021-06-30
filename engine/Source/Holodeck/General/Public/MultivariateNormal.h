@@ -1,0 +1,205 @@
+// MIT License (c) 2019 BYU PCCL see LICENSE file
+
+#pragma once
+#include <random>
+#include <array>
+
+/**
+ * Sample from a mean 0 multivariate normal distribution
+ * with covariance as specified in the constructor
+ */
+template<int N>
+class HOLODECK_API MultivariateNormal
+{
+static_assert(N > 0, "MVN: N must be > 0");
+
+public:
+	MultivariateNormal(){}
+	~MultivariateNormal(){}
+
+    /*
+    * Set up covariance from a std deviation
+    * Can be a float => covariance is diagonal with that #^2
+    * Can be a 3-array => covariance is diagonal with that vector^2
+    * Can be a FJsonValue 3-array => covariance is diagonal with that vector^2 
+    */
+    void initSigma(float sigma){
+        for(int i=0;i<N;i++){
+            sqrtCov[i][i] = sigma;
+        }
+        uncertain = true;
+    }
+    void initSigma(std::array<float,N> sigma){
+        for(int i=0;i<N;i++){
+            sqrtCov[i][i] = sigma[i];
+        }
+        uncertain = true;
+    }
+    void initSigma(TArray<TSharedPtr<FJsonValue>> sigma){
+        try{
+            for(int i=0;i<N;i++){
+                sqrtCov[i][i] = sigma[i]->AsNumber();
+            }
+            uncertain = true;
+        }
+        catch(...){
+            UE_LOG(LogHolodeck, Warning, TEXT("MVN::initSigma:: Unable to parse json."));
+        }
+    }
+
+
+    /*
+    * Set up covariance from a covariance
+    * Can be a float => covariance is diagonal with that #
+    * Can be a 3-array => covariance is diagonal with that vector
+    * Can be 3x3-array => covariance is that array
+    * Can be a FJsonValue 3-array => covariance is diagonal with that vector
+    * Can be a FJsonValue 3x3-array => covariance is that array
+    */
+    void initCov(float cov){
+        for(int i=0;i<N;i++){
+            sqrtCov[i][i] = FMath::Sqrt(cov);
+        }
+        uncertain = true;
+    }
+    void initCov(std::array<float,N> cov){
+        for(int i=0;i<N;i++){
+            sqrtCov[i][i] = FMath::Sqrt(cov[i]);
+        }
+        uncertain = true;
+    }
+    void initCov(std::array<std::array<float,N>,N> cov){
+        sqrtCov = cov;
+
+        bool success = Cholesky(sqrtCov);
+        if(success){
+            uncertain = true;
+        }
+        else{
+            UE_LOG(LogHolodeck, Warning, TEXT("MVN: Encountered a non-positive definite covariance"));
+        }
+    }
+    void initCov(TArray<TSharedPtr<FJsonValue>> cov){
+        try{
+            double temp;
+            bool is2D = !(cov[0]->TryGetNumber(temp)); 
+
+            if(is2D){
+                std::array<std::array<float,N>,N> parsed;
+                for(int i=0;i<N;i++){
+                    TArray<TSharedPtr<FJsonValue>> row = cov[i]->AsArray();
+                    for(int j=0;j<N;j++){
+                        parsed[i][j] = row[j]->AsNumber();
+                    }
+                }
+                initCov(parsed);
+            }
+            else{
+                for(int i=0;i<N;i++){
+                    sqrtCov[i][i] = FMath::Sqrt(cov[i]->AsNumber());
+                }
+            }
+            uncertain = true;
+        }
+        catch(...){
+            UE_LOG(LogHolodeck, Warning, TEXT("MVN::initCov:: Unable to parse json."));
+        }
+    }
+
+
+    /* 
+    * Different ways to sample, with different return types
+    * Can return as std::array, TArray, FVector (requires N=3), or float (requires N=1)
+    */
+    std::array<float,N> sampleArray(){
+        std::array<float,N> sam;
+        std::array<float,N> result = {0};
+
+        if(uncertain){
+            // sample from N(0,1);
+            for(int i=0;i<N;i++){
+                sam[i] = dist(gen);
+            }
+
+            // shift by our covariance
+            for(int i=0;i<N;i++){
+                for(int j=0;j<N;j++){
+                    result[i] += sqrtCov[i][j]*sam[j];
+                }
+            }
+        }
+
+        return result;
+    };
+    TArray<float> sampleTArray(){
+        // sample
+        std::array<float,N> sample = sampleArray();
+
+        // put into TArray
+        TArray<float> result;
+        result.Append(sample, N);
+
+        return result;
+    }
+    FVector sampleFVector(){
+        verify(N == 3);
+
+        // sample
+        std::array<float,N> sample = sampleArray();
+
+        // put into TArray
+        FVector result = FVector(sample[0], sample[1], sample[2]);
+
+        return result;
+    }
+    float sampleFloat(){
+        verify(N == 1);
+
+        // sample
+        std::array<float,N> sample = sampleArray();
+
+        return sample[0];
+    }
+
+    /*
+    * Computes cholesky decomp in place
+    * returns false if matrix isn't positive definite
+    */
+    static bool Cholesky(std::array<std::array<float,N>,N>& A){
+        for(int32 I=0;I<N;++I){
+            for(int32 J = I; J < N; ++J){
+                float Sum = A[I][J];
+                for(int32 K = I - 1; K >= 0; --K){
+                    Sum -= A[I][K] * A[J][K];
+                }
+                if (I == J){
+                    if (Sum <= 0){
+                        // Not positive definite (rounding?)
+                        return false;
+                    }
+                    A[I][J] = FMath::Sqrt(Sum);
+                }
+                else{
+                    A[J][I] = Sum / A[I][I];
+                }
+            }
+        }
+
+        for(int32 I=0;I<N;++I){
+            for(int32 J=0;J<I;++J){
+                A[J][I] = 0;
+            }
+        }
+
+        return true;
+    }
+
+    std::array<std::array<float,N>,N> getSqrtCov(){ return sqrtCov; }
+
+private:
+    bool uncertain = false;
+    std::array<std::array<float,N>,N> sqrtCov = {{{{0}}}};
+    std::normal_distribution<float> dist{0.0f, 1.0f};
+    std::random_device rd{};
+    std::mt19937 gen{ rd() };
+};
