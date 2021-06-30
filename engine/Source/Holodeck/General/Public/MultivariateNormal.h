@@ -198,7 +198,7 @@ public:
 
 private:
     bool uncertain = false;
-    std::array<std::array<float,N>,N> sqrtCov = {0};
+    std::array<std::array<float,N>,N> sqrtCov = {{{{0}}}};
     std::normal_distribution<float> dist{0.0f, 1.0f};
     std::random_device rd{};
     std::mt19937 gen{ rd() };
