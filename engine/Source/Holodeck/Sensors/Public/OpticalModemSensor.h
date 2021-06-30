@@ -19,9 +19,9 @@ public:
 virtual void ParseSensorParms(FString ParmsJson) override;
 
 protected:
-	int GetNumItems() override { return 1; };
+	int GetNumItems() override { return 4; };
 
-    int GetItemSize() override { return 1; }
+    int GetItemSize() override { return sizeof(int); }
 
     void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
