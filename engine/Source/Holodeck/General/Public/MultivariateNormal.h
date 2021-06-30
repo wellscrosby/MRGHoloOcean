@@ -7,6 +7,10 @@
 /**
  * Sample from a mean 0 multivariate normal distribution
  * with covariance as specified in the constructor
+ *
+ *
+ * Using try/catch macros that disable when compiled w -fexceptions
+ * https://stackoverflow.com/questions/32094585/c-error-exception-handling-disabled-use-fexceptions-to-enable
  */
 template<int N>
 class HOLODECK_API MultivariateNormal
@@ -38,13 +42,13 @@ public:
     void initSigma(TArray<TSharedPtr<FJsonValue>> sigma){
         verifyf(sigma.Num() == N, TEXT("Sigma has size %d and should be %d"), sigma.Num(), N);
         
-        try{
+        __try{
             for(int i=0;i<N;i++){
                 sqrtCov[i][i] = sigma[i]->AsNumber();
             }
             uncertain = true;
         }
-        catch(...){
+        __catch(...){
             UE_LOG(LogHolodeck, Warning, TEXT("MVN::initSigma:: Unable to parse json."));
         }
     }
@@ -84,7 +88,7 @@ public:
     void initCov(TArray<TSharedPtr<FJsonValue>> cov){
         verifyf(cov.Num() == N, TEXT("Cov has size %d and should be %d"), cov.Num(), N);
 
-        try{
+        __try{
             double temp;
             bool is2D = !(cov[0]->TryGetNumber(temp)); 
 
@@ -106,7 +110,7 @@ public:
             }
             uncertain = true;
         }
-        catch(...){
+        __catch(...){
             UE_LOG(LogHolodeck, Warning, TEXT("MVN::initCov:: Unable to parse json."));
         }
     }
