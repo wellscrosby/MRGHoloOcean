@@ -5,6 +5,9 @@
 
 #include "HolodeckSensor.h"
 
+#include "MultivariateNormal.h"
+#include "Kismet/KismetMathLibrary.h"
+
 #include "DVLSensor.generated.h"
 
 /**
@@ -29,11 +32,22 @@ public:
 	*/
 	virtual void InitializeSensor() override;
 
+	/**
+	* Allows parameters to be set dynamically
+	*/
+	virtual void ParseSensorParms(FString ParmsJson) override;
+
 protected:
 	//See HolodeckSensor for the documentation of these overridden functions.
 	int GetNumItems() override { return 3; };
 	int GetItemSize() override { return sizeof(float); };
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	UPROPERTY(EditAnywhere)
+	bool DebugLines = false;
+
+	UPROPERTY(EditAnywhere)
+	float elevation = 90;
 
 private:
 	/**
@@ -42,4 +56,13 @@ private:
 	  * Not owned.
 	  */
 	UPrimitiveComponent* Parent;
+
+	// Used for noise
+	float sinElev;
+	float cosElev;
+	MultivariateNormal<4> mvn;
+	TArray<TArray<float>> transform;
+
+	// used for debugging
+	TArray<FVector> directions;
 };

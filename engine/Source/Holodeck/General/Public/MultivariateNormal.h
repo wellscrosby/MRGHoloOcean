@@ -36,6 +36,8 @@ public:
         uncertain = true;
     }
     void initSigma(TArray<TSharedPtr<FJsonValue>> sigma){
+        verifyf(sigma.Num() == N, TEXT("Sigma has size %d and should be %d"), sigma.Num(), N);
+        
         try{
             for(int i=0;i<N;i++){
                 sqrtCov[i][i] = sigma[i]->AsNumber();
@@ -68,7 +70,7 @@ public:
         }
         uncertain = true;
     }
-    void initCov(std::array<std::array<float,N>,N> cov){
+    void initCov(std::array<std::array<float,N>,N> cov){        
         sqrtCov = cov;
 
         bool success = Cholesky(sqrtCov);
@@ -80,6 +82,8 @@ public:
         }
     }
     void initCov(TArray<TSharedPtr<FJsonValue>> cov){
+        verifyf(cov.Num() == N, TEXT("Cov has size %d and should be %d"), cov.Num(), N);
+
         try{
             double temp;
             bool is2D = !(cov[0]->TryGetNumber(temp)); 
@@ -88,6 +92,7 @@ public:
                 std::array<std::array<float,N>,N> parsed;
                 for(int i=0;i<N;i++){
                     TArray<TSharedPtr<FJsonValue>> row = cov[i]->AsArray();
+                    verifyf(row.Num() == N, TEXT("Cov Row has size %d and should be %d"), cov.Num(), N);
                     for(int j=0;j<N;j++){
                         parsed[i][j] = row[j]->AsNumber();
                     }
@@ -110,6 +115,7 @@ public:
     /* 
     * Different ways to sample, with different return types
     * Can return as std::array, TArray, FVector (requires N=3), or float (requires N=1)
+    * All functions draw on sampleArray. If cov hasn't been set, returns 0s
     */
     std::array<float,N> sampleArray(){
         std::array<float,N> sam;
@@ -137,12 +143,12 @@ public:
 
         // put into TArray
         TArray<float> result;
-        result.Append(sample, N);
+        result.Append(sample.data(), N);
 
         return result;
     }
     FVector sampleFVector(){
-        verify(N == 3);
+        verifyf(N == 3, TEXT("Can't use MVN size %d with FVector samples"), N);
 
         // sample
         std::array<float,N> sample = sampleArray();
@@ -153,7 +159,7 @@ public:
         return result;
     }
     float sampleFloat(){
-        verify(N == 1);
+        verifyf(N == 1, TEXT("Can't use MVN size %d with float samples"), N);
 
         // sample
         std::array<float,N> sample = sampleArray();
@@ -195,6 +201,7 @@ public:
     }
 
     std::array<std::array<float,N>,N> getSqrtCov(){ return sqrtCov; }
+    bool isUncertain(){ return uncertain;}
 
 private:
     bool uncertain = false;
