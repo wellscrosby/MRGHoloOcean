@@ -232,15 +232,15 @@ bool USonarSensor::inRange(Octree* tree, float size){
 	return true;
 }	
 
-void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& leafs, float size){
+void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& rLeafs, float size){
 	bool in = inRange(tree, size);
 	if(in){
 		if(tree->leafs.Num() == 0){
-			leafs.Add(tree);
+			rLeafs.Add(tree);
 		}
 		else{
 			for(Octree* l : tree->leafs){
-				leafsInRange(l, leafs, size/2);
+				leafsInRange(l, rLeafs, size/2);
 			}
 		}
 	}

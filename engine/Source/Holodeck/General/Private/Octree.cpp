@@ -148,7 +148,7 @@ TArray<Octree*> Octree::fromJson(FString filename){
     TArray<Octree*> trees;
 
     // load file to a string
-    std::ifstream t(*filename);
+    std::ifstream t(TCHAR_TO_ANSI(*filename));
     std::string str((std::istreambuf_iterator<char>(t)),
                     std::istreambuf_iterator<char>());
     char* source = &str[0];
