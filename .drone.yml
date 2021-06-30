@@ -14,8 +14,13 @@ steps:
 - name: Test
   image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
   commands:
+  # Find what branch we need to pull from
+  - BRANCH_EXISTS=$(git ls-remote --heads https://bitbucket.org/frostlab/holodeck-ocean-engine.git ${DRONE_BRANCH} | wc -l)
+  - if [ $BRANCH_EXISTS == "1" ]; then BRANCH=${DRONE_BRANCH}; else BRANCH=develop; fi
+  - echo $BRANCH
+  # Install, and run tests
   - pip install .
-  - python3 -c "import holodeck; holodeck.install(\"Ocean\", \"https://robots.et.byu.edu/jenkins/job/holodeck-ocean-engine/job/develop/lastSuccessfulBuild/artifact/Ocean.zip\")"
+  - python3 -c "import holodeck; holodeck.install(\"Ocean\", \"https://robots.et.byu.edu/jenkins/job/holodeck-ocean-engine/job/$BRANCH/lastSuccessfulBuild/artifact/Ocean.zip\")"
   - py.test
 
 
