@@ -86,11 +86,11 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("OctreeMax")) {
-			OctreeMax = JsonParsed->GetNumberField("OctreeMax")*100;
+			OctreeMax = (int) (JsonParsed->GetNumberField("OctreeMax")*100);
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("OctreeMin")) {
-			OctreeMin = JsonParsed->GetNumberField("OctreeMin")*100;
+			OctreeMin = (int) (JsonParsed->GetNumberField("OctreeMin")*100);
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Boolean>("ViewDebug")) {
@@ -147,19 +147,21 @@ void USonarSensor::InitializeSensor() {
 		FString file_path = FPaths::ProjectDir() + "/" + GetWorld()->GetMapName();
 		FFileManagerGeneric().MakeDirectory(*file_path);
 
-		FString filename = file_path + "/octree_" + FString::SanitizeFloat(OctreeMax, 4) + "_" + FString::SanitizeFloat(OctreeMin, 4) + ".json";
+		FString filename = file_path + "/octree_" + FString::FromInt(OctreeMax) + "_" + FString::FromInt(OctreeMin) + ".json";
 
 		// Clean environment size
-		FVector min = FVector(FGenericPlatformMath::Min(EnvMin.X, EnvMax.X), FGenericPlatformMath::Min(EnvMin.Y, EnvMax.Y), FGenericPlatformMath::Min(EnvMin.Z, EnvMax.Z));
-		FVector max = FVector(FGenericPlatformMath::Max(EnvMin.X, EnvMax.X), FGenericPlatformMath::Max(EnvMin.Y, EnvMax.Y), FGenericPlatformMath::Max(EnvMin.Z, EnvMax.Z));
+		FVector min = FVector((int)FGenericPlatformMath::Min(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Min(EnvMin.Y, EnvMax.Y), (int)FGenericPlatformMath::Min(EnvMin.Z, EnvMax.Z));
+		FVector max = FVector((int)FGenericPlatformMath::Max(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Max(EnvMin.Y, EnvMax.Y), (int)FGenericPlatformMath::Max(EnvMin.Z, EnvMax.Z));
 		EnvMin = min;
 		EnvMax = max;
 
 		// check if it's been made yet
 		if(FPaths::FileExists(filename)){
+			UE_LOG(LogHolodeck, Warning, TEXT("SonarSensor::Loading Octree.."));
 			octree = Octree::fromJson(filename);
 		}
 		else{
+			UE_LOG(LogHolodeck, Warning, TEXT("SonarSensor::Making Octree.."));
 			// Otherwise, make the octrees
 			FVector nCells = (EnvMax - EnvMin) / OctreeMax;
 			for(int i = 0; i < nCells.X; i++) {
@@ -171,6 +173,7 @@ void USonarSensor::InitializeSensor() {
 				}
 			}
 			// save for next time
+			UE_LOG(LogHolodeck, Warning, TEXT("SonarSensor::Saving Octree.."));
 			Octree::toJson(octree, filename);
 		}
 	}
@@ -229,15 +232,15 @@ bool USonarSensor::inRange(Octree* tree, float size){
 	return true;
 }	
 
-void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& leafs, float size){
+void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& rLeafs, float size){
 	bool in = inRange(tree, size);
 	if(in){
 		if(tree->leafs.Num() == 0){
-			leafs.Add(tree);
+			rLeafs.Add(tree);
 		}
 		else{
 			for(Octree* l : tree->leafs){
-				leafsInRange(l, leafs, size/2);
+				leafsInRange(l, rLeafs, size/2);
 			}
 		}
 	}

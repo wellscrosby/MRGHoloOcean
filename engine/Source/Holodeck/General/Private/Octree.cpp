@@ -78,7 +78,7 @@ int Octree::numLeafs(){
         return 1;
     }
     else{
-        int num = 0;
+        int num = 1;
         for(Octree* leaf : leafs){
             num += leaf->numLeafs();
         }
@@ -87,99 +87,104 @@ int Octree::numLeafs(){
 }
 
 void Octree::toJson(TArray<Octree*>& trees, FString filename){
+    // calculate buffer size
+    int64 num = 0;
+    for(Octree* t : trees){
+        num += t->numLeafs();
+    }
+    num *= 100;
+
     // Get values of all trees
-    TArray<TSharedPtr<FJsonValue>> treesJson;
-    for(Octree* tree : trees){
-        // have to convert to different type
-        TSharedRef<FJsonValueObject> treeJson = MakeShareable(new FJsonValueObject( tree->toJson() ));
-        treesJson.Add(treeJson);
+    char* buffer = new char[num]();
+    gason::JSonBuilder doc(buffer, num-1);
+
+    doc.startObject().startArray("trees");
+    for(Octree* t: trees){
+        t->toJson(doc);
     }
 
-    // Make Json object and put them in
-    TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-    JsonObject->SetArrayField("trees", treesJson);
+    doc.endArray().endObject();
 
-    // Output to string
-    FString asString;
-    TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> Writer = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&asString);
-    FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
+    if ( !doc.isBufferAdequate() ) {
+        puts("warning: the buffer is small and the output json is not valid.");
+    }
 
     // String to file
-    FFileHelper::SaveStringToFile(asString, *filename);
+    // 
+    FILE* fp = fopen(TCHAR_TO_ANSI(*filename), "w+t");
+    fwrite(buffer, strlen(buffer), 1, fp);
+    fclose(fp);
+
+    delete[] buffer;
 }
 
-TSharedPtr<FJsonObject> Octree::toJson(){
-    // create and fill in json for this tree
-    TSharedPtr<FJsonObject> json = MakeShareable(new FJsonObject);
-    json->SetArrayField("p", vecToJson(loc));
-    if(leafs.Num()==0){
-        json->SetArrayField("n", vecToJson(normal));
+void Octree::toJson(gason::JSonBuilder& doc){
+    doc.startObject()
+        .startArray("p")
+            .addValue((int)loc[0])
+            .addValue((int)loc[1])
+            .addValue((int)loc[2])
+        .endArray();
+
+    if(leafs.Num() != 0){
+        doc.startArray("l");
+        for(Octree* l : leafs){
+            l->toJson(doc);
+        }
+        doc.endArray();
     }
     else{
-        TArray<TSharedPtr<FJsonValue>> leafsJson;
-        for(Octree* leaf : leafs){
-            // have to convert to different type
-            TSharedRef<FJsonValueObject> leafJson = MakeShareable(new FJsonValueObject( leaf->toJson() ));
-            leafsJson.Add(leafJson);
-        }
-        json->SetArrayField("l", leafsJson);
+        doc.startArray("n")
+                .addValue(normal[0])
+                .addValue(normal[1])
+                .addValue(normal[2])
+            .endArray();
     }
 
-    return json;
-}
-
-TArray<TSharedPtr<FJsonValue>> Octree::vecToJson(FVector vec){
-    TArray<TSharedPtr<FJsonValue>> json;
-    for(int i=0; i<3; i++){
-        TSharedPtr<FJsonValue> item = MakeShareable(new FJsonValueNumber(vec.Component(i)));
-        json.Add(item);
-    }
-    return json;
+    doc.endObject();
 }
 
 TArray<Octree*> Octree::fromJson(FString filename){
     TArray<Octree*> trees;
 
     // load file to a string
-    FString jsonString;
-    FFileHelper::LoadFileToString(jsonString,*filename);
+    std::ifstream t(TCHAR_TO_ANSI(*filename));
+    std::string str((std::istreambuf_iterator<char>(t)),
+                    std::istreambuf_iterator<char>());
+    char* source = &str[0];
 
-    // convert string to json, and get moving
-    TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
-	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(jsonString);
- 
-    if (FJsonSerializer::Deserialize(JsonReader, JsonObject) && JsonObject.IsValid())
-	{
-        //The person "object" that is retrieved from the given json file
-        TArray<TSharedPtr<FJsonValue>> treesJson = JsonObject->GetArrayField("trees");
-    
-        for(auto tJson : treesJson){
-            fromJson(tJson->AsObject(), trees);
-        }
+    char* endptr;
+    gason::JsonValue json;
+    gason::JsonAllocator allocator;
+    int status = gason::jsonParse(source, &endptr, &json, allocator);
+    if (status != gason::JSON_PARSE_OK) {
+        puts("parsing failed!");
     }
-    else{
-        UE_LOG(LogTemp, Warning, TEXT("Couldn't deserialize %s"), *filename);
+
+    gason::JsonValue temp = json.toNode()->value;
+    for(gason::JsonNode* o : temp){
+        fromJson(o->value, trees);
     }
 
     return trees;
 }
 
-void Octree::fromJson(TSharedPtr<FJsonObject> json, TArray<Octree*>& parent){
-    // put in location
-    TArray<TSharedPtr<FJsonValue>> locJson = json->GetArrayField("p");
-    FVector loc = FVector(locJson[0]->AsNumber(), locJson[1]->AsNumber(), locJson[2]->AsNumber());
-    Octree * child = new Octree(loc);
-
-    // if it has children put them in
-    if(json->HasField("l")){
-        for(auto l : json->GetArrayField("l")){
-            fromJson(l->AsObject(), child->leafs);
+void Octree::fromJson(gason::JsonValue& json, TArray<Octree*>& parent){
+    Octree* child = new Octree;
+    for(gason::JsonNode* o : json){
+        if(o->key[0] == 'p'){
+            gason::JsonNode* arr = o->value.toNode();
+            child->loc = FVector(arr->value.toNumber(), arr->next->value.toNumber(), arr->next->next->value.toNumber());
         }
-    }
-    // otherwise it's a leaf, put in normal
-    else{
-        TArray<TSharedPtr<FJsonValue>> normalJson = json->GetArrayField("n");
-        child->normal = FVector(normalJson[0]->AsNumber(), normalJson[1]->AsNumber(), normalJson[2]->AsNumber());
+        if(o->key[0] == 'l'){
+            for(gason::JsonNode* l : o->value){
+                fromJson(l->value, child->leafs);
+            }
+        }
+        if(o->key[0] == 'n'){
+            gason::JsonNode* arr = o->value.toNode();
+            child->normal = FVector(arr->value.toNumber(), arr->next->value.toNumber(), arr->next->next->value.toNumber());
+        }
     }
 
     parent.Add(child);
