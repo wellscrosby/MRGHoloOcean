@@ -11,15 +11,11 @@ steps:
   commands:
   - docker build -t "${DRONE_REPO}:${DRONE_COMMIT:0:8}" .
 
-- name: Install libraries
+- name: Test
   image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
   commands:
   - pip install .
   - python3 -c "import holodeck; holodeck.install(\"Ocean\", \"https://robots.et.byu.edu/jenkins/job/holodeck-ocean-engine/job/develop/lastSuccessfulBuild/artifact/Ocean.zip\")"
-   
-- name: Test
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
-  commands:
   - py.test
 
 
