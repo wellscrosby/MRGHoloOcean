@@ -7,10 +7,6 @@
 /**
  * Sample from a mean 0 multivariate normal distribution
  * with covariance as specified in the constructor
- *
- *
- * Using try/catch macros that disable when compiled w -fexceptions
- * https://stackoverflow.com/questions/32094585/c-error-exception-handling-disabled-use-fexceptions-to-enable
  */
 template<int N>
 class HOLODECK_API MultivariateNormal
@@ -42,15 +38,10 @@ public:
     void initSigma(TArray<TSharedPtr<FJsonValue>> sigma){
         verifyf(sigma.Num() == N, TEXT("Sigma has size %d and should be %d"), sigma.Num(), N);
         
-        __try{
-            for(int i=0;i<N;i++){
-                sqrtCov[i][i] = sigma[i]->AsNumber();
-            }
-            uncertain = true;
+        for(int i=0;i<N;i++){
+            sqrtCov[i][i] = sigma[i]->AsNumber();
         }
-        __catch(...){
-            UE_LOG(LogHolodeck, Warning, TEXT("MVN::initSigma:: Unable to parse json."));
-        }
+        uncertain = true;
     }
 
 
@@ -88,31 +79,26 @@ public:
     void initCov(TArray<TSharedPtr<FJsonValue>> cov){
         verifyf(cov.Num() == N, TEXT("Cov has size %d and should be %d"), cov.Num(), N);
 
-        __try{
-            double temp;
-            bool is2D = !(cov[0]->TryGetNumber(temp)); 
+        double temp;
+        bool is2D = !(cov[0]->TryGetNumber(temp)); 
 
-            if(is2D){
-                std::array<std::array<float,N>,N> parsed;
-                for(int i=0;i<N;i++){
-                    TArray<TSharedPtr<FJsonValue>> row = cov[i]->AsArray();
-                    verifyf(row.Num() == N, TEXT("Cov Row has size %d and should be %d"), cov.Num(), N);
-                    for(int j=0;j<N;j++){
-                        parsed[i][j] = row[j]->AsNumber();
-                    }
-                }
-                initCov(parsed);
-            }
-            else{
-                for(int i=0;i<N;i++){
-                    sqrtCov[i][i] = FMath::Sqrt(cov[i]->AsNumber());
+        if(is2D){
+            std::array<std::array<float,N>,N> parsed;
+            for(int i=0;i<N;i++){
+                TArray<TSharedPtr<FJsonValue>> row = cov[i]->AsArray();
+                verifyf(row.Num() == N, TEXT("Cov Row has size %d and should be %d"), cov.Num(), N);
+                for(int j=0;j<N;j++){
+                    parsed[i][j] = row[j]->AsNumber();
                 }
             }
-            uncertain = true;
+            initCov(parsed);
         }
-        __catch(...){
-            UE_LOG(LogHolodeck, Warning, TEXT("MVN::initCov:: Unable to parse json."));
+        else{
+            for(int i=0;i<N;i++){
+                sqrtCov[i][i] = FMath::Sqrt(cov[i]->AsNumber());
+            }
         }
+        uncertain = true;
     }
 
 
