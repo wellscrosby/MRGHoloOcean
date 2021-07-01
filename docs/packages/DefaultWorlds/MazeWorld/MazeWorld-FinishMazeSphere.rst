@@ -9,6 +9,6 @@ close as possible to post with a golden ball on the other end.
 Agents
 ------
 
-- ``sphere0``: Main :ref:`sphere <sphere-agent>` agent
+- ``sphere0``: Main sphere agent
 
 See `MazeWorld-FinishMazeSphere.json <https://github.com/BYU-PCCL/holodeck-configs/blob/master/DefaultWorlds/MazeWorld-FinishMazeSphere.json>`_.

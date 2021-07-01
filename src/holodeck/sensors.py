@@ -377,8 +377,6 @@ class JointRotationSensor(HolodeckSensor):
     """Returns the state of the :class:`~holodeck.agents.AndroidAgent`'s or the 
     :class:`~holodeck.agents.HandAgent`'s joints.
 
-    See :ref:`android-joints` or :ref:`hand-joints` for the indexes into this vector.
-
     """
 
     sensor_type = "JointRotationSensor"
@@ -410,8 +408,7 @@ class PressureSensor(HolodeckSensor):
     :class:`~holodeck.agents.HandAgent`, returns the pressure on the
     joint.
 
-    For each joint, returns ``[x_loc, y_loc, z_loc, force]``, in the order the joints are listed
-    in :ref:`android-joints` or :ref:`hand-joints`.
+    For each joint, returns ``[x_loc, y_loc, z_loc, force]``.
 
     """
 
@@ -442,8 +439,7 @@ class PressureSensor(HolodeckSensor):
 class RelativeSkeletalPositionSensor(HolodeckSensor):
     """Gets the position of each bone in a skeletal mesh as a quaternion.
 
-    Returns a numpy array with four entries for each bone (see 
-    :ref:`android-bones` or :ref:`hand-bones` for the order used)
+    Returns a numpy array with four entries for each bone.
     """
 
     def __init__(self, client, agent_name, agent_type, name="RGBCamera", config=None):
@@ -643,7 +639,6 @@ class SonarSensor(HolodeckSensor):
 
     - ``BinsRange``: Number of range bins of resulting image
     - ``BinsAzimuth``: Number of azimuth bins of resulting image
-    # TODO - Should these actually be resolution #s? Or both?
     - ``OctreeMax``: Starting size of octree elements
     - ``OctreeMin``: Leaf size of octree elements
 

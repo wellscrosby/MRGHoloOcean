@@ -114,16 +114,13 @@ Agent Types
 
 Here are valid ``agent_type`` s:
 
-====================== ========================
-Agent Type             String in agent_type
-====================== ========================
-:ref:`android-agent`    ``AndroidAgent``
-:ref:`hand-agent`       ``HandAgent``
-:ref:`turtle-agent`     ``TurtleAgent``
-:ref:`nav-agent`        ``NavAgent``
-:ref:`sphere-agent`     ``SphereAgent``
-:ref:`uav-agent`        ``UAV``
-====================== ========================
+========================= ========================
+Agent Type                String in agent_type
+========================= ========================
+:ref:`turtle-agent`        ``TurtleAgent``
+:ref:`uav-agent`           ``UAV``
+:ref:`hovering-auv-agent`   ``HoveringAUV``
+========================= ========================
 
 Control Schemes
 ***************

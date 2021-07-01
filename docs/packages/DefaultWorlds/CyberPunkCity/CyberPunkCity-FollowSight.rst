@@ -9,7 +9,7 @@ Agents
 ------
 
 - ``uav0``: :ref:`UAV <uav-agent>`, Main agent, 
-- ``nav0``: :ref:`NavAgent <nav-agent>` that will automatically navigate to a 
+- ``nav0``: NavAgent that will automatically navigate to a 
   predetermined location
 
 See `CyberPunkCity-FollowSight.json <https://github.com/BYU-PCCL/holodeck-configs/blob/master/DefaultWorlds/CyberPunkCity-FollowSight.json>`_.
