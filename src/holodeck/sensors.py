@@ -914,7 +914,7 @@ class SensorDefinition:
         "DVLSensor": DVLSensor,
         "PoseSensor": PoseSensor,
         "AcousticBeaconSensor": AcousticBeaconSensor,
-        "OpticalModemSensor": OpticalModemSensor,
+        "OpticalModemSensor": OpticalModemSensor
     }
 
     def get_config_json_string(self):
