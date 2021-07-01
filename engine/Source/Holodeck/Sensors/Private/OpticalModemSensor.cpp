@@ -42,7 +42,7 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 	
 int* UOpticalModemSensor::CanTransmit() {
 
-    static int dataOut [3] = {1,1,1};
+    static int dataOut [4] = {-2,-2,-2,-2};
 
     // get coordinates of other sensor in local frame
     FVector sendingSensor = this->GetComponentLocation();
@@ -58,14 +58,18 @@ int* UOpticalModemSensor::CanTransmit() {
     if (dist > MaxDistance) {
         // return 0;
         dataOut[0] = 0;
+        dataOut[1] = 0;
     }
     else {
         // Calculate if sensors are facing each other within 120 degrees
         //--> Difference in angle needs to be -60 < x < 60 
         //--> Check both sensors to make sure both are in acceptable orientations
+        dataOut[1] = 1;
 
         if (IsSensorOriented(this, sendToReceive) && IsSensorOriented(fromSensor, receiveToSend)) {
             // Calculate if rangefinder and dist are equal or not.
+
+            dataOut[2] = 0;
 
             FCollisionQueryParams QueryParams = FCollisionQueryParams();
             QueryParams.AddIgnoredComponent(Parent);
@@ -79,16 +83,17 @@ int* UOpticalModemSensor::CanTransmit() {
             
             if (dist == range) {
                 // return 1;
-                dataOut[2] = 2;
+                dataOut[3] = 1;
+                dataOut[0] = 1;
             }
             else {
                 // return 0;
-                dataOut[2] = 0;
+                dataOut[3] = 0;
             }
         }
         else {
             // return 0;
-            dataOut[1] = 0;
+            dataOut[2] = 0;
         }
     }
 
