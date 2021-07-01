@@ -646,12 +646,12 @@ class TurtleAgent(HolodeckAgent):
 class HoveringAUV(HolodeckAgent):
     """A simple autonomous underwater vehicle.
 
-    **Action Space**:
+    **Action Space**:::
 
-    ::`
         [Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, 
         Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]
     
+
     -  All are capped by max acceleration
 
     Inherits from :class:`HolodeckAgent`."""

@@ -1,6 +1,6 @@
 # Holodeck
 
-[![Holodeck Video](docs/images/sunrise_Moment.jpg)](https://www.youtube.com/watch?v=_huewiGqfrs)
+[![Holodeck Video](docs/images/inspect_plane.jpg)](https://www.youtube.com/watch?v=_huewiGqfrs)
 
 [![Read the docs badge](https://readthedocs.org/projects/holodeck/badge/)](https://holodeck.readthedocs.io/en/develop/) ![Build Status](https://jenkins.holodeck.ml/buildStatus/icon?job=holodeck-engine%2Fdevelop)
 
