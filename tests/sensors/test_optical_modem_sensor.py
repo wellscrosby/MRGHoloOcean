@@ -180,12 +180,6 @@ def test_not_oriented():
             state, reward, terminal, _ = env.step(command)
             env.agents.get("uav0")._client.command_center.enqueue_command(holodeck.command.SendOpticalMessageCommand("uav0","OpticalModemSensor", "uav1", "OpticalModemSensor"))
 
-        print(state)
-        print(env.agents.get("uav0").sensors.get("OpticalModemSensor").sensor_data)
-        print(env.agents.get("uav1").sensors.get("OpticalModemSensor").sensor_data)
-        print(env.agents.get("uav0").sensors.get("OpticalModemSensor").msg_data)
-        print(env.agents.get("uav1").sensors.get("OpticalModemSensor").msg_data)
-
         assert env.agents.get("uav1").sensors.get("OpticalModemSensor").sensor_data == None, "Receiving modem received data when it should not have done so."
 
 uav_config_v4 = {
