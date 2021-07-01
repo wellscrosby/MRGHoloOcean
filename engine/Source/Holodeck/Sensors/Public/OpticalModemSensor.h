@@ -19,7 +19,7 @@ public:
 virtual void ParseSensorParms(FString ParmsJson) override;
 
 protected:
-	int GetNumItems() override { return 4; };
+	int GetNumItems() override { return 5; };
 
     int GetItemSize() override { return sizeof(int); }
 

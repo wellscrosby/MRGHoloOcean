@@ -19,10 +19,11 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
     if (Parent != nullptr && bOn) {
 		// if someone starting transmitting
 		if (fromSensor) {
-            int* temp = this->CanTransmit();
-			IntBuffer[0] = temp[0]; //Returns 1 or 0 for true and false respectively
-            for (int i = 0; i < 3; i++) {
-                IntBuffer[i+1] = temp[i];
+            // int* temp = this->CanTransmit();
+			// IntBuffer[0] = temp[0]; //Returns 1 or 0 for true and false respectively
+            // for (int i = 0; i < 3; i++) {
+            //     IntBuffer[i+1] = temp[i];
+            IntBuffer = this->CantTransmit();
     }
 		}
         else {
@@ -42,7 +43,7 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 	
 int* UOpticalModemSensor::CanTransmit() {
 
-    static int dataOut [4] = {-2,-2,-2,-2};
+    static int dataOut [4] = {-3,-3,-3,-3};
 
     // get coordinates of other sensor in local frame
     FVector sendingSensor = this->GetComponentLocation();
