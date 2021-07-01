@@ -4,6 +4,8 @@
 
 #include "HolodeckSensor.h"
 
+#include "MultivariateNormal.h"
+
 #include "IMUSensor.generated.h"
 
 /**
@@ -41,11 +43,19 @@ public:
 	  */
 	FVector GetAngularVelocityVector();
 
+	/**
+	* Allows parameters to be set dynamically
+	*/
+	virtual void ParseSensorParms(FString ParmsJson) override;
+
 protected:
 	// See HolodeckSensor for more information on these overridden functions.
-	int GetNumItems() override { return 6; };
+	int GetNumItems() override { return ReturnBias ? 12 : 6; };
 	int GetItemSize() override { return sizeof(float); };
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	UPROPERTY(EditAnywhere)
+	bool ReturnBias = true;
 
 private:
 	/**
@@ -74,4 +84,11 @@ private:
 	FVector LinearAccelerationVector;
 	FVector AngularVelocityVector;
 
+	// Used for noise
+	MultivariateNormal<3> mvnAccel;
+	MultivariateNormal<3> mvnOmega;
+	MultivariateNormal<3> mvnBiasAccel;
+	MultivariateNormal<3> mvnBiasOmega;
+	FVector BiasAccel = FVector(0);
+	FVector BiasOmega = FVector(0);
 };
