@@ -55,7 +55,7 @@ protected:
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere)
-	bool ReturnBias = true;
+	bool ReturnBias = false;
 
 private:
 	/**
