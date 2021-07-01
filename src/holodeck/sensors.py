@@ -338,14 +338,23 @@ class OrientationSensor(HolodeckSensor):
 class IMUSensor(HolodeckSensor):
     """Inertial Measurement Unit sensor.
 
-    Returns a 2D numpy array of
-
-    ::`
+    Returns a 2D numpy array of::
 
        [ [accel_x, accel_y, accel_z],
          [ang_vel_roll,  ang_vel_pitch, ang_vel_yaw],
          [accel_bias_x, accel_bias_y, accel_bias_z],
          [ang_vel_bias_roll,  ang_vel_bias_pitch, ang_vel_bias_yaw]    ]
+
+    **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the
+    following options:
+
+    - ``AccelSigma``/``AccelCov``: Covariance/Std for acceleration component. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
+    - ``AngVelSigma``/``AngVelCov``: Covariance/Std for angular velocity component. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
+    - ``AccelBiasSigma``/``AccelCBiasov``: Covariance/Std for acceleration bias component. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
+    - ``AngVelSigma``/``AngVelCov``: Covariance/Std for acceleration bias component. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
+    - ``ReturnBias``: Whether the sensor should return the bias along with accel/ang. vel. Defaults to false.
 
     """
 
@@ -376,8 +385,6 @@ class IMUSensor(HolodeckSensor):
 class JointRotationSensor(HolodeckSensor):
     """Returns the state of the :class:`~holodeck.agents.AndroidAgent`'s or the 
     :class:`~holodeck.agents.HandAgent`'s joints.
-
-    See :ref:`android-joints` or :ref:`hand-joints` for the indexes into this vector.
 
     """
 
@@ -410,8 +417,7 @@ class PressureSensor(HolodeckSensor):
     :class:`~holodeck.agents.HandAgent`, returns the pressure on the
     joint.
 
-    For each joint, returns ``[x_loc, y_loc, z_loc, force]``, in the order the joints are listed
-    in :ref:`android-joints` or :ref:`hand-joints`.
+    For each joint, returns ``[x_loc, y_loc, z_loc, force]``.
 
     """
 
@@ -442,8 +448,7 @@ class PressureSensor(HolodeckSensor):
 class RelativeSkeletalPositionSensor(HolodeckSensor):
     """Gets the position of each bone in a skeletal mesh as a quaternion.
 
-    Returns a numpy array with four entries for each bone (see 
-    :ref:`android-bones` or :ref:`hand-bones` for the order used)
+    Returns a numpy array with four entries for each bone.
     """
 
     def __init__(self, client, agent_name, agent_type, name="RGBCamera", config=None):
@@ -473,6 +478,14 @@ class LocationSensor(HolodeckSensor):
     """Gets the location of the agent in the world.
 
     Returns coordinates in ``[x, y, z]`` format (see :ref:`coordinate-system`)
+
+    **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the
+    following options:
+
+    - ``Sigma``/``Cov``: Covariance/Std. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
+
     """
 
     sensor_type = "LocationSensor"
@@ -643,7 +656,6 @@ class SonarSensor(HolodeckSensor):
 
     - ``BinsRange``: Number of range bins of resulting image
     - ``BinsAzimuth``: Number of azimuth bins of resulting image
-    # TODO - Should these actually be resolution #s? Or both?
     - ``OctreeMax``: Starting size of octree elements
     - ``OctreeMin``: Leaf size of octree elements
 
@@ -679,16 +691,19 @@ class SonarSensor(HolodeckSensor):
 class DVLSensor(HolodeckSensor):
     """Doppler Velocity Log Sensor.
 
-    Returns a 1D numpy array of
-
-    ::`
+    Returns a 1D numpy array of::
 
        [velocity_x, velocity_y, velocity_z]
 
-    In the robot frame. The ``configuration`` block (see :ref:`configuration-block`) accepts the
+     **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the
     following options:
 
-    - ``AcousticDebug``: Show debug traces. (default false) (TODO)
+    - ``Elevation``: Angle of each acoustic beam off z-axis pointing down. Only used for noise/visualization. Defaults to 90 => horizontal.
+    - ``DebugLines``: Whether to show lines of each beam. Defaults to false.
+    - ``Sigma``/``Cov``: Covariance/Std to be applied to each beam. Can be scalar, 4-vector or 4x4-matrix. Defaults to 0 => no noise.
+
     """
 
     sensor_type = "DVLSensor"
@@ -724,24 +739,18 @@ class PoseSensor(HolodeckSensor):
         return [4, 4]
 
 class AcousticBeaconSensor(HolodeckSensor):
-    """Doppler Velocity Log Sensor.
+    """Acoustic Beacon Sensor. Can send message to an other beacon from the `~holodeck.HolodeckEnvironment.send_acoustic_message` command.
 
-    Returns a 1D numpy array of
+    Returning array depends on sent message type. 
 
-    ::`
+    # TODO Document all possible message types.
 
-       [velocity_x, velocity_y, velocity_z]
-
-    In the robot frame. The ``configuration`` block (see :ref:`configuration-block`) accepts the
-    following options:
-
-    - ``AcousticDebug``: Show debug traces. (default false) (TODO)
     """
 
     sensor_type = "AcousticBeaconSensor"
     instances = dict()
 
-    def __init__(self, client, agent_name, agent_type, name="RGBCamera",  config=None):
+    def __init__(self, client, agent_name, agent_type, name="AcousticBeaconSensor",  config=None):
         self.sending_to = []
         
         # assign an id

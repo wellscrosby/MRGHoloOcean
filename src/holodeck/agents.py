@@ -371,8 +371,6 @@ class AndroidAgent(HolodeckAgent):
 
     Can be controlled via torques supplied to its joints.
 
-    See :ref:`android-agent` for more details.
-
     **Action Space:**
 
     94 dimensional vector of continuous values representing torques to be
@@ -487,14 +485,11 @@ class HandAgent(HolodeckAgent):
 
     Can be controlled via torques supplied to its joints and moved around in
     three dimensions.
-
-    See :ref:`hand-agent` for more details.
     
     **Action Space:**
 
     23 or 26 dimensional vector of continuous values representing torques to be
-    applied at each joint. The layout of joints can be found here:
-    :ref:`hand-joints`.
+    applied at each joint.
 
     Inherits from :class:`HolodeckAgent`.
     
@@ -580,8 +575,6 @@ class HandAgent(HolodeckAgent):
 class NavAgent(HolodeckAgent):
     """A humanoid character capable of intelligent navigation.
 
-       See :ref:`nav-agent` for more details.
-
        **Action Space:**
 
        Continuous control scheme of the form ``[x_target, y_target, z_target]``. 
@@ -615,8 +608,6 @@ class NavAgent(HolodeckAgent):
 
 class TurtleAgent(HolodeckAgent):
     """A simple turtle bot.
-
-    See :ref:`turtle-agent` for more details.
 
     **Action Space**:
 
@@ -655,11 +646,12 @@ class TurtleAgent(HolodeckAgent):
 class HoveringAUV(HolodeckAgent):
     """A simple autonomous underwater vehicle.
 
-    **Action Space**:
+    **Action Space**:::
 
-    ``[Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, 
-        Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]``
+        [Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, 
+        Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]
     
+
     -  All are capped by max acceleration
 
     Inherits from :class:`HolodeckAgent`."""

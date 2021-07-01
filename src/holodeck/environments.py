@@ -811,10 +811,9 @@ class HolodeckEnvironment:
 ######################## ACOUSTIC BEACON HELPERS ###########################
 
     def send_acoustic_message(self, id_from, id_to, msg_type, msg_data):
-        """Adjusts the rendering quality of Holodeck.
+        """Send a message from one beacon to another.
         
-        Args:
-            render_quality (:obj:`int`): An integer between 0 = Low Quality and 3 = Epic quality.
+        # TODO: Fill this out.
         """
         AcousticBeaconSensor.instances[id_from].send_message(id_to, msg_type, msg_data)
 
