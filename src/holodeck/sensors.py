@@ -311,6 +311,7 @@ class RGBCamera(HolodeckSensor):
         self._client.command_center.enqueue_command(command_to_send)
         self.tick_every = ticks_per_capture
 
+
 class OrientationSensor(HolodeckSensor):
     """Gets the forward, right, and up vector for the agent.
     Returns a 2D numpy array of
@@ -341,12 +342,27 @@ class IMUSensor(HolodeckSensor):
 
     ::`
 
-       [ [acceleration_x, acceleration_y, acceleration_z],
-         [velocity_roll,  velocity_pitch, velocity_yaw]   ]
+       [ [accel_x, accel_y, accel_z],
+         [ang_vel_roll,  ang_vel_pitch, ang_vel_yaw],
+         [accel_bias_x, accel_bias_y, accel_bias_z],
+         [ang_vel_bias_roll,  ang_vel_bias_pitch, ang_vel_bias_yaw]    ]
 
     """
 
     sensor_type = "IMUSensor"
+
+    def __init__(self, client, agent_name, agent_type, name="IMUSensor",  config=None):
+
+        self.config = {} if config is None else config
+
+        return_bias = False
+
+        if "ReturnBias" in self.config:
+            return_bias = self.config["ReturnBias"]
+
+        self.shape = [4,3] if return_bias else [2,3]
+
+        super(IMUSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
     @property
     def dtype(self):
@@ -354,7 +370,7 @@ class IMUSensor(HolodeckSensor):
 
     @property
     def data_shape(self):
-        return [2, 3]
+        return self.shape
 
 
 class JointRotationSensor(HolodeckSensor):
@@ -617,6 +633,49 @@ class AbuseSensor(HolodeckSensor):
 ######################## HOLODECK-OCEAN CUSTOM SENSORS ###########################
 #Make sure to also add your new sensor to SensorDefintion below
 
+class SonarSensor(HolodeckSensor):
+    """Simulates an imaging sonar.
+
+    **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the following
+    options:
+
+    - ``BinsRange``: Number of range bins of resulting image
+    - ``BinsAzimuth``: Number of azimuth bins of resulting image
+    # TODO - Should these actually be resolution #s? Or both?
+    - ``OctreeMax``: Starting size of octree elements
+    - ``OctreeMin``: Leaf size of octree elements
+
+    """
+
+    sensor_type = "SonarSensor"
+
+    def __init__(self, client, agent_name, agent_type, name="SonarSensor", config=None):
+
+        self.config = {} if config is None else config
+
+        b_range   = 300
+        b_azimuth = 128
+
+        if "BinsRange" in self.config:
+            b_range = self.config["BinsRange"]
+
+        if "BinsAzimuth" in self.config:
+            b_azimuth = self.config["BinsAzimuth"]
+
+        self.shape = (b_range, b_azimuth)
+
+        super(SonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+
+    @property
+    def dtype(self):
+        return np.float32
+
+    @property
+    def data_shape(self):
+        return self.shape
+
 class DVLSensor(HolodeckSensor):
     """Doppler Velocity Log Sensor.
 
@@ -835,6 +894,7 @@ class SensorDefinition:
         "DVLSensor": DVLSensor,
         "PoseSensor": PoseSensor,
         "AcousticBeaconSensor": AcousticBeaconSensor,
+        "SonarSensor": SonarSensor,
     }
 
     def get_config_json_string(self):
@@ -866,7 +926,7 @@ class SensorDefinition:
         self.rotation = rotation
         self.config = self.type.default_config if config is None else config
         # hacky way to get RGBCamera to capture lined up with python rate
-        if sensor_type == "RGBCamera":
+        if sensor_type in ["RGBCamera", "SonarSensor"]:
             self.config['TicksPerCapture'] = tick_every
         self.existing = existing
 
