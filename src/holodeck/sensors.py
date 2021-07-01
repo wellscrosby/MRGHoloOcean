@@ -342,12 +342,27 @@ class IMUSensor(HolodeckSensor):
 
     ::`
 
-       [ [acceleration_x, acceleration_y, acceleration_z],
-         [velocity_roll,  velocity_pitch, velocity_yaw]   ]
+       [ [accel_x, accel_y, accel_z],
+         [ang_vel_roll,  ang_vel_pitch, ang_vel_yaw],
+         [accel_bias_x, accel_bias_y, accel_bias_z],
+         [ang_vel_bias_roll,  ang_vel_bias_pitch, ang_vel_bias_yaw]    ]
 
     """
 
     sensor_type = "IMUSensor"
+
+    def __init__(self, client, agent_name, agent_type, name="IMUSensor",  config=None):
+
+        self.config = {} if config is None else config
+
+        return_bias = False
+
+        if "ReturnBias" in self.config:
+            return_bias = self.config["ReturnBias"]
+
+        self.shape = [4,3] if return_bias else [2,3]
+
+        super(IMUSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
     @property
     def dtype(self):
@@ -355,7 +370,7 @@ class IMUSensor(HolodeckSensor):
 
     @property
     def data_shape(self):
-        return [2, 3]
+        return self.shape
 
 
 class JointRotationSensor(HolodeckSensor):
