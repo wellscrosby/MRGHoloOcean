@@ -2,7 +2,7 @@
 #include "Holodeck.h"
 #include "HolodeckSensor.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "MultivarieateNormal.h"
+#include "MultivariateNormal.h"
 
 #include "OpticalModemSensor.generated.h"
 
