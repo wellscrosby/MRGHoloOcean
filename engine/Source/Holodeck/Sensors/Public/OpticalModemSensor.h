@@ -2,6 +2,7 @@
 #include "Holodeck.h"
 #include "HolodeckSensor.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "MultivarieateNormal.h"
 
 #include "OpticalModemSensor.generated.h"
 
@@ -28,10 +29,14 @@ protected:
     //Max distance of the modem in meters
     UPROPERTY(EditAnywhere)
 	float MaxDistance = 50;
+
+    float NoiseMaxDistance;
     
     //Debug Variables
     UPROPERTY(EditAnywhere)
 	float LaserAngle = 60;
+
+    float NoiseLaserAngle;
 
 	UPROPERTY(EditAnywhere)
 	bool LaserDebug = false;
@@ -50,4 +55,6 @@ private:
     int* CanTransmit();
     TMap<FString, FColor> ColorMap;
     void FillColorMap();
+    MultivariateNormal<1> DistanceNoise;
+    MultivariateNormal<1> AngleNoise
 };

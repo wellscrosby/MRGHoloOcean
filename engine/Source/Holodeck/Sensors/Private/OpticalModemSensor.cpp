@@ -11,6 +11,8 @@ void UOpticalModemSensor::InitializeSensor() {
 	Super::InitializeSensor();
 	//You need to get the pointer to the object the sensor is attached to. 
 	Parent = Cast<UPrimitiveComponent>(this->GetAttachParent());
+    NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
+    NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
 }
 
 void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
@@ -23,7 +25,9 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			// IntBuffer[0] = temp[0]; //Returns 1 or 0 for true and false respectively
             // for (int i = 0; i < 3; i++) {
             //     IntBuffer[i+1] = temp[i];
-            IntBuffer = this->CantTransmit();
+            NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
+            NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
+            IntBuffer = this->CanTransmit();
     }
 		}
         else {
@@ -36,8 +40,8 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
     
 
     if (LaserDebug) {
-        DrawDebugCone(GetWorld(), GetComponentLocation(), GetForwardVector(), MaxDistance * 100, FMath::DegreesToRadians(LaserAngle), FMath::DegreesToRadians(LaserAngle), DebugNumSides, DebugColor, false, .01, ECC_WorldStatic, 1.F);
-        DrawDebugLine(GetWorld(), GetComponentLocation(), GetForwardVector() * MaxDistance * 100, DebugColor,false, .01,ECC_WorldStatic, 1.F);
+        DrawDebugCone(GetWorld(), GetComponentLocation(), GetForwardVector(), NoiseMaxDistance * 100, FMath::DegreesToRadians(NoiseLaserAngle), FMath::DegreesToRadians(NoiseLaserAngle), DebugNumSides, DebugColor, false, .01, ECC_WorldStatic, 1.F);
+        DrawDebugLine(GetWorld(), GetComponentLocation(), GetForwardVector() * NoiseMaxDistance * 100, DebugColor,false, .01,ECC_WorldStatic, 1.F);
     }
 }
 	
@@ -52,7 +56,7 @@ int* UOpticalModemSensor::CanTransmit() {
     FVector receiveToSend = sendingSensor - receiveSensor;
 
     float dist = sendToReceive.Size() / 100;
-    UE_LOG(LogHolodeck, Log, TEXT("dist = %f  MaxDistance = %f"), dist, MaxDistance);
+    UE_LOG(LogHolodeck, Log, TEXT("dist = %f  MaxDistance = %f"), dist, NoiseMaxDistance);
     UE_LOG(LogHolodeck, Log, TEXT("SensorLocation = %s  ParentLocation = %s"), *sendingSensor.ToString(), *Parent->GetComponentLocation().ToString())
 
     //Max guaranteed range of modem is 50 meters
@@ -106,7 +110,7 @@ bool UOpticalModemSensor::IsSensorOriented(UOpticalModemSensor* Sensor, FVector 
     float angle = FMath::RadiansToDegrees(UKismetMathLibrary::Acos(UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(Sensor->GetForwardVector()), UKismetMathLibrary::Normal(localToSensor))));
     UE_LOG(LogHolodeck, Log, TEXT("angle = %f"),angle);
 
-    if (-1 *LaserAngle < angle && angle < LaserAngle) {
+    if (-1 *NoiseLaserAngle < angle && angle < NoiseLaserAngle) {
         return true;
     }
     else {
@@ -140,6 +144,18 @@ void UOpticalModemSensor::ParseSensorParms(FString ParmsJson) {
             FillColorMap();
 			DebugColor = ColorMap[JsonParsed->GetStringField("DebugColor")];
 		}
+        if (JsonParsed->HasTypedField<EJson::Number>("DistanceSigma")) {
+			DistanceNoise.initSigma(JsonParsed->GetNumberField("DistanceSigma"));
+        }
+        if (JsonParsed->HasTypedField<EJson::Number>("AngleSigma")) {
+			AngleNoise.initSigma(JsonParsed->GetNumberField("AngleSigma"));
+        }
+		if (JsonParsed->HasTypedField<EJson::Number>("DistanceCov")) {
+			DistanceNoise.initCov(JsonParsed->GetNumberField("DistanceCov"));
+		}
+        if (JsonParsed->HasTypedField<EJson::Number>("AngleCov")) {
+			AngleNoise.initCov(JsonParsed->GetNumberField("AngleCov"));
+        }
 	}
 	else {
 		UE_LOG(LogHolodeck, Fatal, TEXT("URangeFinderSensor::ParseSensorParms:: Unable to parse json."));
