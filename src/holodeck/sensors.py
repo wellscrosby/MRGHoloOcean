@@ -539,7 +539,7 @@ class CollisionSensor(HolodeckSensor):
 
     @property
     def dtype(self):
-        return np.bool
+        return np.bool_
 
     @property
     def data_shape(self):
