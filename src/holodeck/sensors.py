@@ -805,6 +805,11 @@ class OpticalModemSensor(HolodeckSensor):
     - ``DebugNumSides``: Number of sides on the debug cone. (default 72)
     - ``LaserAngle``: Angle of lasers from origin. Measured in degrees. (default 60)
     - ``LaserDebug``: Show debug traces. (default false)
+    - ``DistanceSigma``: Determines the standard deviation of the noise of MaxDistance. (defualt 0)
+    - ``AngleSigma``: Determines the standard deviation of the noise of LaserAngle. (default 0)
+    - ``DistanceCov``: Determines the covariance of the noise of MaxDistance. (defualt 0)
+    - ``AngleCov``: Determines the covariance of the noise of LaserAngle. (default 0)
+
     """
     sensor_type = "OpticalModemSensor"
     instances = dict()
