@@ -56,5 +56,5 @@ private:
     TMap<FString, FColor> ColorMap;
     void FillColorMap();
     MultivariateNormal<1> DistanceNoise;
-    MultivariateNormal<1> AngleNoise
+    MultivariateNormal<1> AngleNoise;
 };
