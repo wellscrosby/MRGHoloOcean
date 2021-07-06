@@ -16,7 +16,8 @@ steps:
   - git clone https://bitbucket.org/frostlab/holodeck-ocean-worlds.git
   - bash Build/ContinuousIntegration/package_ue4_project.sh
   - echo "The pull request was successfully packaged"
-  - mv Ocean.zip ${DRONE_COMMIT:0:8}.zip
+  - mkdir results
+  - mv Ocean.zip result/${DRONE_COMMIT:0:8}.zip
 
 - name: Push to S3
   image: plugins/s3
@@ -24,7 +25,7 @@ steps:
       bucket: holo
       access_key: frostlab
       secret_key: frostlab2020
-      source: **/*.zip
+      source: results/*
       target: /${DRONE_BRANCH}
       path_style: true
       endpoint: http://minio:9000/  
