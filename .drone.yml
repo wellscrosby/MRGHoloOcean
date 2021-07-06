@@ -20,7 +20,7 @@ steps:
   - echo $BRANCH
   # Install, and run tests
   - pip install .
-  - python3 -c "import holodeck; holodeck.install(\"Ocean\", \"https://robots.et.byu.edu/jenkins/job/holodeck-ocean-engine/job/$BRANCH/lastSuccessfulBuild/artifact/Ocean.zip\")"
+  - python3 -c "import holodeck; holodeck.install(\"Ocean\", \"https://robots.et.byu.edu/holo/Ocean/$BRANCH/latest.zip")"
   - py.test
 
 
