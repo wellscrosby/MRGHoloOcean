@@ -14,10 +14,8 @@ steps:
   commands:
   # TODO Figure out how to clone using gitea credentials
   - git clone https://bitbucket.org/frostlab/holodeck-ocean-worlds.git
-  - bash Build/ContinuousIntegration/package_ue4_project.sh
+  - bash Build/ContinuousIntegration/package_ue4_project.sh ${DRONE_COMMIT:0:8}
   - echo "The pull request was successfully packaged"
-  - mkdir results
-  - mv Ocean.zip result/${DRONE_COMMIT:0:8}.zip
 
 - name: Push to S3
   image: plugins/s3
@@ -25,7 +23,7 @@ steps:
       bucket: holo
       access_key: frostlab
       secret_key: frostlab2020
-      source: results/*
+      source: Ocean/*
       target: /${DRONE_BRANCH}
       path_style: true
       endpoint: http://minio:9000/  
