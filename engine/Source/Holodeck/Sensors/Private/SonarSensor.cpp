@@ -144,10 +144,8 @@ void USonarSensor::InitializeSensor() {
 		}
 		OctreeMax = temp;
 
-		FString file_path = FPaths::ProjectDir() + "/" + GetWorld()->GetMapName();
-		FFileManagerGeneric().MakeDirectory(*file_path);
-
-		FString filename = file_path + "/octree_" + FString::FromInt(OctreeMax) + "_" + FString::FromInt(OctreeMin) + ".json";
+		FString filePath = FPaths::ProjectDir() + "Octrees/" + GetWorld()->GetMapName();
+		filePath += "/" + FString::FromInt(OctreeMin) + "_" + FString::FromInt(OctreeMax);
 
 		// Clean environment size
 		FVector min = FVector((int)FGenericPlatformMath::Min(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Min(EnvMin.Y, EnvMax.Y), (int)FGenericPlatformMath::Min(EnvMin.Z, EnvMax.Z));
@@ -156,9 +154,9 @@ void USonarSensor::InitializeSensor() {
 		EnvMax = max;
 
 		// check if it's been made yet
-		if(FPaths::FileExists(filename)){
+		if(FPaths::DirectoryExists(filePath)){
 			UE_LOG(LogHolodeck, Warning, TEXT("SonarSensor::Loading Octree.."));
-			octree = Octree::fromJson(filename);
+			octree = Octree::fromJson(filePath);
 		}
 		else{
 			UE_LOG(LogHolodeck, Warning, TEXT("SonarSensor::Making Octree.."));
@@ -173,8 +171,8 @@ void USonarSensor::InitializeSensor() {
 				}
 			}
 			// save for next time
-			UE_LOG(LogHolodeck, Warning, TEXT("SonarSensor::Saving Octree.."));
-			Octree::toJson(octree, filename);
+			UE_LOG(LogHolodeck, Warning, TEXT("SonarSensor::Saving Octree.. to %s"), *filePath);
+			Octree::toJson(octree, filePath);
 		}
 	}
 

@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "Engine/World.h"
 #include "Misc/FileHelper.h"
+#include "HAL/FileManagerGeneric.h"
 #include "DrawDebugHelpers.h"
+
 #include "gason.h"
 #include "jsonbuilder.h"
 #include <string>
@@ -41,8 +43,8 @@ class Octree
         static void makeOctree(FVector center, float size, UWorld* World, TArray<Octree*>& parent, float minBox=16);
 
         // functions for loading/saving octrees
-        static void toJson(TArray<Octree*>& trees, FString filename);
-        static TArray<Octree*> fromJson(FString filename);
+        static void toJson(TArray<Octree*>& trees, FString filePath);
+        static TArray<Octree*> fromJson(FString filePath);
 
         // helpers for loading/saving
         void toJson(gason::JSonBuilder& doc);
