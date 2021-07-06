@@ -6,7 +6,6 @@ ue4 setroot /home/ue4/UnrealEngine
 
 packagename="Ocean"
 commit="$1"
-branch="$2"
 
 echo "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
 echo "⚠ Packaging $packagename..."
@@ -45,10 +44,10 @@ echo "👉 Deleting config files for $commit..."
 rm *.json
 cd ..
 
-echo "👉 Moving $commit.zip into $packagename folder..."
-mkdir $packagename
-mv "dist/$commit.zip" $packagename
-cp $packagename/$commit.zip $packagename/latest.zip
+echo "👉 Moving $commit.zip into final folder..."
+mkdir final
+mv "dist/$commit.zip" final
+cp final/$commit.zip final/latest.zip
 
 
 echo "👉 Done packaging package $commit"

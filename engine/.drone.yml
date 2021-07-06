@@ -23,7 +23,8 @@ steps:
       bucket: holo
       access_key: frostlab
       secret_key: frostlab2020
-      source: Ocean/*
-      target: /${DRONE_BRANCH}
+      source: final/*
+      strip_prefix: final/
+      target: /Ocean/${DRONE_BRANCH}
       path_style: true
       endpoint: http://minio:9000/  
