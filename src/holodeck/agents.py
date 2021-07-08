@@ -682,6 +682,39 @@ class PerfectHoveringAUV(HoveringAUV):
     """Identical to the HoveringAUV, just with ideal COM, COB, and volume."""
     agent_type = "PerfectHoveringAUV"
 
+class TorpedoAUV(HolodeckAgent):
+    """A simple foward motion autonomous underwater vehicle.
+
+    **Action Space**:::
+
+        [pitch_torque, roll_torque, yaw_torque, thrust]
+
+    -  All are capped by max acceleration
+
+    Inherits from :class:`HolodeckAgent`."""
+    # constants in TorpedoAUV.h in holodeck-engine
+    __MAX_ACCEL = 100
+    __MIN_ACCEL = -__MAX_ACCEL
+
+    agent_type = "TorpedoAUV"
+
+    @property
+    def control_schemes(self):
+        scheme = "[pitch_torque, roll_torque, yaw_torque, thrust]"
+        low = [self.__MIN_ACCEL]*4
+        high = [self.__MAX_ACCEL]*4
+        return [(scheme, ContinuousActionSpace([4], low=low, high=high))]
+
+    def get_joint_constraints(self, joint_name):
+        return None
+
+    def __repr__(self):
+        return "TorpedoAUV " + self.name
+
+    def __act__(self, action):
+        np.copyto(self._action_buffer, np.array(action))
+        np.copyto(self._action_buffer, action)
+
 class AgentDefinition:
     """Represents information needed to initialize agent.
 
@@ -707,6 +740,7 @@ class AgentDefinition:
         "TurtleAgent": TurtleAgent,
         "HoveringAUV": HoveringAUV,
         "PerfectHoveringAUV": PerfectHoveringAUV,
+        "TorpedoAUV": TorpedoAUV,
     }
 
     def __init__(self, agent_name, agent_type, sensors=None, starting_loc=(0, 0, 0),
