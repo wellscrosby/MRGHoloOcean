@@ -3,8 +3,6 @@
 #include "Holodeck.h"
 #include "TorpedoAUV.h"
 
-const float AUV_MAX_FORCE = 100;
-
 // Sets default values
 ATorpedoAUV::ATorpedoAUV() {
 	PrimaryActorTick.bCanEverTick = true;
