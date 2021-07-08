@@ -31,9 +31,9 @@ public:
 
 	// Physical parameters of vehicle
 	// These all MUST be set
-	float Volume;
-	FVector CenterBuoyancy;
-	FVector CenterMass;
+	float Volume; // in m^3
+	FVector CenterBuoyancy; // in cm
+	FVector CenterMass; // in cm
 	float MassInKG;
 
 	// Used for surface buoyancy.
