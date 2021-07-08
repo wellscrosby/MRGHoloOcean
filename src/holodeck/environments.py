@@ -117,7 +117,7 @@ class HolodeckEnvironment:
         self._client = HolodeckClient(self._uuid, start_world)
         self._command_center = CommandCenter(self._client)
         self._client.command_center = self._command_center
-        self._reset_ptr = self._client.malloc("RESET", [1], np.bool)
+        self._reset_ptr = self._client.malloc("RESET", [1], np.bool_)
         self._reset_ptr[0] = False
 
         # Initialize environment controller

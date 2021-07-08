@@ -1,0 +1,197 @@
+import holodeck
+import uuid
+import pytest
+
+import numpy as np
+
+@pytest.fixture
+def config():
+    config = {
+        "name": "test_imu_sensor",
+        "world": "Rooms",
+        "main_agent": "turtle0",
+        "agents": [
+            {
+                "agent_name": "turtle0",
+                "agent_type": "TurtleAgent",
+                "sensors": [
+                    {
+                        "sensor_type": "IMUSensor",
+                    },
+                    {
+                        "sensor_type": "IMUSensor",
+                        "sensor_name": "noise",
+                        "configuration": {
+                            "AccelSigma" : 10,
+                            "AngVelSigma" : 10,
+                            "ReturnBias": True
+                        }
+                    }
+                ],
+                "control_scheme": 0,
+                "location": [-1.5, -1.50, 3.0],
+                "rotation": [0, 0, 0]
+            }
+        ]
+    }
+    return config
+
+
+def test_imu_sensor_acceleration(config):
+    """Make sure when we move forward x is positive, y is close to 0. Make sure when not moving both are close to 0
+    """
+
+    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+
+    with holodeck.environments.HolodeckEnvironment(scenario=config,
+                                                   binary_path=binary_path,
+                                                   show_viewport=True,
+                                                   uuid=str(uuid.uuid4())) as env:
+        #let it land and then start moving forward
+        for _ in range(100):
+            _, _, _  = env.tick()["IMUSensor"][0]
+        env.step([150,0])
+
+        #Move forward, making sure y is relatively small, and x is increasing
+        for i in range(50):
+            x_accel, y_accel, z_accel = env.step([150,0])[0]["IMUSensor"][0]
+            assert x_accel >= 0, f"The acceleration wasn't positive at step {i}!"
+            assert y_accel <= .5
+            assert np.isclose(z_accel, 9.81, 1e-2)
+            last_x_accel = x_accel
+
+        #Let it stop
+        for _ in range(100):
+            env.step([0, 0])
+
+        #Move backward, making sure y is relatively small, and x is decreasing
+        for i in range(50):
+            x_accel, y_accel, z_accel = env.step([-150,0])[0]["IMUSensor"][0]
+            assert x_accel <= 1e-3, f"The acceleration wasn't negative at step {i}!"
+            assert y_accel <= .5
+            assert np.isclose(z_accel, 9.81, 1e-2)
+
+            last_x_accel = x_accel
+        #Let it stop
+        for _ in range(100):
+            env.step([0, 0])
+
+        #make sure everythign is close to 0
+        x_accel, y_accel, z_accel = env.tick()["IMUSensor"][0]
+        assert x_accel <= 1e-2, "The x accel wasn't close enough to zero!"
+        assert y_accel <= 1e-2, "The y accel wasn't close enough to zero!"
+
+def test_imu_sensor_angular_velocity(config):
+    """Make sure when we move forward x is positive, y is close to 0. Make sure when not moving both are close to 0
+    """
+
+    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+
+    with holodeck.environments.HolodeckEnvironment(scenario=config,
+                                                   binary_path=binary_path,
+                                                   show_viewport=True,
+                                                   uuid=str(uuid.uuid4())) as env:
+        #let it land and then start moving forward
+        for _ in range(100):
+            _, _, last_z_angvel = env.tick()["IMUSensor"][1]
+        env.step([0,150])
+
+        #Move forward, making sure y is relatively small, and x is increasing
+        for i in range(60):
+            x_angvel, y_angvel, new_z_angvel = env.step([0,150])[0]["IMUSensor"][1]
+            assert x_angvel <= .5
+            assert y_angvel <= .5
+            assert new_z_angvel >= last_z_angvel, f"The angvel didn't increase at step {i}!"
+            last_z_angvel = new_z_angvel
+
+        #Let it stop
+        for _ in range(100):
+            env.step([0, 0])
+
+        #Move backward, making sure y is relatively small, and x is decreasing
+        for i in range(60):
+            x_angvel, y_angvel, new_z_angvel = env.step([0,-150])[0]["IMUSensor"][1]
+            assert x_angvel <= .5
+            assert y_angvel <= .5
+            assert new_z_angvel <= last_z_angvel, f"The angvel didn't decrease at step {i}!"
+            last_z_angvel = new_z_angvel
+
+        #Let it stop
+        for _ in range(100):
+            env.step([0, 0])
+
+        #make sure everythign is close to 0
+        x_angvel, y_angvel, z_angvel = env.tick()["IMUSensor"][1]
+        assert x_angvel <= 1e-2, "The x angvel wasn't close enough to zero!"
+        assert y_angvel <= 1e-2, "The y angvel wasn't close enough to zero!"
+        assert z_angvel <= 1e-2, "The z angvel wasn't close enough to zero!"
+
+def test_imu_noise_accel(config):
+    """Make sure turning on noise actually turns it on"""
+    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+
+    with holodeck.environments.HolodeckEnvironment(scenario=config,
+                                                   binary_path=binary_path,
+                                                   show_viewport=False,
+                                                   uuid=str(uuid.uuid4())) as env:
+        #let it land and then start moving forward
+        for _ in range(100):
+            state = env.tick()
+            assert not np.allclose(state['IMUSensor'][0], state['noise'][0])
+
+def test_imu_noise_angvel(config):
+    """Make sure turning on noise actually turns it on"""
+    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+
+    with holodeck.environments.HolodeckEnvironment(scenario=config,
+                                                   binary_path=binary_path,
+                                                   show_viewport=False,
+                                                   uuid=str(uuid.uuid4())) as env:
+        #let it land and then start moving forward
+        for _ in range(100):
+            state = env.tick()
+            assert not np.allclose(state['IMUSensor'][1], state['noise'][1])
+
+def test_imu_noise_returnbias(config):
+    """Make sure returning the bias actually works"""
+    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+
+    with holodeck.environments.HolodeckEnvironment(scenario=config,
+                                                   binary_path=binary_path,
+                                                   show_viewport=False,
+                                                   uuid=str(uuid.uuid4())) as env:
+        #let it land and then start moving forward
+        for _ in range(10):
+            state = env.tick()
+            assert state['IMUSensor'].shape == (2,3)
+            assert state['noise'].shape == (4,3)
+            assert np.allclose(np.zeros(3), state['noise'][2])
+            assert np.allclose(np.zeros(3), state['noise'][3])
+
+def test_imu_noise_bias_accel(config):
+    """Make sure turning on noise actually turns it on"""
+    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    config['agents'][0]['sensors'][1]['configuration']['AccelBiasSigma'] = 10
+
+    with holodeck.environments.HolodeckEnvironment(scenario=config,
+                                                   binary_path=binary_path,
+                                                   show_viewport=False,
+                                                   uuid=str(uuid.uuid4())) as env:
+        #let it land and then start moving forward
+        for _ in range(100):
+            state = env.tick()
+            assert not np.allclose(np.zeros(3), state['noise'][2])
+
+def test_imu_noise_bias_angvel(config):
+    """Make sure turning on noise actually turns it on"""
+    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    config['agents'][0]['sensors'][1]['configuration']['AngVelBiasSigma'] = 10
+
+    with holodeck.environments.HolodeckEnvironment(scenario=config,
+                                                   binary_path=binary_path,
+                                                   show_viewport=False,
+                                                   uuid=str(uuid.uuid4())) as env:
+        #let it land and then start moving forward
+        for _ in range(100):
+            state = env.tick()
+            assert not np.allclose(np.zeros(3), state['noise'][3])
