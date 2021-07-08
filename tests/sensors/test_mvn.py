@@ -5,7 +5,7 @@ import uuid
 from scipy.stats import multivariate_normal as mvn
 import numpy as np
 
-eps = 1e-6
+eps = 1e-7
 
 @pytest.fixture
 def config():
