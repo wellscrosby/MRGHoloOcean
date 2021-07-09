@@ -156,6 +156,15 @@ public:
 
         return sample[0];
     }
+    float sampleRayleigh(){
+        // Samples from a rayleigh distribution
+        verifyf(N == 2, TEXT("Can't use MVN size %d with Rayleigh Noise"), N);
+
+        // sample
+        std::array<float,N> sample = sampleArray();
+
+        return sqrt(sample[0]*sample[0] + sample[1]*sample[1]);
+    }
 
     /*
     * Computes cholesky decomp in place

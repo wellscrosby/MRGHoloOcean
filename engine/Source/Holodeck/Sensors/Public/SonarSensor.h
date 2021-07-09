@@ -9,6 +9,7 @@
 #include "Octree.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Async/ParallelFor.h"
+#include "MultivariateNormal.h"
 
 #include "Json.h"
 
@@ -108,6 +109,10 @@ private:
 	TArray<TArray<Octree*>> tempLeafs;
 	int32* count;
 	
+	// for adding noise
+	MultivariateNormal<2> addNoise;
+	MultivariateNormal<1> multNoise;
+
 	// use for skipping frames
 	int TickCounter = 0;
 

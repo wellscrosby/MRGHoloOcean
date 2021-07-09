@@ -61,6 +61,20 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ParmsJson);
 	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
 
+		// For handling noise
+		if (JsonParsed->HasTypedField<EJson::Number>("AddSigma")) {
+			addNoise.initSigma(JsonParsed->GetNumberField("AddSigma"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("AddCov")) {
+			addNoise.initCov(JsonParsed->GetNumberField("AddCov"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("MultSigma")) {
+			multNoise.initSigma(JsonParsed->GetNumberField("MultSigma"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("MultCov")) {
+			multNoise.initCov(JsonParsed->GetNumberField("MultCov"));
+		}
+
 		if (JsonParsed->HasTypedField<EJson::Number>("MaxRange")) {
 			MaxRange = JsonParsed->GetNumberField("MaxRange")*100;
 		}
@@ -298,10 +312,11 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 		// time.Start();
 		for (int i = 0; i < BinsRange*BinsAzimuth; i++) {
 			if(count[i] != 0){
-				result[i] /= count[i];
+				result[i] *= (1 + multNoise.sampleFloat())/count[i];
+				result[i] += addNoise.sampleRayleigh();
 			}
 			else{
-				result[i] = 0;
+				result[i] = addNoise.sampleRayleigh();
 			}
 		}
 		// time.End();
