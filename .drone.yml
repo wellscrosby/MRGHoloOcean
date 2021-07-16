@@ -1,0 +1,30 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+- name: Build Docker Image
+  image: docker:latest
+  volumes:
+  - name: docker_sock
+    path: /var/run/docker.sock
+  commands:
+  - docker build -t "${DRONE_REPO}:${DRONE_COMMIT:0:8}" .
+
+- name: Test
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  commands:
+  # Find what branch we need to pull from
+  - BRANCH_EXISTS=$(git ls-remote --heads https://bitbucket.org/frostlab/holodeck-ocean-engine.git ${DRONE_BRANCH} | wc -l)
+  - if test "$BRANCH_EXISTS" = "1"; then BRANCH=${DRONE_BRANCH}; else BRANCH=develop; fi
+  - echo $BRANCH
+  # Install, and run tests
+  - pip install .
+  - python3 -c "import holodeck; holodeck.install(\"Ocean\", \"https://robots.et.byu.edu/holo/Ocean/$BRANCH/latest.zip\")"
+  - py.test
+
+
+volumes:
+- name: docker_sock
+  host:
+    path: /var/run/docker.sock

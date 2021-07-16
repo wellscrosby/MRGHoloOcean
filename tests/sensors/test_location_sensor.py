@@ -99,3 +99,6 @@ def test_location_sensor_falling():
 
         assert almost_equal(last_location, new_location), "The UAV did not seem to settle!"
 
+######################################################
+# LocationSensor nosie tests are found in test_mvn.py
+######################################################

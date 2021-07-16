@@ -11,4 +11,5 @@ Documentation on specific agents available in Holodeck:
 
    turtle-agent
    uav-agent
+   hovering-auv-agent
 

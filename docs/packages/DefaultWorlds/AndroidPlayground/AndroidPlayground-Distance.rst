@@ -8,6 +8,6 @@ This scenario rewards the agent for maximizing its distance from the start locat
 Agents
 ------
 
-- ``android0``: Main :ref:`Android <android-agent>` agent
+- ``android0``: Main Android agent
 
 See `AndroidPlayground-MaxDistance.json <https://github.com/BYU-PCCL/holodeck-configs/blob/master/DefaultWorlds/AndroidPlayground-MaxDistance.json>`_.

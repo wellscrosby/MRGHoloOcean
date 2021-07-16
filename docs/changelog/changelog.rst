@@ -119,48 +119,48 @@ Holodeck 0.3.0
 --------------
 *11/02/2019*
 
-This is a content release focused on improving the :ref:`android-agent` and
+This is a content release focused on improving the android-agent and
 adding more scenarios and tasks for it. We also added a new floating hand
 agent to provide a simpler agent that can do many of the dexterity tasks.
 
 Highlights
 ~~~~~~~~~~
-- Added :ref:`dexterity-package` with new worlds and scenarios (see below for
+- Added dexterity-package with new worlds and scenarios (see below for
   comprehensive listing)
-- Added :ref:`clean-up-task` and :ref:`cup-game-task` tasks
-- Added :ref:`hand-agent`
+- Added clean-up-task and cup-game-task tasks
+- Added hand-agent
 
 New Features
 ~~~~~~~~~~~~
-- Added the :ref:`dexterity-package` with new worlds and scenarios:
+- Added the dexterity-package with new worlds and scenarios:
 
-  - :ref:`playroom-world`
+  - playroom-world
 
-    - :ref:`playroom-android`
-    - :ref:`playroom-hand`
-    - :ref:`playroom-standfromground`
-    - :ref:`playroom-standfromstanding`
+    - playroom-android
+    - playroom-hand
+    - playroom-standfromground
+    - playroom-standfromstanding
 
-  - :ref:`clean-up-world`
+  - clean-up-world
     (`#290 <https://github.com/BYU-PCCL/holodeck/issues/290>`_)
 
-    - :ref:`cleanup-groundandroid`
-    - :ref:`cleanup-groundhand`
-    - :ref:`cleanup-tableandroid`
-    - :ref:`cleanup-tablehand`
+    - cleanup-groundandroid
+    - cleanup-groundhand
+    - cleanup-tableandroid
+    - cleanup-tablehand
 
-  - :ref:`cup-game-world`
+  - cup-game-world
     (`#288 <https://github.com/BYU-PCCL/holodeck/issues/288>`_)
 
-    - :ref:`cupgame-custom`
-    - :ref:`cupgame-easy`
-    - :ref:`cupgame-hard`
+    - cupgame-custom
+    - cupgame-easy
+    - cupgame-hard
 
-  - :ref:`grip-world`
+  - grip-world
 
-    - :ref:`grip-liftbottle`
+    - grip-liftbottle
 
-- Added the :ref:`hand-agent` - a simplified Android hand that can float
+- Added the hand-agent - a simplified Android hand that can float
   around
   (`#287 <https://github.com/BYU-PCCL/holodeck/issues/287>`_)
 
@@ -199,7 +199,7 @@ New Features
 
 Changes
 ~~~~~~~
-- Increased the :ref:`android-agent`'s strength in the
+- Increased the android-agent's strength in the
   ``ANDROID_MAX_SCALED_TORQUES`` control scheme.
 
   - Previously the AndroidAgent didn't have enough strength to even move its
@@ -241,7 +241,7 @@ Bug Fixes
     more bones than joints, previously it returned them in a completely
     different order than expected.
   - Now the order for this sensor is explicitly specified in
-    :ref:`android-bones` and :ref:`hand-bones`.
+    android-bones and hand-bones.
   - Previously on the first tick it would return uninitialized garbage on the
     first tick
 - Fixed being unable to spawn the :ref:`turtle-agent`.

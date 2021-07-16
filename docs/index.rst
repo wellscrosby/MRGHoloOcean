@@ -1,6 +1,6 @@
-Welcome to Holodeck-Ocean's's documentation!
+Welcome to Holodeck-Ocean's documentation!
 ==============================================
-.. image:: images/sunrise_Moment.jpg
+.. image:: images/inspect_plane.jpg
 
 .. toctree::
    :maxdepth: 2

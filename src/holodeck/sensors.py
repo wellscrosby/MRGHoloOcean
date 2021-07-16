@@ -311,6 +311,7 @@ class RGBCamera(HolodeckSensor):
         self._client.command_center.enqueue_command(command_to_send)
         self.tick_every = ticks_per_capture
 
+
 class OrientationSensor(HolodeckSensor):
     """Gets the forward, right, and up vector for the agent.
     Returns a 2D numpy array of
@@ -337,16 +338,40 @@ class OrientationSensor(HolodeckSensor):
 class IMUSensor(HolodeckSensor):
     """Inertial Measurement Unit sensor.
 
-    Returns a 2D numpy array of
+    Returns a 2D numpy array of::
 
-    ::`
+       [ [accel_x, accel_y, accel_z],
+         [ang_vel_roll,  ang_vel_pitch, ang_vel_yaw],
+         [accel_bias_x, accel_bias_y, accel_bias_z],
+         [ang_vel_bias_roll,  ang_vel_bias_pitch, ang_vel_bias_yaw]    ]
 
-       [ [acceleration_x, acceleration_y, acceleration_z],
-         [velocity_roll,  velocity_pitch, velocity_yaw]   ]
+    **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the
+    following options:
+
+    - ``AccelSigma``/``AccelCov``: Covariance/Std for acceleration component. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
+    - ``AngVelSigma``/``AngVelCov``: Covariance/Std for angular velocity component. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
+    - ``AccelBiasSigma``/``AccelCBiasov``: Covariance/Std for acceleration bias component. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
+    - ``AngVelSigma``/``AngVelCov``: Covariance/Std for acceleration bias component. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
+    - ``ReturnBias``: Whether the sensor should return the bias along with accel/ang. vel. Defaults to false.
 
     """
 
     sensor_type = "IMUSensor"
+
+    def __init__(self, client, agent_name, agent_type, name="IMUSensor",  config=None):
+
+        self.config = {} if config is None else config
+
+        return_bias = False
+
+        if "ReturnBias" in self.config:
+            return_bias = self.config["ReturnBias"]
+
+        self.shape = [4,3] if return_bias else [2,3]
+
+        super(IMUSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
     @property
     def dtype(self):
@@ -354,14 +379,12 @@ class IMUSensor(HolodeckSensor):
 
     @property
     def data_shape(self):
-        return [2, 3]
+        return self.shape
 
 
 class JointRotationSensor(HolodeckSensor):
     """Returns the state of the :class:`~holodeck.agents.AndroidAgent`'s or the 
     :class:`~holodeck.agents.HandAgent`'s joints.
-
-    See :ref:`android-joints` or :ref:`hand-joints` for the indexes into this vector.
 
     """
 
@@ -394,8 +417,7 @@ class PressureSensor(HolodeckSensor):
     :class:`~holodeck.agents.HandAgent`, returns the pressure on the
     joint.
 
-    For each joint, returns ``[x_loc, y_loc, z_loc, force]``, in the order the joints are listed
-    in :ref:`android-joints` or :ref:`hand-joints`.
+    For each joint, returns ``[x_loc, y_loc, z_loc, force]``.
 
     """
 
@@ -426,8 +448,7 @@ class PressureSensor(HolodeckSensor):
 class RelativeSkeletalPositionSensor(HolodeckSensor):
     """Gets the position of each bone in a skeletal mesh as a quaternion.
 
-    Returns a numpy array with four entries for each bone (see 
-    :ref:`android-bones` or :ref:`hand-bones` for the order used)
+    Returns a numpy array with four entries for each bone.
     """
 
     def __init__(self, client, agent_name, agent_type, name="RGBCamera", config=None):
@@ -457,6 +478,14 @@ class LocationSensor(HolodeckSensor):
     """Gets the location of the agent in the world.
 
     Returns coordinates in ``[x, y, z]`` format (see :ref:`coordinate-system`)
+
+    **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the
+    following options:
+
+    - ``Sigma``/``Cov``: Covariance/Std. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
+
     """
 
     sensor_type = "LocationSensor"
@@ -510,7 +539,7 @@ class CollisionSensor(HolodeckSensor):
 
     @property
     def dtype(self):
-        return np.bool
+        return np.bool_
 
     @property
     def data_shape(self):
@@ -617,19 +646,64 @@ class AbuseSensor(HolodeckSensor):
 ######################## HOLODECK-OCEAN CUSTOM SENSORS ###########################
 #Make sure to also add your new sensor to SensorDefintion below
 
+class SonarSensor(HolodeckSensor):
+    """Simulates an imaging sonar.
+
+    **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the following
+    options:
+
+    - ``BinsRange``: Number of range bins of resulting image
+    - ``BinsAzimuth``: Number of azimuth bins of resulting image
+    - ``OctreeMax``: Starting size of octree elements
+    - ``OctreeMin``: Leaf size of octree elements
+
+    """
+
+    sensor_type = "SonarSensor"
+
+    def __init__(self, client, agent_name, agent_type, name="SonarSensor", config=None):
+
+        self.config = {} if config is None else config
+
+        b_range   = 300
+        b_azimuth = 128
+
+        if "BinsRange" in self.config:
+            b_range = self.config["BinsRange"]
+
+        if "BinsAzimuth" in self.config:
+            b_azimuth = self.config["BinsAzimuth"]
+
+        self.shape = (b_range, b_azimuth)
+
+        super(SonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+
+    @property
+    def dtype(self):
+        return np.float32
+
+    @property
+    def data_shape(self):
+        return self.shape
+
 class DVLSensor(HolodeckSensor):
     """Doppler Velocity Log Sensor.
 
-    Returns a 1D numpy array of
-
-    ::`
+    Returns a 1D numpy array of::
 
        [velocity_x, velocity_y, velocity_z]
 
-    In the robot frame. The ``configuration`` block (see :ref:`configuration-block`) accepts the
+     **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the
     following options:
 
-    - ``AcousticDebug``: Show debug traces. (default false) (TODO)
+    - ``Elevation``: Angle of each acoustic beam off z-axis pointing down. Only used for noise/visualization. Defaults to 90 => horizontal.
+    - ``DebugLines``: Whether to show lines of each beam. Defaults to false.
+    - ``Sigma``/``Cov``: Covariance/Std to be applied to each beam. Can be scalar, 4-vector or 4x4-matrix. Defaults to 0 => no noise.
+
     """
 
     sensor_type = "DVLSensor"
@@ -665,18 +739,12 @@ class PoseSensor(HolodeckSensor):
         return [4, 4]
 
 class AcousticBeaconSensor(HolodeckSensor):
-    """Doppler Velocity Log Sensor.
+    """Acoustic Beacon Sensor. Can send message to an other beacon from the `~holodeck.HolodeckEnvironment.send_acoustic_message` command.
 
-    Returns a 1D numpy array of
+    Returning array depends on sent message type. 
 
-    ::`
+    # TODO Document all possible message types.
 
-       [velocity_x, velocity_y, velocity_z]
-
-    In the robot frame. The ``configuration`` block (see :ref:`configuration-block`) accepts the
-    following options:
-
-    - ``AcousticDebug``: Show debug traces. (default false) (TODO)
     """
 
     sensor_type = "AcousticBeaconSensor"
@@ -918,7 +986,8 @@ class SensorDefinition:
         "DVLSensor": DVLSensor,
         "PoseSensor": PoseSensor,
         "AcousticBeaconSensor": AcousticBeaconSensor,
-        "OpticalModemSensor": OpticalModemSensor
+        "OpticalModemSensor": OpticalModemSensor,
+        "SonarSensor": SonarSensor,
     }
 
     def get_config_json_string(self):
@@ -950,7 +1019,7 @@ class SensorDefinition:
         self.rotation = rotation
         self.config = self.type.default_config if config is None else config
         # hacky way to get RGBCamera to capture lined up with python rate
-        if sensor_type == "RGBCamera":
+        if sensor_type in ["RGBCamera", "SonarSensor"]:
             self.config['TicksPerCapture'] = tick_every
         self.existing = existing
 

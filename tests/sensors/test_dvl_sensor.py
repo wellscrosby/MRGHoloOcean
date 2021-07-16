@@ -1,6 +1,8 @@
 import holodeck
 import uuid
 
+import numpy as np
+
 turtle_config = {
     "name": "test_velocity_sensor",
     "world": "Rooms",
@@ -12,6 +14,13 @@ turtle_config = {
             "sensors": [
                 {
                     "sensor_type": "DVLSensor",
+                },
+                {
+                    "sensor_type": "DVLSensor",
+                    "sensor_name": "noise",
+                    "configuration": {
+                        "Sigma": 5
+                    }
                 }
             ],
             "control_scheme": 0,
@@ -112,3 +121,17 @@ def test_dvl_sensor_rotated():
         assert x_velocity <= 1e-2, "The x velocity wasn't close enough to zero!"
         assert y_velocity <= 1e-2, "The y velocity wasn't close enough to zero!"
         assert z_velocity <= 1e-2, "The z velocity wasn't close enough to zero!"
+
+def test_dvl_noise():
+    """Make sure turning on noise actually turns it on"""
+    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    turtle_config['agents'][0]['rotation'] = [0, 0, 0]
+
+    with holodeck.environments.HolodeckEnvironment(scenario=turtle_config,
+                                                   binary_path=binary_path,
+                                                   show_viewport=False,
+                                                   uuid=str(uuid.uuid4())) as env:
+        #let it land and then start moving forward
+        for _ in range(10):
+            state = env.tick()
+            assert not np.allclose(state['DVLSensor'], state['noise'])

@@ -126,7 +126,7 @@ class CommandCenter:
         self._client = client
 
         # Set up command buffer
-        self._command_bool_ptr = self._client.malloc("command_bool", [1], np.bool)
+        self._command_bool_ptr = self._client.malloc("command_bool", [1], np.bool_)
         # This is the size of the command buffer that Holodeck expects/will read.
         self.max_buffer = 1048576
         self._command_buffer_ptr = self._client.malloc("command_buffer", [self.max_buffer], np.byte)
