@@ -34,13 +34,20 @@ public:
 	*/
 	void Tick(float DeltaSeconds) override;
 
-	unsigned int GetRawActionSizeInBytes() const override { return 4 * sizeof(float); };
+	unsigned int GetRawActionSizeInBytes() const override { return 5 * sizeof(float); };
 	void* GetRawActionBuffer() const override { return (void*)CommandArray; };
 
 	// Allows agent to fall up to ~8 meters
 	float GetAccelerationLimit() override { return 400; }
 
-	void ApplyThrusters();
+	// Location of all forces to apply
+	TArray<FVector> controls{ FVector(-95,0,0),
+								FVector(-45,7.07,0),
+								FVector(-45,0,7.07),
+								FVector(-45,-7.07,0),
+								FVector(-45,0,-7.07) };
+
+	void ApplyFin(int i);
 
 private:
 	/** NOTE: These go counter-clockwise, starting in front right
@@ -53,6 +60,6 @@ private:
 	* 6: Angled   Back  Port Thruster
 	* 7: Angled   Back  Starboard Thruster
 	*/
-	float CommandArray[4];
+	float CommandArray[5];
 
 };

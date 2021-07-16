@@ -28,24 +28,73 @@ void ATorpedoAUV::InitializeAgent() {
 void ATorpedoAUV::Tick(float DeltaSeconds) {
 	Super::Tick(DeltaSeconds);
 	ApplyBuoyantForce();
-	ApplyThrusters();
+
+	// Apply propeller
+	float ThrustToApply = CommandArray[0];
+	FVector LocalThrust = FVector(ThrustToApply, 0, 0);
+	LocalThrust = ConvertLinearVector(LocalThrust, ClientToUE);
+	RootMesh->AddForceAtLocationLocal(LocalThrust, controls[0]);
+
+	// Apply fin forces
+	for(int i=1;i<2;i++){
+		// ApplyFin(i);
+	}
+	ApplyFin(1);
+	ApplyFin(3);
 }
 
 // TODO: Analyze physics and implement more accurate controls here
 // These are mostly placeholders while testing
-void ATorpedoAUV::ApplyThrusters(){
-	float RollTorqueToApply = -CommandArray[0];
-	float PitchTorqueToApply = -CommandArray[1];
-	float YawTorqueToApply = CommandArray[2];
-	float ThrustToApply = CommandArray[3];
+void ATorpedoAUV::ApplyFin(int i){
+	// Get rotations
+	FRotator bodyToWorld = this->GetActorRotation();
+	FRotator finToBody = FRotator(CommandArray[1], 0, 0);
 
-	FVector LocalThrust = FVector(ThrustToApply, 0, 0);
-	LocalThrust = ConvertLinearVector(LocalThrust, ClientToUE);
-	FVector LocalTorque = FVector(RollTorqueToApply, PitchTorqueToApply, YawTorqueToApply);
-	LocalTorque = ConvertTorque(LocalTorque, ClientToUE);
+	// get velocity at fin location
+	FVector velWorld = RootMesh->GetPhysicsLinearVelocityAtPoint(controls[i]);
+	FVector velBody = bodyToWorld.UnrotateVector(velWorld);
+	FVector velFin = finToBody.UnrotateVector(velBody);
+	velFin.X = 0;
 
-	// Apply torques and forces in global coordinates
-	RootMesh->AddTorqueInRadians(GetActorRotation().RotateVector(LocalTorque));
-	RootMesh->AddForce(GetActorRotation().RotateVector(LocalThrust));
-	
+	double angle = FMath::Atan2(velFin.Z, velFin.Y);
+	double u2 = velFin.Z*velFin.Z + velFin.Y*velFin.Y;
+	double du2 = angle * u2;
+
+	double lift = du2;
+	double drag = angle * du2;
+
+	FVector liftDirection = -FVector::CrossProduct(FVector(1,0,0), velFin);
+	liftDirection.Normalize();
+	FVector dragDirection = -velFin;
+	dragDirection.Normalize();
+
+	FVector forceFin = lift*liftDirection + drag*dragDirection;
+	// FVector forceBody = finToBody.RotateVector(forceFin);
+
+	UE_LOG(LogHolodeck, Warning, TEXT("command: %f"), CommandArray[i]);
+	UE_LOG(LogHolodeck, Warning, TEXT("Velocity of Body %d: %s"), i, *velBody.ToString());
+	UE_LOG(LogHolodeck, Warning, TEXT("u2: %f, du2: %f"), u2, du2);
+	UE_LOG(LogHolodeck, Warning, TEXT("Lift: %f, Drag: %f"), lift, drag);
+	UE_LOG(LogHolodeck, Warning, TEXT("forceFin: %s"), *forceFin.ToString());
+
+	RootMesh->AddForce(bodyToWorld.RotateVector(forceFin));
 }
+
+// void ATorpedoAUV::ApplyFin(int i){
+// 	// Get rotations
+// 	FRotator bodyToWorld = this->GetActorRotation();
+// 	FRotator finToBody = FRotator(CommandArray[1], 0, 0);
+
+// 	// get velocity at fin location
+// 	FVector velWorld = RootMesh->GetPhysicsLinearVelocityAtPoint(controls[i]);
+// 	FVector velFin = finToBody.UnrotateVector(bodyToWorld.UnrotateVector(velWorld));
+// 	// velFin.X = 0;
+
+
+// 	UE_LOG(LogHolodeck, Warning, TEXT("angle: %f"), angle);
+// 	UE_LOG(LogHolodeck, Warning, TEXT("velWorld: %s"), *velWorld.ToString());
+// 	UE_LOG(LogHolodeck, Warning, TEXT("u2: %f, du2: %f"), u2, du2);
+// 	UE_LOG(LogHolodeck, Warning, TEXT("Lift: %f, Drag: %f"), lift, drag);
+// 	// UE_LOG(LogHolodeck, Warning, TEXT("dragDirection: %s"), *dragDirection.ToString());
+// 	// UE_LOG(LogHolodeck, Warning, TEXT("liftDirection: %s"), *liftDirection.ToString());
+// }
