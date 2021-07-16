@@ -846,7 +846,6 @@ class OpticalModemSensor(HolodeckSensor):
             modem = self.__class__.instances[i]
             command = SendOpticalMessageCommand(self.agent_name, self.name, modem.agent_name, modem.name)
             self._client.command_center.enqueue_command(command)
-            #self.sending_to.append(i)
 
             modem.msg_data = msg_data
             modem.msg_type = msg_type
@@ -857,7 +856,7 @@ class OpticalModemSensor(HolodeckSensor):
         
         if self._sensor_data_buffer[0] > 0:
             #data = [self.msg_type, sending[0], self.msg_data]
-            data = ["type", self._sensor_data_buffer[0], self._sensor_data_buffer[1:]]
+            data = ["type", self._sensor_data_buffer, self._sensor_data_buffer[1:]]
         else:
             data = None
 
