@@ -17,99 +17,70 @@ void UOpticalModemSensor::InitializeSensor() {
 
 void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	//check if your parent pointer is valid, and if the sensor is on. Then get the velocity and buffer, then send the data to it. 
-    int* IntBuffer = static_cast<int*>(Buffer);
+    bool BoolBuffer = static_cast<bool>(Buffer);
     if (Parent != nullptr && bOn) {
 		// if someone starting transmitting
-		if (fromSensor) {
-            // int* temp = this->CanTransmit();
-			// IntBuffer[0] = temp[0]; //Returns 1 or 0 for true and false respectively
-            // for (int i = 0; i < 3; i++) {
-            //     IntBuffer[i+1] = temp[i];
+		if (FromSensor) {
             NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
             NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
-            IntBuffer = this->CanTransmit();
+            BoolBuffer = this->CanTransmit();
 		}
-        else {
-            IntBuffer[0] = -2; //indicates no fromSensor
-        }
-	}
-    else {
-        IntBuffer[0] = -1; //indicates not on or no parent
     }
     
 
     if (LaserDebug) {
         DrawDebugCone(GetWorld(), GetComponentLocation(), GetForwardVector(), NoiseMaxDistance * 100, FMath::DegreesToRadians(NoiseLaserAngle), FMath::DegreesToRadians(NoiseLaserAngle), DebugNumSides, DebugColor, false, .01, ECC_WorldStatic, 1.F);
-        DrawDebugLine(GetWorld(), GetComponentLocation(), GetForwardVector() * NoiseMaxDistance * 100, DebugColor,false, .01,ECC_WorldStatic, 1.F);
+        DrawDebugLine(GetWorld(), GetComponentLocation(), GetForwardVector() * NoiseMaxDistance * 100, DebugColor, false, .01,ECC_WorldStatic, 1.F);
     }
 }
 	
-int* UOpticalModemSensor::CanTransmit() {
-
-    static int dataOut [4] = {-3,-3,-3,-3};
+bool UOpticalModemSensor::CanTransmit() {
 
     // get coordinates of other sensor in local frame
-    FVector sendingSensor = this->GetComponentLocation();
-    FVector receiveSensor = fromSensor->GetComponentLocation();
-    FVector sendToReceive = receiveSensor - sendingSensor;
-    FVector receiveToSend = sendingSensor - receiveSensor;
+    FVector SendingSensor = this->GetComponentLocation();
+    FVector ReceiveSensor = FromSensor->GetComponentLocation();
+    FVector SendToReceive = ReceiveSensor - SendingSensor;
+    FVector ReceiveToSend = SendingSensor - ReceiveSensor;
 
-    float dist = sendToReceive.Size() / 100;
-    UE_LOG(LogHolodeck, Log, TEXT("dist = %f  MaxDistance = %f"), dist, NoiseMaxDistance);
-    UE_LOG(LogHolodeck, Log, TEXT("SensorLocation = %s  ParentLocation = %s"), *sendingSensor.ToString(), *Parent->GetComponentLocation().ToString())
+    float Dist = SendToReceive.Size() / 100;
+    UE_LOG(LogHolodeck, Log, TEXT("Dist = %f  MaxDistance = %f"), Dist, NoiseMaxDistance);
+    UE_LOG(LogHolodeck, Log, TEXT("SensorLocation = %s  ParentLocation = %s"), *SendingSensor.ToString(), *Parent->GetComponentLocation().ToString())
 
     //Max guaranteed range of modem is 50 meters
-    if (dist > MaxDistance) {
-        // return 0;
-        dataOut[0] = 0;
-        dataOut[1] = 0;
-    }
-    else {
+    if (Dist <= NoiseMaxDistance) {
+    
         // Calculate if sensors are facing each other within 120 degrees
         //--> Difference in angle needs to be -60 < x < 60 
         //--> Check both sensors to make sure both are in acceptable orientations
-        dataOut[1] = 1;
 
-        if (IsSensorOriented(this, sendToReceive) && IsSensorOriented(fromSensor, receiveToSend)) {
+        if (IsSensorOriented(this, SendToReceive) && IsSensorOriented(FromSensor, ReceiveToSend)) {
             // Calculate if rangefinder and dist are equal or not.
-
-            dataOut[2] = 0;
 
             FCollisionQueryParams QueryParams = FCollisionQueryParams();
             QueryParams.AddIgnoredComponent(Parent);
 
             FHitResult Hit = FHitResult();
 
-            bool TraceResult = GetWorld()->LineTraceSingleByChannel(Hit, sendingSensor, receiveSensor, ECollisionChannel::ECC_Visibility, QueryParams);
+            bool TraceResult = GetWorld()->LineTraceSingleByChannel(Hit, SendingSensor, ReceiveSensor, ECollisionChannel::ECC_Visibility, QueryParams);
            
-            float range = (TraceResult && Hit.GetComponent() == fromSensor->Parent ? dist : Hit.Distance);
-            UE_LOG(LogHolodeck, Log, TEXT("range = %f  object = %s"), range, *Hit.GetActor()->GetName());
+            float Range = (TraceResult && Hit.GetComponent() == FromSensor->Parent ? Dist : Hit.Distance);
+            UE_LOG(LogHolodeck, Log, TEXT("range = %f  object = %s"), Range, *Hit.GetActor()->GetName());
             
-            if (dist == range) {
-                // return 1;
-                dataOut[3] = 1;
-                dataOut[0] = 1;
+            if (Dist == Range) {
+                return true;
             }
-            else {
-                // return 0;
-                dataOut[3] = 0;
-            }
-        }
-        else {
-            // return 0;
-            dataOut[2] = 0;
         }
     }
 
-    return dataOut;
+    return false;
 }
 
 
-bool UOpticalModemSensor::IsSensorOriented(UOpticalModemSensor* Sensor, FVector localToSensor) {
-    float angle = FMath::RadiansToDegrees(UKismetMathLibrary::Acos(UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(Sensor->GetForwardVector()), UKismetMathLibrary::Normal(localToSensor))));
-    UE_LOG(LogHolodeck, Log, TEXT("angle = %f"),angle);
+bool UOpticalModemSensor::IsSensorOriented(UOpticalModemSensor* Sensor, FVector LocalToSensor) {
+    float Angle = FMath::RadiansToDegrees(UKismetMathLibrary::Acos(UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(Sensor->GetForwardVector()), UKismetMathLibrary::Normal(LocalToSensor))));
+    UE_LOG(LogHolodeck, Log, TEXT("angle = %f"), Angle);
 
-    if (-1 *NoiseLaserAngle < angle && angle < NoiseLaserAngle) {
+    if (-1 *NoiseLaserAngle < Angle && Angle < NoiseLaserAngle) {
         return true;
     }
     else {

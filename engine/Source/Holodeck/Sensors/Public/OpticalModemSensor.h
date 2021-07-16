@@ -15,14 +15,14 @@ public:
     UOpticalModemSensor();
 
     virtual void InitializeSensor() override;
-    UOpticalModemSensor* fromSensor = nullptr;
+    UOpticalModemSensor* FromSensor = nullptr;
 
 virtual void ParseSensorParms(FString ParmsJson) override;
 
 protected:
-	int GetNumItems() override { return 5; };
+	int GetNumItems() override { return 1; };
 
-    int GetItemSize() override { return sizeof(int); }
+    int GetItemSize() override { return sizeof(bool); }
 
     void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -51,8 +51,8 @@ protected:
 private:
 
     UPrimitiveComponent* Parent;
-    bool IsSensorOriented(UOpticalModemSensor* Sensor, FVector localToSensor);
-    int* CanTransmit();
+    bool IsSensorOriented(UOpticalModemSensor* Sensor, FVector LocalToSensor);
+    bool CanTransmit();
     TMap<FString, FColor> ColorMap;
     void FillColorMap();
     MultivariateNormal<1> DistanceNoise;

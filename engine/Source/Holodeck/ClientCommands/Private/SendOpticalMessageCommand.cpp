@@ -15,23 +15,23 @@ void USendOpticalMessageCommand::Execute() {
 	verify(World);
 
 	// Get sensor it came from
-	FString fromAgentName = StringParams[0].c_str();
-	FString fromSensorName = StringParams[1].c_str();
+	FString FromAgentName = StringParams[0].c_str();
+	FString FromSensorName = StringParams[1].c_str();
 
-	AHolodeckAgent* fromAgent = GetAgent(fromAgentName);
-	verifyf(fromAgent, TEXT("%s Could not find agent %s"), *FString(__func__), *fromAgentName);
-	verifyf(fromAgent->SensorMap.Contains(fromSensorName), TEXT("%s Sensor %s not found on agent %s"), *FString(__func__), *fromSensorName, *fromAgentName);
-	UOpticalModemSensor* fromSensor = (UOpticalModemSensor*)fromAgent->SensorMap[fromSensorName];
+	AHolodeckAgent* FromAgent = GetAgent(FromAgentName);
+	verifyf(FromAgent, TEXT("%s Could not find agent %s"), *FString(__func__), *FromAgentName);
+	verifyf(FromAgent->SensorMap.Contains(FromSensorName), TEXT("%s Sensor %s not found on agent %s"), *FString(__func__), *FromSensorName, *FromAgentName);
+	UOpticalModemSensor* FromSensor = (UOpticalModemSensor*)FromAgent->SensorMap[FromSensorName];
 
 	// Get sensor where it's going
-	FString toAgentName = StringParams[2].c_str();
-	FString toSensorName = StringParams[3].c_str();
+	FString ToAgentName = StringParams[2].c_str();
+	FString ToSensorName = StringParams[3].c_str();
 
-	AHolodeckAgent* toAgent = GetAgent(toAgentName);
-	verifyf(toAgent, TEXT("%s Could not find agent %s"), *FString(__func__), *toAgentName);
-	verifyf(toAgent->SensorMap.Contains(toSensorName), TEXT("%s Sensor %s not found on agent %s"), *FString(__func__), *toSensorName, *toAgentName);
-	UOpticalModemSensor* toSensor = (UOpticalModemSensor*)toAgent->SensorMap[toSensorName];
+	AHolodeckAgent* ToAgent = GetAgent(ToAgentName);
+	verifyf(ToAgent, TEXT("%s Could not find agent %s"), *FString(__func__), *ToAgentName);
+	verifyf(ToAgent->SensorMap.Contains(ToSensorName), TEXT("%s Sensor %s not found on agent %s"), *FString(__func__), *ToSensorName, *ToAgentName);
+	UOpticalModemSensor* ToSensor = (UOpticalModemSensor*)ToAgent->SensorMap[ToSensorName];
 
 	// Send the message
-	toSensor->fromSensor = fromSensor;
+	ToSensor->FromSensor = FromSensor;
 }
