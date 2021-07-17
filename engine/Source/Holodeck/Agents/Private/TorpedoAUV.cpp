@@ -54,30 +54,34 @@ void ATorpedoAUV::ApplyFin(int i){
 	FVector velWorld = RootMesh->GetPhysicsLinearVelocityAtPoint(controls[i]);
 	FVector velBody = bodyToWorld.UnrotateVector(velWorld);
 	FVector velFin = finToBody.UnrotateVector(velBody);
-	velFin.X = 0;
 
-	double angle = FMath::Atan2(velFin.Z, velFin.Y);
-	double u2 = velFin.Z*velFin.Z + velFin.Y*velFin.Y;
-	double du2 = angle * u2;
+	// get flow angle
+	double angle = CommandArray[1]; //UKismetMathLibrary::DegAtan2(-velFin.Z, velFin.X);
+	while(angle > 180){
+		angle -= 360;
+	}
+	while(angle < -180){
+		angle += 360;
+	}
 
-	double lift = du2;
-	double drag = angle * du2;
+	double u2 = velFin.Z*velFin.Z + velFin.X*velFin.X;
+	// TODO: Verify these coefficients
+	double angleRad = angle*3.14/180;
+	double drag = .5 * u2 * angleRad*angleRad / 100;
+	double lift = .5 * u2 * FMath::Abs(angleRad) / 10;
 
-	FVector liftDirection = -FVector::CrossProduct(FVector(1,0,0), velFin);
-	liftDirection.Normalize();
-	FVector dragDirection = -velFin;
-	dragDirection.Normalize();
+	// TODO: Figure out signs here, they get a bit wonky
+	FVector fW = -FVector(drag, 0, lift); //FVector(-FMath::Sign(velFin.X)*drag, 0, -FMath::Sign(velFin.Z)*lift);
+	FRotator WToBody = FRotator(angle, 0, 0);
+	FVector fBody = WToBody.RotateVector(fW);
 
-	FVector forceFin = lift*liftDirection + drag*dragDirection;
-	// FVector forceBody = finToBody.RotateVector(forceFin);
+	UE_LOG(LogHolodeck, Warning, TEXT("command: %f, w_angle: %f"), CommandArray[1], angle);
+	UE_LOG(LogHolodeck, Warning, TEXT("velocity: %s"), *velBody.ToString());
+	UE_LOG(LogHolodeck, Warning, TEXT("velocity_fin: %s"), *velFin.ToString());
+	UE_LOG(LogHolodeck, Warning, TEXT("fW: %s"), *fW.ToString());
+	UE_LOG(LogHolodeck, Warning, TEXT("fBody: %s"), *fBody.ToString());
 
-	UE_LOG(LogHolodeck, Warning, TEXT("command: %f"), CommandArray[i]);
-	UE_LOG(LogHolodeck, Warning, TEXT("Velocity of Body %d: %s"), i, *velBody.ToString());
-	UE_LOG(LogHolodeck, Warning, TEXT("u2: %f, du2: %f"), u2, du2);
-	UE_LOG(LogHolodeck, Warning, TEXT("Lift: %f, Drag: %f"), lift, drag);
-	UE_LOG(LogHolodeck, Warning, TEXT("forceFin: %s"), *forceFin.ToString());
-
-	RootMesh->AddForce(bodyToWorld.RotateVector(forceFin));
+	RootMesh->AddForceAtLocationLocal(fBody, controls[i]);
 }
 
 // void ATorpedoAUV::ApplyFin(int i){
