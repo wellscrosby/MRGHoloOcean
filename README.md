@@ -1,4 +1,4 @@
-# Holodeck
+# HoloOcean
 
 ![Holodeck Image](docs/images/inspect_plane.jpg)
 
@@ -6,7 +6,7 @@
  [![Build Status](https://robots.et.byu.edu:4000/api/badges/frostlab/holoocean/status.svg?ref=refs/heads/develop)](https://robots.et.byu.edu:4000/frostlab/holoocean)
 
 
-Holodeck is a high-fidelity simulator for reinforcement learning built on top of Unreal Engine 4.
+Holodeck is a high-fidelity simulator for underwater robotics built on top of Unreal Engine 4, and forked from Holodeck by BYU's PCCL Lab.
 
 ## Features
  - 7+ rich worlds for training agents in, and many scenarios for those worlds
@@ -17,10 +17,8 @@ Holodeck is a high-fidelity simulator for reinforcement learning built on top of
  - High performance - simulation speeds of up to 2x real time are possible. Performance penalty only for what you need
  - Run headless or watch your agents learn
 
-### Questions? [Join our Discord!](https://discord.gg/Xqqksje)
-
 ## Installation
-`pip install holodeck`
+`pip install holoocean`
 
 (requires >= Python 3.5)
 
@@ -36,9 +34,9 @@ See [Installation](https://holoocean.readthedocs.io/en/latest/usage/installation
 * [Docs](https://holoocean.readthedocs.io/en/latest/)
 
 ## Usage Overview
-Holodeck's interface is similar to [OpenAI's Gym](https://gym.openai.com/). 
+HoloOcean's interface is similar to [OpenAI's Gym](https://gym.openai.com/). 
 
-We try and provide a batteries included approach to let you jump right into using Holodeck, with minimal
+We try and provide a batteries included approach to let you jump right into using HoloOcean, with minimal
 fiddling required.
 
 To demonstrate, here is a quick example using the `DefaultWorlds` package:
@@ -72,7 +70,7 @@ print(state["LocationSensor"])
 ```
 
 ## Multi Agent-Environments
-Holodeck supports multi-agent environments.
+HoloOcean supports multi-agent environments.
 
 Calls to [`step`](https://holoocean.readthedocs.io/en/latest/holodeck/environments.html#holoocean.environments.HolodeckEnvironment.step) only provide an action for the main agent, and then tick the simulation. 
 
@@ -108,16 +106,6 @@ location = states["uav0"]["LocationSensor"]
 
 (`uav0` comes from the [scenario configuration file](https://holoocean.readthedocs.io/en/latest/packages/docs/scenarios.html))
 
-## Running Holodeck Headless
-Holodeck can run headless with GPU accelerated rendering. See [Using Holodeck Headless](https://holoocean.readthedocs.io/en/latest/usage/running-headless.html)
+## Running HoloOcean Headless
+HoloOcean can run headless with GPU accelerated rendering. See [Using HoloOcean Headless](https://holoocean.readthedocs.io/en/latest/usage/running-headless.html)
 
-## Citation:
-```
-@misc{HolodeckPCCL,
-  Author = {Joshua Greaves and Max Robinson and Nick Walton and Mitchell Mortensen and Robert Pottorff and Connor Christopherson and Derek Hancock and Jayden Milne and David Wingate},
-  Title = {Holodeck: A High Fidelity Simulator},
-  Year = {2018},
-}
-```
-
-Holodeck is a project of BYU's Perception, Cognition and Control Lab (https://pcc.cs.byu.edu/).
