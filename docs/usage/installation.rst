@@ -21,10 +21,10 @@ Install Client via git
 =======================
 
 To use the latest version of Holodeck-Ocean, you can install and use Holodeck simply
-by cloning the `frostlab/holodeck-ocean`_, and ensuring it is on your
+by cloning the `frostlab/holoocean`_, and ensuring it is on your
 ``sys.path``.
 
-.. _`frostlab/holodeck-ocean`: https://bitbucket.org/frostlab/holodeck-ocean/
+.. _`frostlab/holoocean`: https://bitbucket.org/frostlab/holoocean/
 
 The ``master`` branch is kept in sync with the pip repository, the ``develop``
 branch is the bleeding edge of development.
@@ -33,16 +33,16 @@ To install, simply run
 
 ::
 
-   git clone https://bitbucket.org/frostlab/holodeck-ocean/
-   pip install holodeck-ocean/
+   git clone https://bitbucket.org/frostlab/holoocean/
+   pip install holoocean/
 
 
-Then to install the oceans package, run the python command 
+Then to install the most recent version of the oceans package, run the python command 
 
 ::
 
    import holoocean
-   holoocean.install("Ocean", "https://robots.et.byu.edu/jenkins/job/holodeck-ocean-engine/job/master/lastSuccessfulBuild/artifact/Ocean.zip")
+   holoocean.install("Ocean", "https://robots.et.byu.edu/holo/Ocean/develop/latest.zip")
 
 
 
@@ -50,10 +50,12 @@ Or as a single console command,
 
 ::
 
-   python -c `import holoocean; holoocean.install("Ocean", "https://robots.et.byu.edu/jenkins/job/holodeck-ocean-engine/job/master/lastSuccessfulBuild/artifact/Ocean.zip")`
+   python -c `import holoocean; holoocean.install("Ocean", "https://robots.et.byu.edu/holo/Ocean/develop/latest.zip")`
 
 
 .. _docker:
+
+Note you can replace "develop" with whichever branch of HoloOcean-Engine you'd like to install.
 
 Docker Installation
 ===================

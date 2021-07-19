@@ -11,7 +11,7 @@ setup(
     long_description_content_type="text/markdown",
     author="Joshua Greaves, Max Robinson, Nick Walton, Jayden Milne, Vin Howe, Daniel Ekpo, Kolby Nottingham",
     author_email="contagon@byu.edu",
-    url="https://bitbucket.org/frostlab/holodeck-ocean",
+    url="https://bitbucket.org/frostlab/holoocean",
     packages=find_packages('src'),
     package_dir={'': 'src'},
     license='MIT License',

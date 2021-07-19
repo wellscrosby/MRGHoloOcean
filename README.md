@@ -2,8 +2,8 @@
 
 ![Holodeck Image](docs/images/inspect_plane.jpg)
 
-[![Documentation Status](https://readthedocs.org/projects/holodeck-ocean/badge/?version=latest)](https://holodeck-ocean.readthedocs.io/en/latest/?badge=latest)
- [![Build Status](https://robots.et.byu.edu:4000/api/badges/frostlab/holodeck-ocean/status.svg?ref=refs/heads/develop)](https://robots.et.byu.edu:4000/frostlab/holodeck-ocean)
+[![Documentation Status](https://readthedocs.org/projects/holoocean/badge/?version=latest)](https://holoocean.readthedocs.io/en/latest/?badge=latest)
+ [![Build Status](https://robots.et.byu.edu:4000/api/badges/frostlab/holoocean/status.svg?ref=refs/heads/develop)](https://robots.et.byu.edu:4000/frostlab/holoocean)
 
 
 Holodeck is a high-fidelity simulator for reinforcement learning built on top of Unreal Engine 4.
