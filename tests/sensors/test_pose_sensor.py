@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 import uuid
 import numpy as np
 from tests.utils.equality import almost_equal
@@ -33,9 +33,9 @@ def test_dvl_sensor_straight():
     """Make sure pose sensor returns the same values as the orientation and location sensors
     """
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=turtle_config,
+    with holoocean.environments.HolodeckEnvironment(scenario=turtle_config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

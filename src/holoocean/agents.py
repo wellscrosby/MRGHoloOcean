@@ -4,9 +4,9 @@ from functools import reduce
 import numpy as np
 from . import joint_constraints
 
-from holodeck.spaces import ContinuousActionSpace, DiscreteActionSpace
-from holodeck.sensors import SensorDefinition, SensorFactory, RGBCamera
-from holodeck.command import AddSensorCommand, RemoveSensorCommand
+from holoocean.spaces import ContinuousActionSpace, DiscreteActionSpace
+from holoocean.sensors import SensorDefinition, SensorFactory, RGBCamera
+from holoocean.command import AddSensorCommand, RemoveSensorCommand
 
 
 class ControlSchemes:
@@ -60,16 +60,16 @@ class HolodeckAgent:
     Examples include the Android, UAV, and SphereRobot.
 
     Args:
-        client (:class:`~holodeck.holodeckclient.HolodeckClient`): The HolodeckClient that this
+        client (:class:`~holoocean.holodeckclient.HolodeckClient`): The HolodeckClient that this
             agent belongs with.
         name (:obj:`str`, optional): The name of the agent. Must be unique from other agents in
             the same environment.
-        sensors (:obj:`dict` of (:obj:`str`, :class:`~holodeck.sensors.HolodeckSensor`)): A list
+        sensors (:obj:`dict` of (:obj:`str`, :class:`~holoocean.sensors.HolodeckSensor`)): A list
             of HolodeckSensors to read from this agent.
 
     Attributes:
         name (:obj:`str`): The name of the agent.
-        sensors (dict of (string, :class:`~holodeck.sensors.HolodeckSensor`)): List of
+        sensors (dict of (string, :class:`~holoocean.sensors.HolodeckSensor`)): List of
             HolodeckSensors on this agent.
         agent_state_dict (dict): A dictionary that maps sensor names to sensor observation data.
     """
@@ -165,8 +165,8 @@ class HolodeckAgent:
         agent in the world.
 
         Args:
-            sensor_defs (:class:`~holodeck.sensors.HolodeckSensor` or
-                         list of :class:`~holodeck.sensors.HolodeckSensor`):
+            sensor_defs (:class:`~holoocean.sensors.HolodeckSensor` or
+                         list of :class:`~holoocean.sensors.HolodeckSensor`):
                 Sensors to add to the agent.
         """
         if not isinstance(sensor_defs, list):
@@ -187,8 +187,8 @@ class HolodeckAgent:
         world.
 
         Args:
-            sensor_defs (:class:`~holodeck.sensors.HolodeckSensor` or
-                         list of :class:`~holodeck.sensors.HolodeckSensor`):
+            sensor_defs (:class:`~holoocean.sensors.HolodeckSensor` or
+                         list of :class:`~holoocean.sensors.HolodeckSensor`):
                 Sensors to remove from the agent.
         """
         if not isinstance(sensor_defs, list):
@@ -217,7 +217,7 @@ class HolodeckAgent:
         """Gets the action space for the current agent and control scheme.
 
         Returns:
-            :class:`~holodeck.spaces.ActionSpace`: The action space for this agent and control
+            :class:`~holoocean.spaces.ActionSpace`: The action space for this agent and control
                 scheme."""
         return self.control_schemes[self._current_control_scheme][1]
 
@@ -228,7 +228,7 @@ class HolodeckAgent:
         element containing the :obj:`ActionSpace` for the control scheme.
 
         Returns:
-            (:obj:`str`, :class:`~holodeck.spaces.ActionSpace`):
+            (:obj:`str`, :class:`~holoocean.spaces.ActionSpace`):
                 Each tuple contains a short description and the ActionSpace
         """
         raise NotImplementedError("Child class must implement this function")
@@ -689,7 +689,7 @@ class AgentDefinition:
         agent_name (:obj:`str`): The name of the agent to control.
         agent_type (:obj:`str` or type): The type of HolodeckAgent to control, string or class
             reference.
-        sensors (:class:`~holodeck.sensors.SensorDefinition` or class type (if no duplicate sensors)): A list of
+        sensors (:class:`~holoocean.sensors.SensorDefinition` or class type (if no duplicate sensors)): A list of
             HolodeckSensors to read from this agent.
         starting_loc (:obj:`list` of :obj:`float`): Starting ``[x, y, z]`` location for agent 
             (see :ref:`coordinate-system`)
@@ -738,7 +738,7 @@ class AgentFactory:
         """Constructs an agent
 
         Args:
-            client (:class:`holodeck.holodeckclient.HolodeckClient`): HolodeckClient agent is
+            client (:class:`holoocean.holodeckclient.HolodeckClient`): HolodeckClient agent is
                 associated with
             agent_def (:class:`AgentDefinition`): Definition of the agent to instantiate
 

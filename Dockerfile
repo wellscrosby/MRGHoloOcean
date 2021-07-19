@@ -18,7 +18,7 @@ RUN pip3 install -U pip setuptools wheel
 RUN pip3 install numpy posix_ipc holodeck pytest opencv-python scipy
 # Install worlds so we don't have to redownload unchanging worlds each time
 USER holodeckuser
-RUN python3 -c 'import holodeck; holodeck.install("DefaultWorlds")'
+RUN python3 -c 'import holoocean; holoocean.install("DefaultWorlds")'
 # Remove default holodeck
 USER root
 RUN pip3 uninstall -y holodeck

@@ -1,5 +1,5 @@
 Exceptions
 ==========
 
-.. automodule:: holodeck.exceptions
+.. automodule:: holoocean.exceptions
    :members:

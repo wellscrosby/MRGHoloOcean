@@ -6,7 +6,7 @@ worry about these.
 
 
 import numpy as np
-from holodeck.exceptions import HolodeckException
+from holoocean.exceptions import HolodeckException
 
 class CommandsGroup:
     """Represents a list of commands
@@ -119,7 +119,7 @@ class CommandCenter:
     """Manages pending commands to send to the client (the engine).
 
     Args:
-        client (:class:`~holodeck.holodeckclient.HolodeckClient`): Client to send commands to
+        client (:class:`~holoocean.holodeckclient.HolodeckClient`): Client to send commands to
 
     """
     def __init__(self, client):
@@ -300,7 +300,7 @@ class AddSensorCommand(Command):
     """Add a sensor to an agent
 
         Args:
-            sensor_definition (~holodeck.sensors.SensorDefinition): Sensor to add
+            sensor_definition (~holoocean.sensors.SensorDefinition): Sensor to add
     """
 
     def __init__(self, sensor_definition):

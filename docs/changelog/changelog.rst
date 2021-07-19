@@ -20,19 +20,19 @@ More bug fixes, improvements, and even a few new features.
 Highlights
 ~~~~~~~~~~
 - **Holodeck now requires Python 3.5 or greater**
-- Added :class:`~holodeck.sensors.AbuseSensor` and 
-  :class:`~holodeck.sensors.RangeFinderSensor`
+- Added :class:`~holoocean.sensors.AbuseSensor` and 
+  :class:`~holoocean.sensors.RangeFinderSensor`
 - Added programmatic spawning of props, see
-  :meth:`~holodeck.environments.HolodeckEnvironment.spawn_prop`
+  :meth:`~holoocean.environments.HolodeckEnvironment.spawn_prop`
 - Weather can be specified in scenarios, see :ref:`weather`.
 
 New Features
 ~~~~~~~~~~~~
 - Added optional start location and rotation randomization on 
-  :meth:`~holodeck.environments.HolodeckEnvironment.reset`. See 
+  :meth:`~holoocean.environments.HolodeckEnvironment.reset`. See 
   :ref:`location-randomization`.
   (`#295 <https://github.com/BYU-PCCL/holodeck/issues/295>`_)
-- :meth:`~holodeck.environments.HolodeckEnvironment.spawn_prop` now allows 
+- :meth:`~holoocean.environments.HolodeckEnvironment.spawn_prop` now allows 
   basic objects (spheres, cubes, cylinders) to be spawned at arbitrary 
   locations in the environment.
   (`#397 <https://github.com/BYU-PCCL/holodeck/issues/397>`_)
@@ -43,17 +43,17 @@ New Features
   If the full 3D distance is desired, set the ``3dDistance`` flag in the
   configuration block of the :ref:`distance-task`.
   (`#360 <https://github.com/BYU-PCCL/holodeck/issues/360>`_)
-- Added :class:`~holodeck.sensors.AbuseSensor`, which senses if an agent
+- Added :class:`~holoocean.sensors.AbuseSensor`, which senses if an agent
   has been abused. Agents experience abuse when they fall from a high distance
   or other agent-specific situations.
   (`#262 <https://github.com/BYU-PCCL/holodeck/issues/262>`_)
 - Environment weather/time can be optionally configured with :ref:`scenarios`
   (`#263 <https://github.com/BYU-PCCL/holodeck/issues/263>`_). See
   :ref:`weather`.
-- :meth:`~holodeck.weather.WeatherController.set_weather` now has sunny
+- :meth:`~holoocean.weather.WeatherController.set_weather` now has sunny
   weather available, which allows you to revert back to the default weather.
   (`#376 <https://github.com/BYU-PCCL/holodeck/issues/376>`_)
-- Added :class:`~holodeck.sensors.RangeFinderSensor` which calculates the
+- Added :class:`~holoocean.sensors.RangeFinderSensor` which calculates the
   distance from the sensor to the first collision in the environment. The 
   sensor can send out multiple rays in a circle if desired.
 
@@ -63,19 +63,19 @@ Changes
 - **Holodeck now requires Python >= 3.5**
   (`#389 <https://github.com/BYU-PCCL/holodeck/issues/389>`_)
 - Moved weather/time methods from
-  :class:`~holodeck.environments.HolodeckEnvironment` to new
-  :class:`~holodeck.weather.WeatherController`
+  :class:`~holoocean.environments.HolodeckEnvironment` to new
+  :class:`~holoocean.weather.WeatherController`
   (`#196 <https://github.com/BYU-PCCL/holodeck/issues/196>`_,
   `#263 <https://github.com/BYU-PCCL/holodeck/issues/263>`_)
-- Calling :meth:`~holodeck.environments.HolodeckEnvironment.send_world_command`
+- Calling :meth:`~holoocean.environments.HolodeckEnvironment.send_world_command`
   for an environment without the given command will now cause
   the environment to exit rather than fail silently.
   This includes all relevant methods in the
-  :class:`~holodeck.weather.WeatherController`.
+  :class:`~holoocean.weather.WeatherController`.
 - Removed the ability to toggle sensors during runtime with the removal of
-  :class:`~holodeck.environments.command.SetSensorEnabledCommand`,
-  :meth:`~holodeck.environments.HolodeckEnvironment.set_sensor_enabled`, and
-  :meth:`~holodeck.sensors.HolodeckSensor.set_sensor_enable`.
+  :class:`~holoocean.environments.command.SetSensorEnabledCommand`,
+  :meth:`~holoocean.environments.HolodeckEnvironment.set_sensor_enabled`, and
+  :meth:`~holoocean.sensors.HolodeckSensor.set_sensor_enable`.
   To specify which sensors to include, use :ref:`custom-scenarios`.
   (`#268 <https://github.com/BYU-PCCL/holodeck/issues/268>`_)
 - Improved Docker images. See :ref:`docker`.
@@ -87,16 +87,16 @@ Changes
 - Every control scheme now has limits on inputs (ie maximum or minimum thrust)
   (`#369 <https://github.com/BYU-PCCL/holodeck/issues/369>`_)
 
-  See :meth:`~holodeck.spaces.ActionSpace.get_high` and 
-  :meth:`~holodeck.spaces.ActionSpace.get_low` to read them.
+  See :meth:`~holoocean.spaces.ActionSpace.get_high` and 
+  :meth:`~holoocean.spaces.ActionSpace.get_low` to read them.
 - Scenario Changes:
 
   - **EuropeanForest-MaxDistance, RedwoodForest-MaxDistance,**
-    **UrbanCity-MaxDistance:** Added :class:`~holodeck.sensors.AbuseSensor`
-  - **InfiniteForest-MaxDistance:** Added :class:`~holodeck.sensors.AbuseSensor` 
-    and :class:`~holodeck.sensors.RangeFinderSensor`.
+    **UrbanCity-MaxDistance:** Added :class:`~holoocean.sensors.AbuseSensor`
+  - **InfiniteForest-MaxDistance:** Added :class:`~holoocean.sensors.AbuseSensor` 
+    and :class:`~holoocean.sensors.RangeFinderSensor`.
   - **MazeWorld-FinishMazeSphere:** Added 
-    :class:`~holodeck.sensors.RangeFinderSensor`
+    :class:`~holoocean.sensors.RangeFinderSensor`
 
 
 Bug Fixes
@@ -165,9 +165,9 @@ New Features
   (`#287 <https://github.com/BYU-PCCL/holodeck/issues/287>`_)
 
   - HandAgent can be used with the same Android-specific sensors (
-    :class:`~holodeck.sensors.JointRotationSensor`,
-    :class:`~holodeck.sensors.PressureSensor`,
-    :class:`~holodeck.sensors.RelativeSkeletalPositionSensor`)
+    :class:`~holoocean.sensors.JointRotationSensor`,
+    :class:`~holoocean.sensors.PressureSensor`,
+    :class:`~holoocean.sensors.RelativeSkeletalPositionSensor`)
 
 - Added new tasks sensors for specific worlds
 
@@ -178,10 +178,10 @@ New Features
     (`#321 <https://github.com/BYU-PCCL/holodeck/pull/321>`_)
 
 - Packages can be installed directly from a URL
-  (see :class:`~holodeck.packagemanager.install`)
+  (see :class:`~holoocean.packagemanager.install`)
   (`#129 <https://github.com/BYU-PCCL/holodeck/issues/129>`_)
 - Agent sensors can now be rotated at run time with
-  :meth:`~holodeck.sensors.HolodeckSensor.rotate`.
+  :meth:`~holoocean.sensors.HolodeckSensor.rotate`.
   (`#305 <https://github.com/BYU-PCCL/holodeck/issues/305>`_)
 - The config files can now specify whether an agent should be spawned
   (`#303 <https://github.com/BYU-PCCL/holodeck/pull/303>`_)
@@ -193,8 +193,8 @@ New Features
   config file by default.
   (`#238 <https://github.com/BYU-PCCL/holodeck/issues/238>`_)
 - You can now specify the number of ticks you want to occur in the
-  :meth:`~holodeck.environments.HolodeckEnvironment.tick` and the
-  :meth:`~holodeck.environments.HolodeckEnvironment.step` methods,
+  :meth:`~holoocean.environments.HolodeckEnvironment.tick` and the
+  :meth:`~holoocean.environments.HolodeckEnvironment.step` methods,
   (`#313 <https://github.com/BYU-PCCL/holodeck/pull/313>`_)
 
 Changes
@@ -215,27 +215,27 @@ Changes
   is black, and slightly smaller.
   (`#217 <https://github.com/BYU-PCCL/holodeck/issues/217>`_)
 - Removed the ``set_state()`` and ``teleport()`` methods from the
-  :class:`~holodeck.environments.HolodeckEnvironment` class.
+  :class:`~holoocean.environments.HolodeckEnvironment` class.
 
   These methods were duplicates of the corresponding methods on the
-  :class:`~holodeck.agents.HolodeckAgent` class. See the linked issue for
+  :class:`~holoocean.agents.HolodeckAgent` class. See the linked issue for
   migration suggestions 👉
   (`#311 <https://github.com/BYU-PCCL/holodeck/issues/311>`_)
 - Removed the ``get/set_ticks_per_capture`` methods from the
-  :class:`~holodeck.agents.HolodeckAgent` and
-  :class:`~holodeck.environments.HolodeckEnvironment` classes, moved
-  :meth:`~holodeck.sensors.RGBCamera.set_ticks_per_capture` method to the
-  :class:`~holodeck.sensors.RGBCamera` class.
+  :class:`~holoocean.agents.HolodeckAgent` and
+  :class:`~holoocean.environments.HolodeckEnvironment` classes, moved
+  :meth:`~holoocean.sensors.RGBCamera.set_ticks_per_capture` method to the
+  :class:`~holoocean.sensors.RGBCamera` class.
   (`#197 <https://github.com/BYU-PCCL/holodeck/issues/197>`_)
 - Viewport will now follow the main agent by default.
   (`#238 <https://github.com/BYU-PCCL/holodeck/issues/238>`_)
 - Viewport will not be rendered when it is hidden (``show_viewport`` param in
-  :class:`~holodeck.environments.HolodeckEnvironment`, Linux only)
+  :class:`~holoocean.environments.HolodeckEnvironment`, Linux only)
   (`#283 <https://github.com/BYU-PCCL/holodeck/issues/283>`_)
 
 Bug Fixes
 ~~~~~~~~~
-- Fixed the :class:`~holodeck.sensors.RelativeSkeletalPositionSensor`.
+- Fixed the :class:`~holoocean.sensors.RelativeSkeletalPositionSensor`.
 
   - This sensor returns the location of bones, not sensors. Since there are
     more bones than joints, previously it returned them in a completely
@@ -246,7 +246,7 @@ Bug Fixes
     first tick
 - Fixed being unable to spawn the :ref:`turtle-agent`.
   (`#308 <https://github.com/BYU-PCCL/holodeck/issues/308>`_)
-- Fixed the :meth:`~holodeck.agents.HolodeckAgent.set_physics_state` method.
+- Fixed the :meth:`~holoocean.agents.HolodeckAgent.set_physics_state` method.
   (`#311 <https://github.com/BYU-PCCL/holodeck/issues/311>`_)
 - Fixed agent spawn rotations being in the incorrect order. Fixed the
   documentation that specified the incorrect order as well (:ref:`rotations`)
@@ -257,7 +257,7 @@ Bug Fixes
 - Fixed being unable to make a Holodeck window larger than the current screen
   resolution
   (`#301 <https://github.com/BYU-PCCL/holodeck/issues/301>`_)
-- Fixed being unable to configure :class:`~holodeck.sensors.ViewportCapture`
+- Fixed being unable to configure :class:`~holoocean.sensors.ViewportCapture`
   sensor.
   (`#301 <https://github.com/BYU-PCCL/holodeck/issues/301>`_)
 
@@ -292,10 +292,10 @@ New Features
 
 Bug Fixes
 ~~~~~~~~~
-- Fixed :meth:`~holodeck.environments.HolodeckEnvironment.info` method
+- Fixed :meth:`~holoocean.environments.HolodeckEnvironment.info` method
   (`#182 <https://github.com/BYU-PCCL/holodeck/issues/182>`_)
 - Fixed command buffer not being reset after calling
-  :meth:`~holodeck.environments.HolodeckEnvironment.reset`.
+  :meth:`~holoocean.environments.HolodeckEnvironment.reset`.
   (`#254 <https://github.com/BYU-PCCL/holodeck/issues/254>`_)
 - Fixed rain not being very visible on Linux
   (`#235 <https://github.com/BYU-PCCL/holodeck/issues/235>`_)
@@ -332,14 +332,14 @@ New Features
   (`#128 <https://github.com/BYU-PCCL/holodeck/issues/128>`_)
 - Add ticks per capture command for RGB Camera
   (`#127 <https://github.com/BYU-PCCL/holodeck/issues/127>`_)
-- Add ``__enter__`` and ``__exit__`` methods to :class:`~holodeck.environments.HolodeckEnvironment`
+- Add ``__enter__`` and ``__exit__`` methods to :class:`~holoocean.environments.HolodeckEnvironment`
   (`#125 <https://github.com/BYU-PCCL/holodeck/issues/125>`_)
 - Add option to run headless on Linux
-  (:meth:`~holodeck.environments.HolodeckEnvironment.set_render_quality` on
-  :class:`~holodeck.environments.HolodeckEnvironment`)
+  (:meth:`~holoocean.environments.HolodeckEnvironment.set_render_quality` on
+  :class:`~holoocean.environments.HolodeckEnvironment`)
   (`#135 <https://github.com/BYU-PCCL/holodeck/issues/135>`_)
 - Add ability to adjust rendering options
-  (:meth:`~holodeck.environments.HolodeckEnvironment.set_render_quality`)
+  (:meth:`~holoocean.environments.HolodeckEnvironment.set_render_quality`)
   (`#136 <https://github.com/BYU-PCCL/holodeck/issues/136>`_)
 - Add environment flag that allows state to be returned as copied object
   instead of reference
@@ -364,9 +364,9 @@ Bug Fixes
   (`#162 <https://github.com/BYU-PCCL/holodeck/issues/162>`_)
 - Fix multi-agent example (thanks bradyz!)
   (`#118 <https://github.com/BYU-PCCL/holodeck/issues/118>`_)
-- Make sure :meth:`~holodeck.environments.HolodeckEnvironment.reset` called before
-  :meth:`~holodeck.environments.HolodeckEnvironment.tick` and
-  :meth:`~holodeck.environments.HolodeckEnvironment.act`
+- Make sure :meth:`~holoocean.environments.HolodeckEnvironment.reset` called before
+  :meth:`~holoocean.environments.HolodeckEnvironment.tick` and
+  :meth:`~holoocean.environments.HolodeckEnvironment.act`
   (`#156 <https://github.com/BYU-PCCL/holodeck/issues/156>`_)
 - And many smaller bugs!
 

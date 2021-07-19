@@ -41,8 +41,8 @@ Then to install the oceans package, run the python command
 
 ::
 
-   import holodeck
-   holodeck.install("Ocean", "https://robots.et.byu.edu/jenkins/job/holodeck-ocean-engine/job/master/lastSuccessfulBuild/artifact/Ocean.zip")
+   import holoocean
+   holoocean.install("Ocean", "https://robots.et.byu.edu/jenkins/job/holodeck-ocean-engine/job/master/lastSuccessfulBuild/artifact/Ocean.zip")
 
 
 
@@ -50,7 +50,7 @@ Or as a single console command,
 
 ::
 
-   python -c `import holodeck; holodeck.install("Ocean", "https://robots.et.byu.edu/jenkins/job/holodeck-ocean-engine/job/master/lastSuccessfulBuild/artifact/Ocean.zip")`
+   python -c `import holoocean; holoocean.install("Ocean", "https://robots.et.byu.edu/jenkins/job/holodeck-ocean-engine/job/master/lastSuccessfulBuild/artifact/Ocean.zip")`
 
 
 .. _docker:
@@ -91,7 +91,7 @@ Install a Package Automatically
 -------------------------------
 ::
 
-   >>> from holodeck import packagemanager
+   >>> from holoocean import packagemanager
    >>> packagemanager.installed_packages()
    []
    >>> packagemanager.available_packages()

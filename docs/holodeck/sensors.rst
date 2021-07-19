@@ -1,5 +1,5 @@
 Sensors
 =======
 
-.. automodule:: holodeck.sensors
+.. automodule:: holoocean.sensors
    :members:

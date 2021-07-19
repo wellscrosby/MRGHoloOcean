@@ -13,22 +13,22 @@ import sys
 
 import numpy as np
 
-from holodeck.command import CommandCenter, SpawnAgentCommand, RGBCameraRateCommand, \
+from holoocean.command import CommandCenter, SpawnAgentCommand, RGBCameraRateCommand, \
     TeleportCameraCommand, RenderViewportCommand, RenderQualityCommand, \
     CustomCommand, DebugDrawCommand, SendAcousticMessageCommand
 
-from holodeck.exceptions import HolodeckException
-from holodeck.holodeckclient import HolodeckClient
-from holodeck.agents import AgentDefinition, SensorDefinition, AgentFactory
-from holodeck.weather import WeatherController
-from holodeck.lcm import SensorData
+from holoocean.exceptions import HolodeckException
+from holoocean.holodeckclient import HolodeckClient
+from holoocean.agents import AgentDefinition, SensorDefinition, AgentFactory
+from holoocean.weather import WeatherController
+from holoocean.lcm import SensorData
 
-from holodeck.sensors import AcousticBeaconSensor
+from holoocean.sensors import AcousticBeaconSensor
 
 class HolodeckEnvironment:
     """Proxy for communicating with a Holodeck world
 
-    Instantiate this object using :meth:`holodeck.holodeck.make`.
+    Instantiate this object using :meth:`holoocean.holoocean.make`.
 
     Args:
         agent_definitions (:obj:`list` of :class:`AgentDefinition`):
@@ -44,7 +44,7 @@ class HolodeckEnvironment:
             Whether to load a binary or not. Defaults to True.
 
         uuid (:obj:`str`):
-            A unique identifier, used when running multiple instances of holodeck. Defaults to "".
+            A unique identifier, used when running multiple instances of holoocean. Defaults to "".
 
         gl_version (:obj:`int`, optional):
             The version of OpenGL to use for Linux. Defaults to 4.
@@ -150,7 +150,7 @@ class HolodeckEnvironment:
         """Gives the action space for the main agent.
 
         Returns:
-            :class:`~holodeck.spaces.ActionSpace`: The action space for the main agent.
+            :class:`~holoocean.spaces.ActionSpace`: The action space for the main agent.
         """
         return self._agent.action_space
 
@@ -362,7 +362,7 @@ class HolodeckEnvironment:
         Returns:
             (:obj:`dict`, :obj:`float`, :obj:`bool`, info): A 4tuple:
                 - State: Dictionary from sensor enum
-                    (see :class:`~holodeck.sensors.HolodeckSensor`) to :obj:`np.ndarray`.
+                    (see :class:`~holoocean.sensors.HolodeckSensor`) to :obj:`np.ndarray`.
                 - Reward (:obj:`float`): Reward returned by the environment.
                 - Terminal: The bool terminal signal returned by the environment.
                 - Info: Any additional info, depending on the world. Defaults to None.
@@ -419,7 +419,7 @@ class HolodeckEnvironment:
             publish (:obj: `bool`): Whether or not to publish as defined by scenario. Defaults to True.
         Returns:
             :obj:`dict`: A dictionary from agent name to its full state. The full state is another
-                dictionary from :obj:`holodeck.sensors.Sensors` enum to np.ndarray, containing the
+                dictionary from :obj:`holoocean.sensors.Sensors` enum to np.ndarray, containing the
                 sensors information for each sensor. The sensors always include the reward and
                 terminal sensors.
 
@@ -470,7 +470,7 @@ class HolodeckEnvironment:
         The agent won't be able to be used until the next frame.
 
         Args:
-            agent_def (:class:`~holodeck.agents.AgentDefinition`): The definition of the agent to
+            agent_def (:class:`~holoocean.agents.AgentDefinition`): The definition of the agent to
             spawn.
         """
         if agent_def.name in self.agents:
@@ -642,7 +642,7 @@ class HolodeckEnvironment:
         Args:
             agent_name (:obj:`str`): The name of the agent to set the control scheme for.
             control_scheme (:obj:`int`): A control scheme value
-                (see :class:`~holodeck.agents.ControlSchemes`)
+                (see :class:`~holoocean.agents.ControlSchemes`)
         """
         if agent_name not in self.agents:
             print("No such agent %s" % agent_name)

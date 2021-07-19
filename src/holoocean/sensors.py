@@ -2,17 +2,17 @@
 import json
 
 import numpy as np
-import holodeck
+import holoocean
 
-from holodeck.command import RGBCameraRateCommand, RotateSensorCommand, CustomCommand, SendAcousticMessageCommand
-from holodeck.exceptions import HolodeckConfigurationException
-from holodeck.lcm import SensorData
+from holoocean.command import RGBCameraRateCommand, RotateSensorCommand, CustomCommand, SendAcousticMessageCommand
+from holoocean.exceptions import HolodeckConfigurationException
+from holoocean.lcm import SensorData
 
 class HolodeckSensor:
     """Base class for a sensor
 
     Args:
-        client (:class:`~holodeck.holodeckclient.HolodeckClient`): Client
+        client (:class:`~holoocean.holodeckclient.HolodeckClient`): Client
             attached to a sensor
         agent_name (:obj:`str`): Name of the parent agent
         agent_type (:obj:`str`): Type of the parent agent
@@ -68,8 +68,8 @@ class HolodeckSensor:
 
     def rotate(self, rotation):
         """Rotate the sensor. It will be applied in approximately three ticks.
-        :meth:`~holodeck.environments.HolodeckEnvironment.step` or
-        :meth:`~holodeck.environments.HolodeckEnvironment.tick`.)
+        :meth:`~holoocean.environments.HolodeckEnvironment.step` or
+        :meth:`~holoocean.environments.HolodeckEnvironment.tick`.)
 
         This will not persist after a call to reset(). If you want a persistent rotation for a sensor,
         specify it in your scenario configuration.
@@ -204,7 +204,7 @@ class ViewportCapture(HolodeckSensor):
     
     It may be useful
     to position the camera with
-    :meth:`~holodeck.environments.HolodeckEnvironment.teleport_camera`.
+    :meth:`~holoocean.environments.HolodeckEnvironment.teleport_camera`.
 
     **Configuration**
 
@@ -383,18 +383,18 @@ class IMUSensor(HolodeckSensor):
 
 
 class JointRotationSensor(HolodeckSensor):
-    """Returns the state of the :class:`~holodeck.agents.AndroidAgent`'s or the 
-    :class:`~holodeck.agents.HandAgent`'s joints.
+    """Returns the state of the :class:`~holoocean.agents.AndroidAgent`'s or the 
+    :class:`~holoocean.agents.HandAgent`'s joints.
 
     """
 
     sensor_type = "JointRotationSensor"
 
     def __init__(self, client, agent_name, agent_type, name="RGBCamera", config=None):
-        if holodeck.agents.AndroidAgent.agent_type in agent_type:
+        if holoocean.agents.AndroidAgent.agent_type in agent_type:
             # Should match AAndroid::TOTAL_DOF
             self.elements = 94
-        elif agent_type == holodeck.agents.HandAgent.agent_type:
+        elif agent_type == holoocean.agents.HandAgent.agent_type:
             # AHandAgent::TOTAL_JOINT_DOF
             self.elements = 23
         else:
@@ -413,8 +413,8 @@ class JointRotationSensor(HolodeckSensor):
 
 
 class PressureSensor(HolodeckSensor):
-    """For each joint on the :class:`~holodeck.agents.AndroidAgent` or the 
-    :class:`~holodeck.agents.HandAgent`, returns the pressure on the
+    """For each joint on the :class:`~holoocean.agents.AndroidAgent` or the 
+    :class:`~holoocean.agents.HandAgent`, returns the pressure on the
     joint.
 
     For each joint, returns ``[x_loc, y_loc, z_loc, force]``.
@@ -424,10 +424,10 @@ class PressureSensor(HolodeckSensor):
     sensor_type = "PressureSensor"
 
     def __init__(self, client, agent_name, agent_type, name="RGBCamera", config=None):
-        if holodeck.agents.AndroidAgent.agent_type in agent_type:
+        if holoocean.agents.AndroidAgent.agent_type in agent_type:
             # Should match AAndroid::NUM_JOINTS
             self.elements = 48
-        elif agent_type == holodeck.agents.HandAgent.agent_type:
+        elif agent_type == holoocean.agents.HandAgent.agent_type:
             # AHandAgent::NUM_JOINTS
             self.elements = 16
         else:
@@ -452,10 +452,10 @@ class RelativeSkeletalPositionSensor(HolodeckSensor):
     """
 
     def __init__(self, client, agent_name, agent_type, name="RGBCamera", config=None):
-        if holodeck.agents.AndroidAgent.agent_type in agent_type:
+        if holoocean.agents.AndroidAgent.agent_type in agent_type:
             # Should match AAndroid::NumBones
             self.elements = 60
-        elif agent_type == holodeck.agents.HandAgent.agent_type:
+        elif agent_type == holoocean.agents.HandAgent.agent_type:
             # AHandAgent::NumBones
             self.elements = 17
         else:
@@ -739,7 +739,7 @@ class PoseSensor(HolodeckSensor):
         return [4, 4]
 
 class AcousticBeaconSensor(HolodeckSensor):
-    """Acoustic Beacon Sensor. Can send message to an other beacon from the `~holodeck.HolodeckEnvironment.send_acoustic_message` command.
+    """Acoustic Beacon Sensor. Can send message to an other beacon from the `~holoocean.HolodeckEnvironment.send_acoustic_message` command.
 
     Returning array depends on sent message type. 
 

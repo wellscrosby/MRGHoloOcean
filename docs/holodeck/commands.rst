@@ -1,5 +1,5 @@
 Commands
 ========
 
-.. automodule:: holodeck.command
+.. automodule:: holoocean.command
    :members:

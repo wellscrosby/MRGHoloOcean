@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 
 
 def test_rgb_camera_not_null(env_scenario):
@@ -11,13 +11,13 @@ def test_rgb_camera_not_null(env_scenario):
     env, scenario = env_scenario
 
     # Find the names of every RGB camera and agent in the scenario
-    config = holodeck.packagemanager.get_scenario(scenario)
+    config = holoocean.packagemanager.get_scenario(scenario)
 
     # Set of tuples of agent name to camera name
     agent_camera_names = set()
     for agent_cfg in config["agents"]:
         for sensor_cfg in agent_cfg["sensors"]:
-            if sensor_cfg["sensor_type"] == holodeck.sensors.RGBCamera.sensor_type:
+            if sensor_cfg["sensor_type"] == holoocean.sensors.RGBCamera.sensor_type:
                 if "sensor_name" in sensor_cfg:
                     sensor_name = sensor_cfg["sensor_name"]
                 else:

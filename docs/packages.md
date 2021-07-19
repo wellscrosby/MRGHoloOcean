@@ -1,5 +1,5 @@
 # Holodeck Packages and Configuration
-How packages are installed, managed, and interpreted in holodeck.
+How packages are installed, managed, and interpreted in holoocean.
 
 ## Package Installation
 

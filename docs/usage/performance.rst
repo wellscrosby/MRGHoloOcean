@@ -55,7 +55,7 @@ Create a :ref:`custom scenario <custom-scenarios>` and in the
 :ref:`configuration block <configuration-block>` for the ``RGBCamera`` set the
 ``CaptureWidth`` and ``CaptureHeight``.
 
-See :class:`~holodeck.sensors.RGBCamera` for more details.
+See :class:`~holoocean.sensors.RGBCamera` for more details.
 
 Changing ticks per capture
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -64,14 +64,14 @@ The number of ticks per capture can be adjusted to give a lower average frame
 time.
 
 See the 
-:meth:`~holodeck.sensors.RGBCamera.set_ticks_per_capture` method.
+:meth:`~holoocean.sensors.RGBCamera.set_ticks_per_capture` method.
 
 Disable Viewport Rendering
 --------------------------
 
 Rendering the viewport window can be unnecessary during training. You can 
 disable the viewport with the 
-:meth:`~holodeck.environments.HolodeckEnvironment.should_render_viewport` 
+:meth:`~holoocean.environments.HolodeckEnvironment.should_render_viewport` 
 method.
 
 At lower ``RGBCamera`` resolutions, you can expect a ~40% frame time reduction.
@@ -81,7 +81,7 @@ Change Render Quality
 
 You can adjust Holodeck to render at a lower (or higher) quality to improve
 performance. See the 
-:meth:`~holodeck.environments.HolodeckEnvironment.set_render_quality` method
+:meth:`~holoocean.environments.HolodeckEnvironment.set_render_quality` method
 
 Below is a comparison of render qualities and the frame time in ms
 

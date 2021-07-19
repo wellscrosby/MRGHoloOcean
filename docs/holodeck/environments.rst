@@ -1,5 +1,5 @@
 Environments
 ============
 
-.. automodule:: holodeck.environments
+.. automodule:: holoocean.environments
    :members:

@@ -4,8 +4,8 @@ with open("README.md") as f:
     readme = f.read()
 
 setup(
-    name="holodeck-ocean",
-    version="0.3.1",
+    name="holoocean",
+    version="0.1.0",
     description="Autonomous Underwater Vehicle Simulator",
     long_description=readme,
     long_description_content_type="text/markdown",

@@ -1,5 +1,5 @@
 Spaces
 ======
 
-.. automodule:: holodeck.spaces
+.. automodule:: holoocean.spaces
    :members:

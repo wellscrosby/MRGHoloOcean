@@ -1,9 +1,9 @@
 from typing import Callable, List
 
-import holodeck
+import holoocean
 import pytest
-from holodeck import packagemanager as pm
-from holodeck.environments import HolodeckEnvironment
+from holoocean import packagemanager as pm
+from holoocean.environments import HolodeckEnvironment
 
 
 def pytest_generate_tests(metafunc):
@@ -39,7 +39,7 @@ def env_scenario(request):
         env.reset()
         return env, scenario
 
-    env = holodeck.make(scenario, show_viewport=False)
+    env = holoocean.make(scenario, show_viewport=False)
     env.reset()
     envs[scenario] = env
     return env, scenario

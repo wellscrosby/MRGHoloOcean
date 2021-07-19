@@ -12,8 +12,8 @@ import pprint
 from queue import Queue
 from threading import Thread
 
-from holodeck import util
-from holodeck.exceptions import HolodeckException, NotFoundException
+from holoocean import util
+from holoocean.exceptions import HolodeckException, NotFoundException
 
 BACKEND_URL = "https://s3.amazonaws.com/holodeckworlds/"
 

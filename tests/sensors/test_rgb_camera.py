@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 import cv2
 import copy
 import numpy as np
@@ -47,9 +47,9 @@ def test_rgb_camera(resolution, request):
         "CaptureHeight": resolution
     }
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HolodeckEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -80,9 +80,9 @@ def make_ticks_per_capture_env():
         "CaptureHeight": 512
     }
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
 
-    shared_ticks_per_capture_env = holodeck.environments.HolodeckEnvironment(
+    shared_ticks_per_capture_env = holoocean.environments.HolodeckEnvironment(
         scenario=cfg,
         binary_path=binary_path,
         show_viewport=False,

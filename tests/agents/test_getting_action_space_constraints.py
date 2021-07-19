@@ -1,6 +1,6 @@
 import uuid
-from holodeck import packagemanager as pm
-from holodeck.environments import HolodeckEnvironment
+from holoocean import packagemanager as pm
+from holoocean.environments import HolodeckEnvironment
 import math
 
 test_data = [

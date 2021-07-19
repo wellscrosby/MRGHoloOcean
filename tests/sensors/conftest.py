@@ -1,7 +1,7 @@
 import pytest
 
 import uuid
-import holodeck
+import holoocean
 
 def pytest_generate_tests(metafunc):
     """Iterate over every scenario
@@ -57,8 +57,8 @@ def env_1024(request):
     global shared_1024_env
 
     if shared_1024_env is None:
-        binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
-        shared_1024_env = holodeck.environments.HolodeckEnvironment(scenario=cfg,
+        binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
+        shared_1024_env = holoocean.environments.HolodeckEnvironment(scenario=cfg,
                                                                     binary_path=binary_path,
                                                                     show_viewport=False,
                                                                     uuid=str(uuid.uuid4()))
@@ -73,9 +73,9 @@ shared_abuse_env = None
 
 def get_abuse_world():
     global shared_abuse_env
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
     if shared_abuse_env is None:
-        shared_abuse_env = holodeck.environments.HolodeckEnvironment(
+        shared_abuse_env = holoocean.environments.HolodeckEnvironment(
             scenario=abuse_config,
             binary_path=binary_path,
             show_viewport=False,
@@ -120,8 +120,8 @@ def rotation_env(request):
     global shared_rotation_env
 
     if shared_rotation_env is None:
-        binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
-        shared_rotation_env = holodeck.environments.HolodeckEnvironment(scenario=cfg,
+        binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
+        shared_rotation_env = holoocean.environments.HolodeckEnvironment(scenario=cfg,
                                                                         binary_path=binary_path,
                                                                         show_viewport=False,
                                                                         uuid=str(uuid.uuid4()))

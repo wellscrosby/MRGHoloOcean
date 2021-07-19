@@ -2,8 +2,8 @@ import uuid
 import copy
 import numpy as np
 import math
-from holodeck import packagemanager as pm
-from holodeck.environments import HolodeckEnvironment
+from holoocean import packagemanager as pm
+from holoocean.environments import HolodeckEnvironment
 
 base_conf = {
     "name": "test_randomization",

@@ -24,16 +24,16 @@ Holodeck is a high-fidelity simulator for reinforcement learning built on top of
 
 (requires >= Python 3.5)
 
-See [Installation](https://holodeck.readthedocs.io/en/latest/usage/installation.html) for complete instructions (including Docker).
+See [Installation](https://holoocean.readthedocs.io/en/latest/usage/installation.html) for complete instructions (including Docker).
 
 ## Documentation
-* [Quickstart](https://holodeck.readthedocs.io/en/latest/usage/getting-started.html)
-* [Changelog](https://holodeck.readthedocs.io/en/latest/changelog/changelog.html)
-* [Examples](https://holodeck.readthedocs.io/en/latest/usage/getting-started.html#code-examples)
-* [Agents](https://holodeck.readthedocs.io/en/latest/agents/agents.html)
-* [Sensors](https://holodeck.readthedocs.io/en/latest/holodeck/sensors.html)
-* [Available Packages and Worlds](https://holodeck.readthedocs.io/en/latest/packages/packages.html)
-* [Docs](https://holodeck.readthedocs.io/en/latest/)
+* [Quickstart](https://holoocean.readthedocs.io/en/latest/usage/getting-started.html)
+* [Changelog](https://holoocean.readthedocs.io/en/latest/changelog/changelog.html)
+* [Examples](https://holoocean.readthedocs.io/en/latest/usage/getting-started.html#code-examples)
+* [Agents](https://holoocean.readthedocs.io/en/latest/agents/agents.html)
+* [Sensors](https://holoocean.readthedocs.io/en/latest/holodeck/sensors.html)
+* [Available Packages and Worlds](https://holoocean.readthedocs.io/en/latest/packages/packages.html)
+* [Docs](https://holoocean.readthedocs.io/en/latest/)
 
 ## Usage Overview
 Holodeck's interface is similar to [OpenAI's Gym](https://gym.openai.com/). 
@@ -44,10 +44,10 @@ fiddling required.
 To demonstrate, here is a quick example using the `DefaultWorlds` package:
 
 ```python
-import holodeck
+import holoocean
 
 # Load the environment. This environment contains a UAV in a city.
-env = holodeck.make("UrbanCity-MaxDistance")
+env = holoocean.make("UrbanCity-MaxDistance")
 
 # You must call `.reset()` on a newly created environment before ticking/stepping it
 env.reset()                         
@@ -74,16 +74,16 @@ print(state["LocationSensor"])
 ## Multi Agent-Environments
 Holodeck supports multi-agent environments.
 
-Calls to [`step`](https://holodeck.readthedocs.io/en/latest/holodeck/environments.html#holodeck.environments.HolodeckEnvironment.step) only provide an action for the main agent, and then tick the simulation. 
+Calls to [`step`](https://holoocean.readthedocs.io/en/latest/holodeck/environments.html#holoocean.environments.HolodeckEnvironment.step) only provide an action for the main agent, and then tick the simulation. 
 
-[`act`](https://holodeck.readthedocs.io/en/latest/holodeck/environments.html#holodeck.environments.HolodeckEnvironment.act) provides a persistent action for a specific agent, and does not tick the simulation. After an 
-action has been provided, [`tick`](https://holodeck.readthedocs.io/en/latest/holodeck/environments.html#holodeck.environments.HolodeckEnvironment.tick) will advance the simulation forward. The action is persisted until another call to `act` provides a different action.
+[`act`](https://holoocean.readthedocs.io/en/latest/holodeck/environments.html#holoocean.environments.HolodeckEnvironment.act) provides a persistent action for a specific agent, and does not tick the simulation. After an 
+action has been provided, [`tick`](https://holoocean.readthedocs.io/en/latest/holodeck/environments.html#holoocean.environments.HolodeckEnvironment.tick) will advance the simulation forward. The action is persisted until another call to `act` provides a different action.
 
 ```python
-import holodeck
+import holoocean
 import numpy as np
 
-env = holodeck.make("CyberPunkCity-Follow")
+env = holoocean.make("CyberPunkCity-Follow")
 env.reset()
 
 # Provide an action for each agent
@@ -106,10 +106,10 @@ terminal = task[1]
 location = states["uav0"]["LocationSensor"]
 ```
 
-(`uav0` comes from the [scenario configuration file](https://holodeck.readthedocs.io/en/latest/packages/docs/scenarios.html))
+(`uav0` comes from the [scenario configuration file](https://holoocean.readthedocs.io/en/latest/packages/docs/scenarios.html))
 
 ## Running Holodeck Headless
-Holodeck can run headless with GPU accelerated rendering. See [Using Holodeck Headless](https://holodeck.readthedocs.io/en/latest/usage/running-headless.html)
+Holodeck can run headless with GPU accelerated rendering. See [Using Holodeck Headless](https://holoocean.readthedocs.io/en/latest/usage/running-headless.html)
 
 ## Citation:
 ```

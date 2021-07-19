@@ -1,5 +1,5 @@
 Util
 ====
 
-.. automodule:: holodeck.util
+.. automodule:: holoocean.util
    :members:

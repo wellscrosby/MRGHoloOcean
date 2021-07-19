@@ -3,5 +3,5 @@
 Holodeck
 ========
 
-.. automodule:: holodeck.holodeck
+.. automodule:: holoocean.holodeck
    :members:

@@ -1,5 +1,5 @@
 """Weather/time controller for environments"""
-from holodeck.exceptions import HolodeckException
+from holoocean.exceptions import HolodeckException
 
 
 class WeatherController:

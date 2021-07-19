@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 import numpy as np
 from tests.utils.equality import almost_equal
 import uuid
@@ -28,9 +28,9 @@ def test_orientation_sensor_after_teleport():
     """Make sure that the orientation sensor correctly updates after using a teleport command to 
     rotate the agent
     """
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=base_cfg,
+    with holoocean.environments.HolodeckEnvironment(scenario=base_cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

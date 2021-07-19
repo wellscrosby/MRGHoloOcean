@@ -1,8 +1,8 @@
 """The client used for subscribing shared memory between python and c++."""
 import os
 
-from holodeck.exceptions import HolodeckException
-from holodeck.shmem import Shmem
+from holoocean.exceptions import HolodeckException
+from holoocean.shmem import Shmem
 
 class HolodeckClient:
     """HolodeckClient for controlling a shared memory session.

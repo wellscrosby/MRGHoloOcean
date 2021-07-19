@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 import uuid
 
 from tests.utils.equality import almost_equal
@@ -28,9 +28,9 @@ def test_static_prop():
     the agent from falling.
     """
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=uav_config,
+    with holoocean.environments.HolodeckEnvironment(scenario=uav_config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -54,9 +54,9 @@ def test_sim_physics_prop():
     and rams the agent.
     """
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=uav_config,
+    with holoocean.environments.HolodeckEnvironment(scenario=uav_config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

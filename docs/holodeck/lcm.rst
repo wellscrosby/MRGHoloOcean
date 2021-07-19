@@ -1,6 +1,6 @@
 LCM
 =============
 
-.. automodule:: holodeck.lcm
+.. automodule:: holoocean.lcm
    :members:
    :imported-members:

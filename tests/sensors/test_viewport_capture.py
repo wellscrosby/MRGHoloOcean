@@ -6,7 +6,7 @@ import time
 
 from tests.utils.equality import mean_square_err
 
-import holodeck
+import holoocean
 
 base_cfg = {
     "name": "test_viewport_capture",
@@ -46,8 +46,8 @@ def test_viewport_capture(resolution, request):
         "CaptureHeight": resolution
     }
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
-    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    with holoocean.environments.HolodeckEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

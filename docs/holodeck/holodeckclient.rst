@@ -1,5 +1,5 @@
 Holodeck Client
 ===============
 
-.. automodule:: holodeck.holodeckclient
+.. automodule:: holoocean.holodeckclient
    :members:

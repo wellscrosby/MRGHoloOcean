@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 import uuid
 from . import finish
 import pytest
@@ -16,9 +16,9 @@ def generate_turtle_walkthrough():
 
     on_step.states = list()
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
 
-    env = holodeck.environments.HolodeckEnvironment(scenario=cfg,
+    env = holoocean.environments.HolodeckEnvironment(scenario=cfg,
                                                     binary_path=binary_path,
                                                     show_viewport=False,
                                                     uuid=str(uuid.uuid4()))

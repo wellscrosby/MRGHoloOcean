@@ -27,10 +27,10 @@ Code
 
 ::
 
-   import holodeck
+   import holoocean
    import numpy as np
 
-   env = holodeck.make('CyberPunkCity-Follow')
+   env = holoocean.make('CyberPunkCity-Follow')
    env.reset()
 
    env.act('uav0', np.array([0, 0, 0, 100]))

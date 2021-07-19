@@ -1,5 +1,5 @@
-import holodeck
-from holodeck.lcm import AcousticBeaconSensor
+import holoocean
+from holoocean.lcm import AcousticBeaconSensor
 import uuid
 import pytest
 import numpy as np
@@ -29,13 +29,13 @@ def test_sensor(sensor):
                 ]
             }
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     d = {"i" : 0}
 
     def my_handler(channel, data):
         d['i'] += 1
 
-    with holodeck.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HolodeckEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -84,13 +84,13 @@ def test_acoustic_beacon():
                 ]
             }
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     d = {"i" : 0}
 
     def my_handler(channel, data):
         d['i'] += 1
 
-    with holodeck.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HolodeckEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -143,7 +143,7 @@ def test_acoustic_types(msg):
                 ]
             }
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
     def my_handler(channel, data):
         temp = AcousticBeaconSensor.decode(data)
@@ -190,7 +190,7 @@ def test_acoustic_types(msg):
             assert ~np.isnan(temp.range)    
             assert ~np.isnan(temp.z)        
 
-    with holodeck.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HolodeckEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 import uuid
 
 turtle_config = {
@@ -25,9 +25,9 @@ turtle_config = {
 def test_rates():
     """Make sure our sensor rates are working properly
     """
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=turtle_config,
+    with holoocean.environments.HolodeckEnvironment(scenario=turtle_config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4()),

@@ -1,5 +1,5 @@
 Shared Memory
 =============
 
-.. automodule:: holodeck.shmem
+.. automodule:: holoocean.shmem
    :members:

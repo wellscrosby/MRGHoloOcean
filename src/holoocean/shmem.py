@@ -6,7 +6,7 @@ from functools import reduce
 
 import numpy as np
 
-from holodeck.exceptions import HolodeckException
+from holoocean.exceptions import HolodeckException
 
 
 class Shmem:

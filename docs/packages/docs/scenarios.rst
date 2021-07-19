@@ -31,8 +31,8 @@ Scenarios allow the same world to be used for many different purposes,
 and allows you to extend and customize the scenarios we provide to
 suit your needs without repackaging the engine.
 
-When you call ``holodeck.make()`` to create an environment, you pass in the
-name of a scenario, eg ``holodeck.make("UrbanCity-Follow")``. This tells
+When you call ``holoocean.make()`` to create an environment, you pass in the
+name of a scenario, eg ``holoocean.make("UrbanCity-Follow")``. This tells
 Holodeck which world to load and where to place agents.
 
 .. _`scenario-files`:
@@ -223,7 +223,7 @@ Configuration Block
 The contents of the ``configuration`` block are sensor-specific. That block is
 passed verbatim to the sensor itself, which parses it.
 
-For example, the docstring for :class:`~holodeck.sensors.RGBCamera` states that
+For example, the docstring for :class:`~holoocean.sensors.RGBCamera` states that
 it accepts ``CaptureWidth`` and ``CaptureHeight`` parameters, so an example
 sensor configuration would be:
 

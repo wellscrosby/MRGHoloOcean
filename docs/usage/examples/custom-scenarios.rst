@@ -18,7 +18,7 @@ Using a Dictionary for a Scenario Config
 ----------------------------------------
 
 Create a dictionary in Python that matches the structure specified in
-:ref:`scenario-files`, and pass it in to :func:`holodeck.make`.
+:ref:`scenario-files`, and pass it in to :func:`holoocean.make`.
 
 Example
 ~~~~~~~
@@ -27,7 +27,7 @@ Example
    :emphasize-lines: 27
    :linenos:
 
-   import holodeck
+   import holoocean
 
    cfg = {
        "name": "test_rgb_camera",
@@ -54,7 +54,7 @@ Example
        ]
    }
 
-   with holodeck.make(scenario_cfg=cfg) as env:
+   with holoocean.make(scenario_cfg=cfg) as env:
        env.tick()
 
 
@@ -71,7 +71,7 @@ the format given in :ref:`scenario-files` and either:
 Holodeck's Scenario Search Path
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When you give a scenario name to :func:`holodeck.make`, Holodeck will search
+When you give a scenario name to :func:`holoocean.make`, Holodeck will search
 look each package folder (see :ref:`package-locations`) until it finds a
 ``.json`` file that matches the scenario name. 
 
