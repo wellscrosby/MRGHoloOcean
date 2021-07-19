@@ -8,6 +8,10 @@
 #include "HolodeckBuoyantAgent.h"
 #include "TorpedoAUV.generated.h"
 
+const float TAUV_MIN_THRUST = 0;
+const float TAUV_MAX_THRUST = 100;
+const float TAUV_MIN_FIN = -90;
+const float TAUV_MAX_FIN = 90;
 
 UCLASS()
 /**
@@ -43,10 +47,10 @@ public:
 
 	// Location of all forces to apply
 	TArray<FVector> controls{ FVector(-95,0,0),
-								FVector(-45,7.07,0),
-								FVector(-45,0,7.07),
-								FVector(-45,-7.07,0),
-								FVector(-45,0,-7.07) };
+								FVector(-75,7.07,0),
+								FVector(-75,0,7.07),
+								FVector(-75,-7.07,0),
+								FVector(-75,0,-7.07) };
 
 	void ApplyFin(int i);
 
