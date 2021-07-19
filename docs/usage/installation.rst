@@ -45,7 +45,6 @@ Then to install the most recent version of the oceans package, run the python co
    holoocean.install("Ocean", "https://robots.et.byu.edu/holo/Ocean/develop/latest.zip")
 
 
-
 Or as a single console command,
 
 ::
