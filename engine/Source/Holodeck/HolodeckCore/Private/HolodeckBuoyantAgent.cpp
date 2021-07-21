@@ -32,9 +32,6 @@ void AHolodeckBuoyantAgent::InitializeAgent(){
 
 void AHolodeckBuoyantAgent::Tick(float DeltaSeconds) {
 	Super::Tick(DeltaSeconds);
-	if(octreeGlobal.Num() == 0 && Server->octree.Num() != 0){
-		makeOctree();
-	}
 	updateOctree();
 }
 

@@ -86,6 +86,7 @@ private:
 	// holds our implementation of Octrees
 	TArray<Octree*>& getOctree(){ return Controller->GetServer()->octree; }
 	void viewLeafs(Octree* tree);
+	void initOctree();
 
 	// various computations we want to cache
 	float RangeRes;

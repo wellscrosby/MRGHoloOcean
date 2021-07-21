@@ -53,13 +53,15 @@ public:
 	void ShowSurfacePoints();
 
 	void makeOctree();
-	// we store the octree in the actor coordinates in octreeClean, 
-	TArray<Octree*> octreeGlobal;
 	// octree in global coordinates in octree
+	TArray<Octree*> octreeGlobal;
+	// we store the octree in the actor coordinates in octreeClean, 
 	TArray<Octree*> octreeLocal;	
 
 private:
+	// Used to fix octreeGlobal 
 	void updateOctree();
 	void updateOctree(Octree* localFrame, Octree* globalFrame);
+	// Used to extract local frame from global frame
 	void cleanOctree(Octree* globalFrame, TArray<Octree*>& results);
 };

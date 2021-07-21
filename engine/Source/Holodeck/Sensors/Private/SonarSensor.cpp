@@ -102,19 +102,37 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 	}
 }
 
+void USonarSensor::initOctree(){
+	if(getOctree().Num() == 0){
+		// This is done here b/c Server doesn't have inheritance info of AHolodeckAgent
+		for(auto& agent : Controller->GetServer()->AgentMap){
+			AActor* actor = static_cast<AActor*>(agent.Value);
+			Octree::ignoreActor(actor);
+		}
+		// make/load octree
+		Controller->GetServer()->makeOctree(GetWorld());
+		Octree::resetParams();
+
+		// initialize small octree for each agent
+		for(auto& agent : Controller->GetServer()->AgentMap){
+			AHolodeckBuoyantAgent* bouyantActor = static_cast<AHolodeckBuoyantAgent*>(agent.Value);
+			bouyantActor->makeOctree();
+		}
+
+		// get all our leafs ready
+		// TODO: calculate what these values should be
+		TArray<Octree*>& octree = getOctree();
+		leafs.Reserve(10000);
+		tempLeafs.Reserve(octree.Num());
+		for(int i=0;i<octree.Num();i++){
+			tempLeafs.Add(TArray<Octree*>());
+			tempLeafs[i].Reserve(1000);
+		}
+	}
+}
 void USonarSensor::InitializeSensor() {
 	Super::InitializeSensor();
 
-	// Ignore all agents thus far
-	// This is done here b/c Server doesn't have inheritance info of AHolodeckAgent
-	for(auto& agent : Controller->GetServer()->AgentMap){
-		AActor* actor = static_cast<AActor*>(agent.Value);
-		Octree::ignoreActor(actor);
-	}
-	// make/load octree
-	Controller->GetServer()->makeOctree(GetWorld());
-	// remove all ignored agents (agents will make their own octree soon)
-	Octree::resetParams();
 	OctreeMax = Controller->GetServer()->OctreeMax;
 	
 	// Get size of each bin
@@ -130,14 +148,6 @@ void USonarSensor::InitializeSensor() {
 	sqrt2 = UKismetMathLibrary::Sqrt(2);
 
 	// setup leaves for later
-	// TODO: calculate what these values should be
-	TArray<Octree*>& octree = getOctree();
-	leafs.Reserve(10000);
-	tempLeafs.Reserve(octree.Num()+30);
-	for(int i=0;i<octree.Num()+30;i++){
-		tempLeafs.Add(TArray<Octree*>());
-		tempLeafs[i].Reserve(1000);
-	}
 	count = new int32[BinsRange*BinsAzimuth]();
 }
 
@@ -204,6 +214,10 @@ void USonarSensor::viewLeafs(Octree* tree){
 	}
 }
 void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
+	// We initialize this here to avoid timeout issues when loading,
+	// and to make sure all agents are in already as well
+	initOctree();
+	
 	TickCounter++;
 	if(TickCounter == TicksPerCapture){
 		// reset things and get ready
