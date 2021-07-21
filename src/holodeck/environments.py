@@ -71,7 +71,8 @@ class HolodeckEnvironment:
 
     def __init__(self, agent_definitions=None, binary_path=None, window_size=None,
                  start_world=True, uuid="", gl_version=4, verbose=False, pre_start_steps=2,
-                 show_viewport=True, ticks_per_sec=30, copy_state=True, scenario=None):
+                 show_viewport=True, ticks_per_sec=30, copy_state=True, scenario=None,
+                 env_min=None, env_max=None):
 
         if agent_definitions is None:
             agent_definitions = []
@@ -87,6 +88,27 @@ class HolodeckEnvironment:
                 self._window_size = 720, 1280
         else:
             self._window_size = window_size
+
+        # Check if env size has been overriden in scenario
+        if scenario is not None and "env_min" in scenario:
+            self._env_min = scenario["env_min"]
+            self._env_max = scenario["env_max"]
+        # otherwise use the one from the env config
+        elif env_min is not None:
+            self._env_min = env_min
+            self._env_max = env_max
+        else:
+            # Default resolution
+            self._env_min = [-10,-10,-10]
+            self._env_max = [10,10,10]
+
+        if scenario is not None and "octree_min" in scenario:
+            self._octree_min = scenario["octree_min"]
+            self._octree_max = scenario["octree_max"]
+        else:
+            # Default resolution
+            self._octree_min = .1
+            self._octree_max = 5
 
         if scenario is not None and "lcm_provider" not in scenario:
             scenario['lcm_provider'] = ""
@@ -685,7 +707,10 @@ class HolodeckEnvironment:
             subprocess.Popen([binary_path, task_key, '-HolodeckOn', '-opengl' + str(gl_version),
                               '-LOG=HolodeckLog.txt', '-ForceRes', '-ResX=' + str(self._window_size[1]),
                               '-ResY=' + str(self._window_size[0]), '--HolodeckUUID=' + self._uuid,
-                              '-TicksPerSec=' + str(self._ticks_per_sec)],
+                              '-TicksPerSec=' + str(self._ticks_per_sec),
+                              '-EnvMinX=' + str(self._env_min[0]), '-EnvMinY=' + str(self._env_min[1]), '-EnvMinZ=' + str(self._env_min[2]),
+                              '-EnvMaxX=' + str(self._env_max[0]), '-EnvMaxY=' + str(self._env_max[1]), '-EnvMaxZ=' + str(self._env_max[2]),
+                              '-OctreeMin=' + str(self._octree_min), '-OctreeMax=' + str(self._octree_max)],
                              stdout=out_stream,
                              stderr=out_stream,
                              env=environment)
@@ -708,7 +733,10 @@ class HolodeckEnvironment:
             subprocess.Popen([binary_path, task_key, '-HolodeckOn', '-LOG=HolodeckLog.txt',
                               '-ForceRes', '-ResX=' + str(self._window_size[1]), '-ResY=' +
                               str(self._window_size[0]), '-TicksPerSec=' + str(self._ticks_per_sec),
-                              '--HolodeckUUID=' + self._uuid],
+                              '--HolodeckUUID=' + self._uuid,
+                              '-EnvMinX=' + str(self._env_min[0]), '-EnvMinY=' + str(self._env_min[1]), '-EnvMinZ=' + str(self._env_min[2]),
+                              '-EnvMaxX=' + str(self._env_max[0]), '-EnvMaxY=' + str(self._env_max[1]), '-EnvMaxZ=' + str(self._env_max[2]),
+                              '-OctreeMin=' + str(self._octree_min), '-OctreeMax=' + str(self._octree_max)],
                              stdout=out_stream, stderr=out_stream)
 
         atexit.register(self.__on_exit__)

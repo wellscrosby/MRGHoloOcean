@@ -74,6 +74,9 @@ def make(scenario_name="", scenario_cfg=None, gl_version=GL_VERSION.OPENGL4, win
     world = [world for world in package_config["worlds"] if world["name"] == scenario["world"]][0]
     param_dict["pre_start_steps"] = world["pre_start_steps"]
 
+    param_dict["env_min"] = world["env_min"]
+    param_dict["env_max"] = world["env_max"]
+
     param_dict["scenario"] = scenario
     param_dict["binary_path"] = binary_path
 
