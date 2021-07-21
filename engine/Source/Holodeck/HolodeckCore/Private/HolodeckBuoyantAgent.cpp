@@ -30,6 +30,29 @@ void AHolodeckBuoyantAgent::InitializeAgent(){
 	}
 }
 
+void AHolodeckBuoyantAgent::Tick(float DeltaSeconds) {
+	Super::Tick(DeltaSeconds);
+	if(octreeGlobal.Num() == 0 && Server->octree.Num() != 0){
+		UE_LOG(LogHolodeck, Warning, TEXT("Before %d"), Server->octree.Num());
+		makeOctree();
+		UE_LOG(LogHolodeck, Warning, TEXT("After %d"), Server->octree.Num());
+	}
+	updateOctree();
+	// UE_LOG(LogHolodeck, Warning, TEXT("Local %s, \tGlobal %s"), *octreeLocal[0]->loc.ToString(), *octreeGlobal[0]->loc.ToString());
+	// UE_LOG(LogHolodeck, Warning, TEXT("NumLocal %d, \tNumGlobal %d"), octreeLocal[0]->numLeafs(), octreeGlobal[0]->numLeafs());
+}
+
+void AHolodeckBuoyantAgent::BeginDestroy() {
+	Super::BeginDestroy();
+
+	if(octreeLocal.Num() != 0){
+		for(Octree* t : octreeLocal){
+			delete t;
+		}
+		octreeLocal.Empty();
+	}
+}
+
 void AHolodeckBuoyantAgent::ApplyBuoyantForce(){
     //Get all the values we need once
     FVector ActorLocation = GetActorLocation();
@@ -67,5 +90,62 @@ void AHolodeckBuoyantAgent::ShowSurfacePoints(){
 	for(int i=0;i<NumSurfacePoints;i++){
 		FVector p_world = ActorLocation + ActorRotation.RotateVector(points[i]);
 		DrawDebugPoint(GetWorld(), p_world, 5, FColor::Red, false, 0.05);
+	}
+}
+
+void AHolodeckBuoyantAgent::makeOctree(){
+	if(octreeGlobal.Num() == 0){
+		UE_LOG(LogHolodeck, Warning, TEXT("HolodeckAgent::Making Octree.."));
+		int OctreeMin = Server->OctreeMin;
+		int OctreeMax = Server->OctreeMax;
+
+		// Otherwise, make the octrees
+		FVector nCells = (BoundingBox.Max - BoundingBox.Min) / OctreeMax;
+		// UE_LOG(LogHolodeck, Warning, TEXT("nCells: %s"), *nCells.ToString());
+		for(int i = 0; i < nCells.X; i++) {
+			for(int j = 0; j < nCells.Y; j++) {
+				for(int k = 0; k < nCells.Z; k++) {
+					FVector center = FVector(i*OctreeMax, j*OctreeMax, k*OctreeMax) + BoundingBox.Min + GetActorLocation();
+					// UE_LOG(LogHolodeck, Warning, TEXT("center: %s"), *center.ToString());
+					// UE_LOG(LogHolodeck, Warning, TEXT("bb: %s"), *BoundingBox.Min.ToString());
+					// UE_LOG(LogHolodeck, Warning, TEXT("loc: %s"), *GetActorLocation().ToString());
+					Octree::makeOctree(center, OctreeMax, GetWorld(), octreeGlobal, OctreeMin);
+				}
+			}
+		}
+		Server->octree += octreeGlobal;
+
+		// Clean out the octree
+		for( Octree* tree : octreeGlobal){
+			cleanOctree(tree, octreeLocal);
+		}
+		// UE_LOG(LogHolodeck, Warning, TEXT("Global size: %d, Local Size %d"), octreeGlobal.Num(), octreeLocal.Num());
+	}
+}
+
+void AHolodeckBuoyantAgent::cleanOctree(Octree* globalFrame, TArray<Octree*>& results){
+	Octree* octree = new Octree;
+	octree->loc = GetActorRotation().UnrotateVector(globalFrame->loc - GetActorLocation());
+	octree->normal = GetActorRotation().UnrotateVector(globalFrame->normal);
+
+	for( Octree* tree : globalFrame->leafs){
+		cleanOctree(tree, octree->leafs);
+	}
+
+	results.Add(octree);
+}
+
+void AHolodeckBuoyantAgent::updateOctree(){
+	for(int i=0;i<octreeGlobal.Num();i++){
+		updateOctree(octreeLocal[i], octreeGlobal[i]);
+	}
+}
+
+void AHolodeckBuoyantAgent::updateOctree(Octree* localFrame, Octree* globalFrame){
+	globalFrame->loc = GetActorLocation() + GetActorRotation().RotateVector(localFrame->loc);
+	globalFrame->normal = GetActorRotation().RotateVector(localFrame->normal);
+
+	for(int i=0;i<globalFrame->leafs.Num();i++){
+		updateOctree(localFrame->leafs[i], globalFrame->leafs[i]);
 	}
 }

@@ -125,7 +125,7 @@ public:
 	TMap<FString, UHolodeckSensor*> SensorMap;
 	AHolodeckPawnControllerInterface* HolodeckController;
 
-private:
+protected:
 
 	UHolodeckGameInstance* Instance;
 	UHolodeckServer* Server;

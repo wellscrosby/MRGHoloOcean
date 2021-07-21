@@ -71,12 +71,6 @@ protected:
 	int BinsAzimuth = 128;
 
 	UPROPERTY(EditAnywhere)
-	float OctreeMax = 256;
-
-	UPROPERTY(EditAnywhere)
-	float OctreeMin = 8;
-
-	UPROPERTY(EditAnywhere)
 	bool ViewDebug = false;
 
 	UPROPERTY(EditAnywhere)
@@ -90,9 +84,8 @@ private:
 	AActor* Parent;
 
 	// holds our implementation of Octrees
-	static TArray<Octree*> octree;
-	static FVector EnvMin;
-	static FVector EnvMax;
+	TArray<Octree*> octree;
+	void viewLeafs(Octree* tree);
 
 	// various computations we want to cache
 	float RangeRes;
@@ -103,6 +96,7 @@ private:
 	float maxElev;
 	float sinOffset;
 	float sqrt2;
+	float OctreeMax;
 
 	// initialize + reserve vectors once
 	TArray<Octree*> leafs;

@@ -9,6 +9,8 @@
 #include <string>
 #include <cstring>
 
+#include "Octree.h"
+
 #include "HolodeckSharedMemory.h"
 #if PLATFORM_WINDOWS
 #define LOADING_SEMAPHORE_PATH "Global\\HOLODECK_LOADING_SEM"
@@ -121,11 +123,23 @@ public:
 	/* Stores pointers to all the agents within the world. */
 	TMap<FString, AHolodeckAgent*> AgentMap;
 
+	/**
+	* MakeOctree
+	* If an octree of the environment hasn't been made, it makes one
+	*/
+	float OctreeMin;
+	float OctreeMax;
+	TArray<Octree*> octree;
+	TArray<Octree*>& makeOctree(UWorld* World);
+
 private:
 
 	FString UUID;
 	std::map<std::string, std::unique_ptr<HolodeckSharedMemory>> Memory;
 	bool bIsRunning;
+
+	FVector EnvMin;
+	FVector EnvMax;
 
 	#if PLATFORM_WINDOWS
 	HANDLE LockingSemaphore1;

@@ -13,14 +13,8 @@ TArray<FVector> Octree::corners = {FVector( 1,  1, 1),
                                     FVector(-1, -1,  1),
                                     FVector(-1, -1, -1)};
 FHitResult Octree::hit = FHitResult();
-FCollisionQueryParams init_params(){
-            FCollisionQueryParams params;
-            params.bTraceComplex = false;
-            params.TraceTag = "";
-            params.bFindInitialOverlaps = true;
-            return params;
-}
-FCollisionQueryParams Octree::params = init_params();
+
+FCollisionQueryParams Octree::params = Octree::init_params();
 
 void Octree::makeOctree(FVector center, float size, UWorld* World, TArray<Octree*>& parent, float minBox){
     /*

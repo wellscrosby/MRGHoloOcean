@@ -54,7 +54,16 @@ class Octree
         static void ignoreActor(const AActor * InIgnoreActor){
             params.AddIgnoredActor(InIgnoreActor);
         }
+        static void resetParams(){ params = init_params(); }
         int numLeafs();
+
+        static FCollisionQueryParams init_params(){
+            FCollisionQueryParams p;
+            p.bTraceComplex = false;
+            p.TraceTag = "";
+            p.bFindInitialOverlaps = true;
+            return p;
+        }
 
         FVector loc;
         FVector normal;
