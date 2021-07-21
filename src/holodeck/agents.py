@@ -687,7 +687,7 @@ class TorpedoAUV(HolodeckAgent):
 
     **Action Space**:::
 
-        [pitch_torque, roll_torque, yaw_torque, thrust]
+        [left_fin, top_fin, right_fin, bottom_fin, thrust]
 
     -  All are capped by max acceleration
 
@@ -700,10 +700,10 @@ class TorpedoAUV(HolodeckAgent):
 
     @property
     def control_schemes(self):
-        scheme = "[pitch_torque, roll_torque, yaw_torque, thrust]"
-        low = [self.__MIN_ACCEL]*4
-        high = [self.__MAX_ACCEL]*4
-        return [(scheme, ContinuousActionSpace([4], low=low, high=high))]
+        scheme = "[left_fin, top_fin, right_fin, bottom_fin, thrust]"
+        low = [self.__MIN_ACCEL]*5
+        high = [self.__MAX_ACCEL]*5
+        return [(scheme, ContinuousActionSpace([5], low=low, high=high))]
 
     def get_joint_constraints(self, joint_name):
         return None
