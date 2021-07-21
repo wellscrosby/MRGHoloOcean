@@ -40,7 +40,8 @@ class HolodeckClient:
         import win32event
         semaphore_all_access = 0x1F0003
 
-        self.timeout = 5000 if self.should_timeout else win32event.INFINITE            
+        # Make the timeout 10 minutes, so we wait for Octrees to load if necessary
+        self.timeout = 10*60*1000 if self.should_timeout else win32event.INFINITE            
 
         self._semaphore1 = \
             win32event.OpenSemaphore(semaphore_all_access, False,
@@ -72,7 +73,8 @@ class HolodeckClient:
 
         # Unfortunately, OSX doesn't support sem_timedwait(), so setting this timeout
         # does nothing.
-        self.timeout = 60 if self.should_timeout else None
+        # Make the timeout 10 minutes, so we wait for Octrees to load if necessary
+        self.timeout = 10*60 if self.should_timeout else None
 
         def posix_acquire_semaphore(sem):
             sem.acquire(self.timeout)
