@@ -30,29 +30,30 @@ void ATorpedoAUV::Tick(float DeltaSeconds) {
 	ApplyBuoyantForce();
 
 	// Apply propeller
-	float ThrustToApply = FMath::Clamp(CommandArray[0], TAUV_MIN_THRUST, TAUV_MAX_THRUST);
+	float ThrustToApply = FMath::Clamp(CommandArray[4], TAUV_MIN_THRUST, TAUV_MAX_THRUST);
 	FVector LocalThrust = FVector(ThrustToApply, 0, 0);
 	LocalThrust = ConvertLinearVector(LocalThrust, ClientToUE);
-	RootMesh->AddForceAtLocationLocal(LocalThrust, controls[0]);
+	RootMesh->AddForceAtLocationLocal(LocalThrust, thruster);
 
 	// Apply fin forces
-	for(int i=1;i<2;i++){
+	for(int i=0;i<4;i++){
 		// ApplyFin(i);
 	}
 	ApplyFin(1);
 	ApplyFin(3);
+	// ApplyFin(3);
 }
 
 // TODO: Analyze physics and implement more accurate controls here
 // These are mostly placeholders while testing
 void ATorpedoAUV::ApplyFin(int i){
 	// Get rotations
-	float commandAngle = CommandArray[1];
+	float commandAngle = CommandArray[i];
 	FRotator bodyToWorld = this->GetActorRotation();
-	FRotator finToBody = FRotator(commandAngle, 0, 0);
+	FRotator finToBody = UKismetMathLibrary::ComposeRotators(FRotator(commandAngle, 0, 0), finRotation[i]);
 
 	// get velocity at fin location
-	FVector velWorld = RootMesh->GetPhysicsLinearVelocityAtPoint(controls[i]);
+	FVector velWorld = RootMesh->GetPhysicsLinearVelocityAtPoint(finTranslation[i]);
 	FVector velBody = bodyToWorld.UnrotateVector(velWorld);
 	FVector velFin = finToBody.UnrotateVector(velBody);
 
@@ -70,23 +71,26 @@ void ATorpedoAUV::ApplyFin(int i){
 	// TODO: Verify these coefficients
 	double angleRad = angle*3.14/180;
 	double sin = -FMath::Sin(angle*3.14/180);
-	double drag = 0.5 * u2 * sin*sin / 100;
-	double lift = 0.5 * u2 * sin / 100;
+	double drag = 0.5 * u2 * sin*sin / 1000;
+	double lift = 0.5 * u2 * sin / 1000;
 	
 	FVector fW = -FVector(drag, 0, lift);
-	FRotator WToBody = FRotator(angle, 0, 0);
+	FRotator WToBody = FRotator(angle, 0, 0) + finRotation[i];
 	FVector fBody = WToBody.RotateVector(fW);
 
-	if(i == 1){
-		UE_LOG(LogHolodeck, Warning, TEXT("pitch: %f, \t sin: %f, \t ca: %f, \t velocity: %s, \t fW: %s"), 
+	if(true){
+		UE_LOG(LogHolodeck, Warning, TEXT("fin: %d, pitch: %f, \t w: %f, \t velocity: %s, \t fW: %s"), 
+						i,
 						bodyToWorld.Euler().Y,
-						sin, 
-						commandAngle,
+						angle,
 						*velBody.ToString(), 
 						*fW.ToString());
 	}
 
+	RootMesh->AddForceAtLocationLocal(fBody, finTranslation[i]);
 	if(.01 < velBody.Size() && velBody.Size() < 200){
-		RootMesh->AddForceAtLocationLocal(fBody, controls[i]);
 	}
+	
+	FTransform finCoord = FTransform(finToBody, finTranslation[i]) * GetActorTransform();
+	DrawDebugCoordinateSystem(GetWorld(), finCoord.GetTranslation(), finCoord.Rotator(), 15, false, .1, ECC_WorldStatic, 1.f);
 }

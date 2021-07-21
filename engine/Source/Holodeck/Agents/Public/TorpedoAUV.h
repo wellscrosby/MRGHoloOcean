@@ -46,11 +46,15 @@ public:
 	float GetAccelerationLimit() override { return 400; }
 
 	// Location of all forces to apply
-	TArray<FVector> controls{ FVector(-95,0,0),
-								FVector(-75,7.07,0),
-								FVector(-75,0,7.07),
-								FVector(-75,-7.07,0),
-								FVector(-75,0,-7.07) };
+	FVector thruster = FVector(-95,0,0);
+	TArray<FVector> finTranslation{ FVector(-75,7.07,0),
+									FVector(-75,0,7.07),
+									FVector(-75,-7.07,0),
+									FVector(-75,0,-7.07) };
+	TArray<FRotator> finRotation{ 	FRotator(0,0,0),
+									FRotator(0,0,-90),
+									FRotator(0,0,-180),
+									FRotator(0,0,-270) };
 
 	void ApplyFin(int i);
 
