@@ -13,9 +13,9 @@ steps:
   image: adamrehn/ue4-full:4.22.3
   environment:
     USERNAME:
-      from-secret: worlds_username
+      from_secret: worlds_username
     PASSWORD: 
-      from-secret: worlds_password
+      from_secret: worlds_password
   commands:
   # TODO Figure out how to clone using gitea credentials
   - git clone https://$USERNAME:$PASSWORD@robots.et.byu.edu/gitea/contagon/HoloOcean-Worlds our_worlds
@@ -27,9 +27,9 @@ steps:
   settings:
       bucket: holo
       access_key: 
-        from-secret: minio_username
+        from_secret: minio_username
       secret_key: 
-        from-secret: minio_password
+        from_secret: minio_password
       source: final/*
       strip_prefix: final/
       target: /Ocean/${DRONE_BRANCH}
