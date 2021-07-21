@@ -84,7 +84,7 @@ private:
 	AActor* Parent;
 
 	// holds our implementation of Octrees
-	TArray<Octree*> octree;
+	TArray<Octree*>& getOctree(){ return Controller->GetServer()->octree; }
 	void viewLeafs(Octree* tree);
 
 	// various computations we want to cache

@@ -111,8 +111,10 @@ void USonarSensor::InitializeSensor() {
 		AActor* actor = static_cast<AActor*>(agent.Value);
 		Octree::ignoreActor(actor);
 	}
-	octree = Controller->GetServer()->makeOctree(GetWorld());
-	Octree::init_params();
+	// make/load octree
+	Controller->GetServer()->makeOctree(GetWorld());
+	// remove all ignored agents (agents will make their own octree soon)
+	Octree::resetParams();
 	OctreeMax = Controller->GetServer()->OctreeMax;
 	
 	// Get size of each bin
@@ -129,9 +131,10 @@ void USonarSensor::InitializeSensor() {
 
 	// setup leaves for later
 	// TODO: calculate what these values should be
+	TArray<Octree*>& octree = getOctree();
 	leafs.Reserve(10000);
-	tempLeafs.Reserve(octree.Num());
-	for(int i=0;i<octree.Num();i++){
+	tempLeafs.Reserve(octree.Num()+30);
+	for(int i=0;i<octree.Num()+30;i++){
 		tempLeafs.Add(TArray<Octree*>());
 		tempLeafs[i].Reserve(1000);
 	}
@@ -203,8 +206,10 @@ void USonarSensor::viewLeafs(Octree* tree){
 void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	TickCounter++;
 	if(TickCounter == TicksPerCapture){
+		// reset things and get ready
 		float* result = static_cast<float*>(Buffer);
 		std::fill(result, result+BinsRange*BinsAzimuth, 0);
+		TArray<Octree*>& octree = getOctree();
 
 		// FILTER TO GET THE LEAFS WE WANT
 		ParallelFor(octree.Num(), [&](int32 i){
@@ -249,8 +254,6 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 		}
 
 		// draw outlines of our region
-		UE_LOG(LogHolodeck, Warning, TEXT("Num: %d"), octree.Num());
-		// viewLeafs(octree[0]);
 		if(ViewDebug){
 			for( Octree* l : leafs){
 				DrawDebugPoint(GetWorld(), l->loc, 5, FColor::Red, false, .03*TicksPerCapture);

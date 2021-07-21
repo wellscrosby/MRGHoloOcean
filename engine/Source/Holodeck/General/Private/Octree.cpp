@@ -16,7 +16,7 @@ FHitResult Octree::hit = FHitResult();
 
 FCollisionQueryParams Octree::params = Octree::init_params();
 
-void Octree::makeOctree(FVector center, float size, UWorld* World, TArray<Octree*>& parent, float minBox){
+void Octree::makeOctree(FVector center, float size, UWorld* World, TArray<Octree*>& parent, float minBox, FString actorName){
     /*
     * There's a bug in UE4 4.22 where if you're sweep has length less than KINDA_SMALL_NUMBER it doesn't do anything
     * https://answers.unrealengine.com/questions/887018/422-spheretraceforobjects-node-is-not-working-anym.html
@@ -26,6 +26,10 @@ void Octree::makeOctree(FVector center, float size, UWorld* World, TArray<Octree
     static FVector offset = 10*FVector(KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER) / sqrt(2.9);
     bool occup = World->SweepSingleByChannel(hit, center, center+offset, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, FCollisionShape::MakeBox(FVector(size/2)), params);
     occup = hit.bStartPenetrating;
+    // if we're making for an actor, make sure we're hitting it and not something else
+    if(occup && actorName != "" && actorName != hit.GetActor()->GetName()){
+        occup = false;
+    }
 
     static float cornerSize = .1;
 
@@ -47,7 +51,7 @@ void Octree::makeOctree(FVector center, float size, UWorld* World, TArray<Octree
             // if it still needs to be broken down, iterate through corners
             if(size > minBox){
                 for(FVector off : corners){
-                    makeOctree(center+(off*size/4), size/2, World, child->leafs, minBox);
+                    makeOctree(center+(off*size/4), size/2, World, child->leafs, minBox, actorName);
                 }
             }
 

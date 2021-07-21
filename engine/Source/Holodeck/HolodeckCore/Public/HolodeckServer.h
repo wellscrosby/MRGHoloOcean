@@ -130,7 +130,7 @@ public:
 	float OctreeMin;
 	float OctreeMax;
 	TArray<Octree*> octree;
-	TArray<Octree*>& makeOctree(UWorld* World);
+	void makeOctree(UWorld* World);
 
 private:
 

@@ -33,13 +33,9 @@ void AHolodeckBuoyantAgent::InitializeAgent(){
 void AHolodeckBuoyantAgent::Tick(float DeltaSeconds) {
 	Super::Tick(DeltaSeconds);
 	if(octreeGlobal.Num() == 0 && Server->octree.Num() != 0){
-		UE_LOG(LogHolodeck, Warning, TEXT("Before %d"), Server->octree.Num());
 		makeOctree();
-		UE_LOG(LogHolodeck, Warning, TEXT("After %d"), Server->octree.Num());
 	}
 	updateOctree();
-	// UE_LOG(LogHolodeck, Warning, TEXT("Local %s, \tGlobal %s"), *octreeLocal[0]->loc.ToString(), *octreeGlobal[0]->loc.ToString());
-	// UE_LOG(LogHolodeck, Warning, TEXT("NumLocal %d, \tNumGlobal %d"), octreeLocal[0]->numLeafs(), octreeGlobal[0]->numLeafs());
 }
 
 void AHolodeckBuoyantAgent::BeginDestroy() {
@@ -95,31 +91,31 @@ void AHolodeckBuoyantAgent::ShowSurfacePoints(){
 
 void AHolodeckBuoyantAgent::makeOctree(){
 	if(octreeGlobal.Num() == 0){
-		UE_LOG(LogHolodeck, Warning, TEXT("HolodeckAgent::Making Octree.."));
+		UE_LOG(LogHolodeck, Warning, TEXT("HolodeckBuoyantAgent::Making Octree.."));
 		int OctreeMin = Server->OctreeMin;
 		int OctreeMax = Server->OctreeMax;
+		// Shrink to the smallest cube the actor fits in
+		float extent = BoundingBox.GetExtent().GetAbsMax()*2;
+		while(OctreeMax/2 > extent){
+			OctreeMax /= 2;
+		}
 
 		// Otherwise, make the octrees
 		FVector nCells = (BoundingBox.Max - BoundingBox.Min) / OctreeMax;
-		// UE_LOG(LogHolodeck, Warning, TEXT("nCells: %s"), *nCells.ToString());
 		for(int i = 0; i < nCells.X; i++) {
 			for(int j = 0; j < nCells.Y; j++) {
 				for(int k = 0; k < nCells.Z; k++) {
-					FVector center = FVector(i*OctreeMax, j*OctreeMax, k*OctreeMax) + BoundingBox.Min + GetActorLocation();
-					// UE_LOG(LogHolodeck, Warning, TEXT("center: %s"), *center.ToString());
-					// UE_LOG(LogHolodeck, Warning, TEXT("bb: %s"), *BoundingBox.Min.ToString());
-					// UE_LOG(LogHolodeck, Warning, TEXT("loc: %s"), *GetActorLocation().ToString());
-					Octree::makeOctree(center, OctreeMax, GetWorld(), octreeGlobal, OctreeMin);
+					FVector center = FVector(i*OctreeMax, j*OctreeMax, k*OctreeMax) + BoundingBox.Min + OctreeMax/4 + GetActorLocation();
+					Octree::makeOctree(center, OctreeMax, GetWorld(), octreeGlobal, OctreeMin, GetName());
 				}
 			}
 		}
 		Server->octree += octreeGlobal;
 
-		// Clean out the octree
+		// Convert our global octree to a local one
 		for( Octree* tree : octreeGlobal){
 			cleanOctree(tree, octreeLocal);
 		}
-		// UE_LOG(LogHolodeck, Warning, TEXT("Global size: %d, Local Size %d"), octreeGlobal.Num(), octreeLocal.Num());
 	}
 }
 

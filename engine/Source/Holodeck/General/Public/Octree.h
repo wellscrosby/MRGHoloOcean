@@ -40,7 +40,7 @@ class Octree
 			}
 		}
 
-        static void makeOctree(FVector center, float size, UWorld* World, TArray<Octree*>& parent, float minBox=16);
+        static void makeOctree(FVector center, float size, UWorld* World, TArray<Octree*>& parent, float minBox=16, FString actorName="");
 
         // functions for loading/saving octrees
         static void toJson(TArray<Octree*>& trees, FString filePath);

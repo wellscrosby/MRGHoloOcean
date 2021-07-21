@@ -162,7 +162,7 @@ void UHolodeckServer::LogSystemError(const std::string& errorMessage) {
     UE_LOG(LogHolodeck, Fatal, TEXT("%s - Error code: %d=%s"), ANSI_TO_TCHAR(errorMessage.c_str()), errno, ANSI_TO_TCHAR(strerror(errno)));
 }
 
-TArray<Octree*>& UHolodeckServer::makeOctree(UWorld* World){
+void UHolodeckServer::makeOctree(UWorld* World){
     if(octree.Num() == 0){
         // Get caching/loading location
         FString filePath = FPaths::ProjectDir() + "Octrees/" + World->GetMapName();
@@ -190,6 +190,4 @@ TArray<Octree*>& UHolodeckServer::makeOctree(UWorld* World){
 			Octree::toJson(octree, filePath);
 		}
     }
-
-    return octree;
 }
