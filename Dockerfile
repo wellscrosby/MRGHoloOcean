@@ -15,7 +15,7 @@ ENV PYTHONPATH="${PYTHONPATH}:/usr/local/lib/python3/dist-packages"
 
 # Install all python dependencies
 RUN pip3 install -U pip setuptools wheel
-RUN pip3 install numpy posix_ipc holodeck pytest opencv-python
+RUN pip3 install numpy posix_ipc holodeck pytest opencv-python scipy
 # Install worlds so we don't have to redownload unchanging worlds each time
 USER holodeckuser
 RUN python3 -c 'import holodeck; holodeck.install("DefaultWorlds")'

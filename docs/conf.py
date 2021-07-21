@@ -54,7 +54,7 @@ autodoc_default_options = {
 }
 
 def setup(app):
-   app.add_stylesheet("themes_override.css")
+   app.add_css_file("themes_override.css")
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['docstemplates']

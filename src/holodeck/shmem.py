@@ -22,7 +22,7 @@ class Shmem:
     _numpy_to_ctype = {
         np.float32: ctypes.c_float,
         np.uint8: ctypes.c_uint8,
-        np.bool: ctypes.c_bool,
+        np.bool_: ctypes.c_bool,
         np.byte: ctypes.c_byte
     }
 
