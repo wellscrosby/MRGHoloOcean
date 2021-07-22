@@ -14,7 +14,7 @@ ATorpedoAUV::ATorpedoAUV() {
 	this->OffsetToOrigin = FVector(0, 0, 0);
 	this->CenterBuoyancy = FVector(0,0,5); 
 	this->CenterMass = FVector(0,0,-5);
-	this->MassInKG = 27;
+	this->MassInKG = 36;
 	this->Volume =  MassInKG / WaterDensity; //0.0342867409204;	
 }
 
@@ -37,28 +37,27 @@ void ATorpedoAUV::Tick(float DeltaSeconds) {
 
 	// Apply fin forces
 	for(int i=0;i<4;i++){
-		// ApplyFin(i);
+		ApplyFin(i);
 	}
-	ApplyFin(1);
-	ApplyFin(3);
-	// ApplyFin(3);
 }
 
-// TODO: Analyze physics and implement more accurate controls here
-// These are mostly placeholders while testing
+/** Based on the models found in
+	* Preliminary Evaluation of Cooperative Navigation of Underwater Vehicles 
+	* 		without a DVL Utilizing a Dynamic Process Model, Section III-3) Control Inputs
+	* 		https://ieeexplore.ieee.org/document/8460970
+*/
 void ATorpedoAUV::ApplyFin(int i){
 	// Get rotations
 	float commandAngle = CommandArray[i];
 	FRotator bodyToWorld = this->GetActorRotation();
 	FRotator finToBody = UKismetMathLibrary::ComposeRotators(FRotator(commandAngle, 0, 0), finRotation[i]);
 
-	// get velocity at fin location
+	// get velocity at fin location, in fin frame
 	FVector velWorld = RootMesh->GetPhysicsLinearVelocityAtPoint(finTranslation[i]);
 	FVector velBody = bodyToWorld.UnrotateVector(velWorld);
 	FVector velFin = finToBody.UnrotateVector(velBody);
 
-	// set an upper and lower cap
-	// get flow angle
+	// get flow angle and flow frame
 	double angle = UKismetMathLibrary::DegAtan2(-velFin.Z, velFin.X);
 	while(angle-commandAngle > 90){
 		angle -= 180;
@@ -66,31 +65,26 @@ void ATorpedoAUV::ApplyFin(int i){
 	while(angle-commandAngle < -90){
 		angle += 180;
 	}
+	FRotator WToBody = UKismetMathLibrary::ComposeRotators(FRotator(angle, 0, 0), finRotation[i]);
 
+	// Calculate force in flow frame
 	double u2 = velFin.Z*velFin.Z + velFin.X*velFin.X;
 	// TODO: Verify these coefficients
-	double angleRad = angle*3.14/180;
+	// I've just adjusted these until they seem to behave correctly
 	double sin = -FMath::Sin(angle*3.14/180);
 	double drag = 0.5 * u2 * sin*sin / 1000;
-	double lift = 0.5 * u2 * sin / 1000;
+	double lift = 0.5 * u2 * sin / 500;
 	
+	// Move force into body frame & apply
 	FVector fW = -FVector(drag, 0, lift);
-	FRotator WToBody = FRotator(angle, 0, 0) + finRotation[i];
 	FVector fBody = WToBody.RotateVector(fW);
-
-	if(true){
-		UE_LOG(LogHolodeck, Warning, TEXT("fin: %d, pitch: %f, \t w: %f, \t velocity: %s, \t fW: %s"), 
-						i,
-						bodyToWorld.Euler().Y,
-						angle,
-						*velBody.ToString(), 
-						*fW.ToString());
-	}
-
 	RootMesh->AddForceAtLocationLocal(fBody, finTranslation[i]);
-	if(.01 < velBody.Size() && velBody.Size() < 200){
-	}
-	
-	FTransform finCoord = FTransform(finToBody, finTranslation[i]) * GetActorTransform();
-	DrawDebugCoordinateSystem(GetWorld(), finCoord.GetTranslation(), finCoord.Rotator(), 15, false, .1, ECC_WorldStatic, 1.f);
+
+	// // Used to draw forces/frames for debugging
+	// FTransform finCoord = FTransform(finToBody, finTranslation[i]) * GetActorTransform();
+	// FVector fWorld = bodyToWorld.RotateVector(fBody);
+	// // View force vector
+	// DrawDebugLine(GetWorld(), finCoord.GetTranslation(), finCoord.GetTranslation()+fWorld*10, FColor::Red, false, .1, ECC_WorldStatic, 1.f);
+	// // View angle of attack coordinate frame
+	// DrawDebugCoordinateSystem(GetWorld(), finCoord.GetTranslation(), finCoord.Rotator(), 15, false, .1, ECC_WorldStatic, 1.f);
 }
