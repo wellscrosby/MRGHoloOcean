@@ -58,6 +58,12 @@ public:
 
 	void ApplyFin(int i);
 
+	// We copy command into here to be able to change fins in blueprint
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<float> DiffCommand;
+
+	TArray<float> LastCommand;
+
 private:
 	/** NOTE: These go counter-clockwise, starting in front right
 	* 0: Vertical Front Starboard Thruster

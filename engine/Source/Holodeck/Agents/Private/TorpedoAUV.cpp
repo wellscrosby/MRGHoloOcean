@@ -22,6 +22,8 @@ void ATorpedoAUV::InitializeAgent() {
 	RootMesh = Cast<UStaticMeshComponent>(RootComponent);
 
 	Super::InitializeAgent();
+	LastCommand = TArray<float>(CommandArray, 5);
+	DiffCommand = TArray<float>(CommandArray, 5);
 }
 
 // Called every frame
@@ -38,6 +40,10 @@ void ATorpedoAUV::Tick(float DeltaSeconds) {
 	// Apply fin forces
 	for(int i=0;i<4;i++){
 		ApplyFin(i);
+
+		// Makes fins move in blueprint
+		DiffCommand[i] = CommandArray[i] - LastCommand[i];
+		LastCommand[i] = CommandArray[i];
 	}
 }
 
