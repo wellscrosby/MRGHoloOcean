@@ -4,6 +4,7 @@
 #include "Benchmarker.h"
 #include "HolodeckBuoyantAgent.h"
 #include "SonarSensor.h"
+// #pragma warning (disable : 4101)
 
 float ATan2Approx(float y, float x)
 {
@@ -299,11 +300,14 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 					b = FMath::Sqrt(bb);
 					c = other->locSpherical.X;
 					cos = (aa + bb - c*c) / (2*a*b);
-					if(cos < shadowCos) binLeafs.RemoveAt(k+1);;					
+					// TODO: This is 100% the line holding us up, figure out how to do this more efficiently
+					if(cos < shadowCos) binLeafs.RemoveAt(k+1);
 				}
 				++j;
 			}
 		});
+		time.End();
+		UE_LOG(LogHolodeck, Warning, TEXT("Calc: %f"), time.CalcMs());
 
 		// CALCULATIONS
 		FVector compLoc = this->GetComponentLocation();
@@ -330,8 +334,6 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 				}
 			}
 		});
-		time.End();
-		UE_LOG(LogHolodeck, Warning, TEXT("Calc: %f"), time.CalcMs());
 		
 		// MOVE THEM INTO BUFFER
 		for (int i = 0; i < BinsRange*BinsAzimuth; i++) {
