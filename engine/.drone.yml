@@ -11,9 +11,14 @@ steps:
 
 - name: Package Project
   image: adamrehn/ue4-full:4.22.3
+  environment:
+    USERNAME:
+      from_secret: worlds_username
+    PASSWORD: 
+      from_secret: worlds_password
   commands:
   # TODO Figure out how to clone using gitea credentials
-  - git clone https://bitbucket.org/frostlab/holodeck-ocean-worlds.git
+  - git clone https://$USERNAME:$PASSWORD@robots.et.byu.edu/gitea/contagon/HoloOcean-Worlds our_worlds
   - bash Build/ContinuousIntegration/package_ue4_project.sh ${DRONE_COMMIT:0:8}
   - echo "The pull request was successfully packaged"
 
@@ -21,8 +26,10 @@ steps:
   image: plugins/s3
   settings:
       bucket: holo
-      access_key: frostlab
-      secret_key: frostlab2020
+      access_key: 
+        from_secret: minio_username
+      secret_key: 
+        from_secret: minio_password
       source: final/*
       strip_prefix: final/
       target: /Ocean/${DRONE_BRANCH}

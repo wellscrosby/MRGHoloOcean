@@ -13,7 +13,7 @@ echo "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠�
 
 #move our worlds into it
 mkdir Content/Worlds
-mv holodeck-ocean-worlds/* Content/Worlds/
+mv our_worlds/* Content/Worlds/
 
 # Package it up
 echo "👉 Starting Packaging Process..."
