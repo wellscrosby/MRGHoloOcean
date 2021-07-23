@@ -142,6 +142,7 @@ void USonarSensor::InitializeSensor() {
 	Super::InitializeSensor();
 
 	OctreeMax = Controller->GetServer()->OctreeMax;
+	OctreeMin = Controller->GetServer()->OctreeMin;
 	
 	// Get size of each bin
 	RangeRes = (MaxRange - MinRange) / BinsRange;
@@ -154,6 +155,7 @@ void USonarSensor::InitializeSensor() {
 
 	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(Azimuth, Elevation)/2);
 	sqrt2 = UKismetMathLibrary::Sqrt(2);
+	
 
 	// setup leaves for later
 	count = new int32[BinsRange*BinsAzimuth]();
@@ -254,7 +256,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 		Benchmarker time;
 		time.Start();
 		for(Octree* l : leafs){
-			int32 aBin = (int)((l->locSpherical[1] - minAzimuth)/ AzimuthRes);
+			int32 aBin = (int)((l->locSpherical.Y - minAzimuth)/ AzimuthRes);
 			// Sometimes we get float->int rounding errors
 			if(aBin == BinsAzimuth) --aBin;
 			sortedLeafs[aBin].Add(l);
@@ -264,10 +266,10 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 		time.Start();
 
 		// HANDLE SHADOWING
-		float shadowAngle = 5;
-		float shadowCos = -FMath::Cos(shadowAngle*3.14/180);
+		// TODO: Do these degree params need to be check for larger octree sizes?
+		float shadowAngle = 1;
+		float shadowCos = -FMath::Cos(shadowAngle*Pi/180);
 		ParallelFor(BinsAzimuth, [&](int32 aBin){
-			int count = 0;
 			TArray<Octree*>& binLeafs = sortedLeafs.GetData()[aBin]; 
 
 			// sort from closest to farthest
@@ -276,28 +278,31 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			});
 
 			int32 j=0,k;
-			float a,b,c,cos;
+			float a,aa,b,bb,c,cos,elevDiff;
 			// remove ones that are in the shadow of bin j
 			while(j < binLeafs.Num()){
 				k = binLeafs.Num()-1;
 				Octree* close = binLeafs.GetData()[j];
 				a = close->locSpherical.X;
+				aa = a*a;
+
 				while(k > j){
 					Octree* other = binLeafs.GetData()[k];
-					b = (close->loc - other->loc).Size();
-					c = other->locSpherical.X;
-					cos = (a*a + b*b - c*c) / (2*a*b);
-					++count;
-					// if it's in the shadow
-					if(cos < shadowCos){
-						// binLeafs.GetData()[k] = nullptr;
-						binLeafs.RemoveAt(k);
-					}
 					--k;
+
+					// if it's definitely out
+					elevDiff = FMath::Abs(close->locSpherical.Z - other->locSpherical.Z);
+					if(elevDiff > 1) continue;
+
+					// do better math for checking
+					bb = FVector::DistSquared(close->loc, other->loc);
+					b = FMath::Sqrt(bb);
+					c = other->locSpherical.X;
+					cos = (aa + bb - c*c) / (2*a*b);
+					if(cos < shadowCos) binLeafs.RemoveAt(k+1);;					
 				}
 				++j;
 			}
-			UE_LOG(LogHolodeck, Warning, TEXT("aBin: %d, count: %d"), aBin, count);
 		});
 
 		// CALCULATIONS
@@ -315,7 +320,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 					float val = FVector::DotProduct(l->normal, normalImpact);
 					if(val > 0){
 						// Compute what bin it goes in
-						int32 rBin = (int)((l->locSpherical[0] - MinRange) / RangeRes);
+						int32 rBin = (int)((l->locSpherical.X - MinRange) / RangeRes);
 						int32 idx = rBin*BinsAzimuth + aBin;
 
 						// TODO: use sigmoid here?
