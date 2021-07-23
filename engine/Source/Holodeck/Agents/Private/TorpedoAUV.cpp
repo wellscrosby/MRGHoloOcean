@@ -54,7 +54,7 @@ void ATorpedoAUV::Tick(float DeltaSeconds) {
 */
 void ATorpedoAUV::ApplyFin(int i){
 	// Get rotations
-	float commandAngle = CommandArray[i];
+	float commandAngle = FMath::Clamp(CommandArray[i], TAUV_MIN_FIN, TAUV_MAX_FIN);
 	FRotator bodyToWorld = this->GetActorRotation();
 	FRotator finToBody = UKismetMathLibrary::ComposeRotators(FRotator(commandAngle, 0, 0), finRotation[i]);
 
@@ -63,37 +63,38 @@ void ATorpedoAUV::ApplyFin(int i){
 	FVector velBody = bodyToWorld.UnrotateVector(velWorld);
 	FVector velFin = finToBody.UnrotateVector(velBody);
 
-	// Sometimes we get huge velocities when settling in, avoid them
-	if(velFin.Size() < 500){
-		// get flow angle and flow frame
-		double angle = commandAngle; //UKismetMathLibrary::DegAtan2(-velFin.Z, velFin.X);
-		while(angle-commandAngle > 90){
-			angle -= 180;
-		}
-		while(angle-commandAngle < -90){
-			angle += 180;
-		}
-		FRotator WToBody = UKismetMathLibrary::ComposeRotators(FRotator(angle, 0, 0), finRotation[i]);
+	// get flow angle and flow frame
+	double angle = UKismetMathLibrary::DegAtan2(-velFin.Z, velFin.X);
+	while(angle-commandAngle > 90){
+		angle -= 180;
+	}
+	while(angle-commandAngle < -90){
+		angle += 180;
+	}
+	FRotator WToBody = UKismetMathLibrary::ComposeRotators(FRotator(angle, 0, 0), finRotation[i]);
 
-		// Calculate force in flow frame
-		double u2 = velFin.Z*velFin.Z + velFin.X*velFin.X;
-		// TODO: Verify these coefficients
-		// I've just adjusted these until they seem to behave correctly
-		double sin = -FMath::Sin(angle*3.14/180);
-		double drag = 0.5 * u2 * sin*sin / 400;
-		double lift = 0.5 * u2 * sin / 200;
-		
-		// Move force into body frame & apply
-		FVector fW = -FVector(drag, 0, lift);
-		FVector fBody = WToBody.RotateVector(fW);
-		RootMesh->AddForceAtLocationLocal(fBody, finTranslation[i]);
+	// Calculate force in flow frame
+	double u2 = velFin.Z*velFin.Z + velFin.X*velFin.X;
+	// TODO: Verify these coefficients
+	// I've just adjusted these until they seem to behave correctly
+	double sin = -FMath::Sin(angle*3.14/180);
+	double drag = 0.5 * u2 * sin*sin / 400;
+	double lift = 0.5 * u2 * sin / 200;
+	// Sometimes they get out of hand, clamp them
+	double maxForce = 100;
+	drag = FMath::Clamp(drag, -maxForce, maxForce);
+	lift = FMath::Clamp(lift, -maxForce, maxForce);
+	
+	// Move force into body frame & apply
+	FVector fW = -FVector(drag, 0, lift);
+	FVector fBody = WToBody.RotateVector(fW);
+	RootMesh->AddForceAtLocationLocal(fBody, finTranslation[i]);
 
-		// // Used to draw forces/frames for debugging
-		// FTransform finCoord = FTransform(finToBody, finTranslation[i]) * GetActorTransform();
-		// FVector fWorld = bodyToWorld.RotateVector(fBody);
-		// // View force vector
-		// DrawDebugLine(GetWorld(), finCoord.GetTranslation(), finCoord.GetTranslation()+fWorld*10, FColor::Red, false, .1, ECC_WorldStatic, 1.f);
-		// // View angle of attack coordinate frame
-		// // DrawDebugCoordinateSystem(GetWorld(), finCoord.GetTranslation(), finCoord.Rotator(), 15, false, .1, ECC_WorldStatic, 1.f);
-	} 
+	// // Used to draw forces/frames for debugging
+	// FTransform finCoord = FTransform(finToBody, finTranslation[i]) * GetActorTransform();
+	// FVector fWorld = bodyToWorld.RotateVector(fBody);
+	// // View force vector
+	// DrawDebugLine(GetWorld(), finCoord.GetTranslation(), finCoord.GetTranslation()+fWorld*10, FColor::Red, false, .1, ECC_WorldStatic, 1.f);
+	// // View angle of attack coordinate frame
+	// // DrawDebugCoordinateSystem(GetWorld(), finCoord.GetTranslation(), finCoord.Rotator(), 15, false, .1, ECC_WorldStatic, 1.f);
 }
