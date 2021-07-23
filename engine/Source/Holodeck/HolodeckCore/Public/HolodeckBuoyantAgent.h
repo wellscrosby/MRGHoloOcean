@@ -20,7 +20,7 @@ public:
 	void InitializeAgent() override;
 
 	const float WaterDensity = 997;
-	const float Gravity = 9.81;
+	float Gravity;
 
 	UPROPERTY(BlueprintReadWrite, Category = UAVMesh)
 		UStaticMeshComponent* RootMesh;
