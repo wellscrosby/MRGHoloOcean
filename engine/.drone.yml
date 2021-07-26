@@ -17,7 +17,6 @@ steps:
     PASSWORD: 
       from_secret: worlds_password
   commands:
-  # TODO Figure out how to clone using gitea credentials
   - git clone https://$USERNAME:$PASSWORD@robots.et.byu.edu/gitea/contagon/HoloOcean-Worlds our_worlds
   - bash Build/ContinuousIntegration/package_ue4_project.sh ${DRONE_COMMIT:0:8}
   - echo "The pull request was successfully packaged"
@@ -35,3 +34,20 @@ steps:
       target: /Ocean/${DRONE_BRANCH}
       path_style: true
       endpoint: http://minio:9000/  
+
+- name: Push Tagged S3
+  image: plugins/s3
+  settings:
+      bucket: holo
+      access_key: 
+        from_secret: minio_username
+      secret_key: 
+        from_secret: minio_password
+      source: tag/*
+      strip_prefix: tag/
+      target: /Ocean/${DRONE_TAG}
+      path_style: true
+      endpoint: http://minio:9000/  
+  when:
+    event:
+      - tag 
