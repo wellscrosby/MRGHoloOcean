@@ -253,10 +253,30 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			leafs += tl;
 		}
 
-		// SORT THEM INTO AZIMUTH BINS
+		// GET THE DOT PRODUCT, REMOVE BACKSIDE OF ANYTHING
 		Benchmarker time;
 		time.Start();
+		FVector compLoc = this->GetComponentLocation();
+		ParallelFor(leafs.Num(), [&](int32 i){
+			Octree* l = leafs.GetData()[i]; 
+
+			// Compute impact normal
+			FVector normalImpact = compLoc - l->loc; 
+			normalImpact /= normalImpact.Size();
+
+			// compute contribution
+			float val = FVector::DotProduct(l->normal, normalImpact);
+			if(val > 0) l->val = val;
+			else leafs.GetData()[i] = nullptr;
+		});
+		time.End();
+		UE_LOG(LogHolodeck, Warning, TEXT("Calc: %f"), time.CalcMs());
+
+		// SORT THEM INTO AZIMUTH BINS
+		time.Start();
 		for(Octree* l : leafs){
+			if(l == nullptr) continue;
+
 			int32 aBin = (int)((l->locSpherical.Y - minAzimuth)/ AzimuthRes);
 			// Sometimes we get float->int rounding errors
 			if(aBin == BinsAzimuth) --aBin;
@@ -278,16 +298,25 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 				return a.locSpherical.X < b.locSpherical.X;
 			});
 
-			int32 j=0,k;
+			int32 j=0,k,rBin,idx;
 			float a,aa,b,bb,c,cos,elevDiff;
 			Octree *close, *other;
-			// remove ones that are in the shadow of bin j
+			// Iterate through, adding in contributions
 			while(j < binLeafs.Num()){
 				k = binLeafs.Num()-1;
 				close = binLeafs.GetData()[j];
+
+				// Compute what bin it goes in
+				rBin = (int)((close->locSpherical.X - MinRange) / RangeRes);
+				idx = rBin*BinsAzimuth + aBin;
+
+				// TODO: use sigmoid here?
+				result[idx] += close->val;
+				++count[idx];
+
+				// remove ones that are in the shadow of bin j
 				a = close->locSpherical.X;
 				aa = a*a;
-
 				while(k > j){
 					other = binLeafs.GetData()[k];
 					--k;
@@ -308,33 +337,8 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			}
 		});
 		time.End();
-		UE_LOG(LogHolodeck, Warning, TEXT("Calc: %f"), time.CalcMs());
+		UE_LOG(LogHolodeck, Warning, TEXT("Shadows: %f"), time.CalcMs());
 
-		// CALCULATIONS
-		FVector compLoc = this->GetComponentLocation();
-		ParallelFor(BinsAzimuth, [&](int32 aBin){
-			TArray<Octree*>& binLeafs = sortedLeafs.GetData()[aBin]; 
-
-			for(Octree* l : binLeafs){
-				if(l != nullptr){
-					// Compute impact normal
-					FVector normalImpact = compLoc - l->loc; 
-					normalImpact /= normalImpact.Size();
-
-					// compute contribution
-					float val = FVector::DotProduct(l->normal, normalImpact);
-					if(val > 0){
-						// Compute what bin it goes in
-						int32 rBin = (int)((l->locSpherical.X - MinRange) / RangeRes);
-						int32 idx = rBin*BinsAzimuth + aBin;
-
-						// TODO: use sigmoid here?
-						result[idx] += val;
-						++count[idx];
-					}
-				}
-			}
-		});
 		
 		// MOVE THEM INTO BUFFER
 		for (int i = 0; i < BinsRange*BinsAzimuth; i++) {
