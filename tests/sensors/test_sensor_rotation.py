@@ -1,7 +1,8 @@
 import cv2, os
 from tests.utils.equality import mean_square_err
 
-
+@pytest.mark.skipif("DefaultWorlds" not in holoocean.installed_packages(),
+                    reason='DefaultWorlds package not installed')
 def test_sensor_rotation(rotation_env, request):
     """Validates that calling rotate actually rotates the sensor using the RGBCamera.
 
@@ -18,7 +19,8 @@ def test_sensor_rotation(rotation_env, request):
     assert err < 2000, \
         "The sensor appeared to not rotate!"
 
-
+@pytest.mark.skipif("DefaultWorlds" not in holoocean.installed_packages(),
+                    reason='DefaultWorlds package not installed')
 def test_sensor_rotation_resets_after_reset(rotation_env):
     """Validates that the sensor rotation is reset back to the starting position after calling ``.reset()``.
     """
