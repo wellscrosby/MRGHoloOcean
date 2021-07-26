@@ -9,15 +9,9 @@ RUN adduser --disabled-password --gecos "" holodeckuser
 
 # Install all python dependencies
 RUN pip3 install -U pip setuptools wheel
-RUN pip3 install numpy posix_ipc holodeck pytest opencv-python scipy lcm
-# Install worlds so we don't have to redownload unchanging worlds each time
-USER holodeckuser
-RUN python3 -c 'import holodeck; holodeck.install("DefaultWorlds")'
-# Remove default holodeck
-USER root
-RUN pip3 uninstall -y holodeck
-USER holodeckuser
+RUN pip3 install numpy posix_ipc pytest opencv-python scipy lcm
 
+USER holodeckuser
 WORKDIR /home/holodeckuser/
 
 CMD /bin/bash

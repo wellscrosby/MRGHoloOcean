@@ -7,8 +7,8 @@ from holoocean.environments import HolodeckEnvironment
 
 base_conf = {
     "name": "test_randomization",
-    "world": "TestWorld",
-    "package_name": "DefaultWorlds",
+    "world": "ExampleLevel",
+    "package_name": "Ocean",
     "main_agent": "sphere0",
     "agents": [
         {
@@ -25,8 +25,8 @@ base_conf = {
             "control_scheme": 0,
             "location": [0.95, -1.75, 0.5],
             "rotation": [1.0, 2.0, 3.0],
-            "location_randomization": [2, 2, 2],
-            "rotation_randomization": [2, 2, 2]
+            "location_randomization": [10, 10, 10],
+            "rotation_randomization": [10, 10, 10]
         }
     ]
 }
@@ -53,7 +53,7 @@ def test_location_with_randomization():
     Returns:
 
     """
-    bin_path = pm.get_binary_path_for_package("DefaultWorlds")
+    bin_path = pm.get_binary_path_for_package("Ocean")
     conf = copy.deepcopy(base_conf)
 
     with HolodeckEnvironment(scenario=conf, binary_path=bin_path, show_viewport=False, uuid=str(uuid.uuid4())) as env:
@@ -80,7 +80,7 @@ def test_rotation_with_randomization():
     Returns:
 
     """
-    bin_path = pm.get_binary_path_for_package("DefaultWorlds")
+    bin_path = pm.get_binary_path_for_package("Ocean")
     conf = copy.deepcopy(base_conf)
 
     with HolodeckEnvironment(scenario=conf, binary_path=bin_path, show_viewport=False, uuid=str(uuid.uuid4())) as env:

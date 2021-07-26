@@ -3,7 +3,7 @@ import uuid
 
 uav_config = {
     "name": "test_velocity_sensor",
-    "world": "TestWorld",
+    "world": "ExampleLevel",
     "main_agent": "uav0",
     "agents": [
         {
@@ -26,7 +26,7 @@ def test_velocity_sensor_uav_z_axis():
     Make sure it zeros out after it hits the ground, and then goes positive on takeoff
     """
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
     with holoocean.environments.HolodeckEnvironment(scenario=uav_config,
                                                    binary_path=binary_path,

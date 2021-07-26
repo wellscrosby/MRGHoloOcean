@@ -6,7 +6,7 @@ from tests.utils.equality import almost_equal
 
 sphere_config = {
     "name": "test_location_sensor",
-    "world": "TestWorld",
+    "world": "ExampleLevel",
     "main_agent": "sphere0",
     "agents": [
         {
@@ -28,7 +28,7 @@ def test_location_sensor_after_teleport():
     """Make sure the location sensor updates after a teleport. Also verifies that the coordinates for the teleport
     command match the coordinates used by the location sensor
     """
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
     with holoocean.environments.HolodeckEnvironment(scenario=sphere_config,
                                                    binary_path=binary_path,
@@ -49,7 +49,7 @@ def test_location_sensor_after_teleport():
 
 uav_config = {
     "name": "test_location_sensor",
-    "world": "TestWorld",
+    "world": "ExampleLevel",
     "main_agent": "uav0",
     "agents": [
         {
@@ -75,7 +75,7 @@ def test_location_sensor_falling():
     # Spawn the UAV 10 meters up
     cfg["agents"][0]["location"] = [0, 0, 10]
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
     with holoocean.environments.HolodeckEnvironment(scenario=cfg,
                                                    binary_path=binary_path,

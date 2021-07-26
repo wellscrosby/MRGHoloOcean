@@ -6,7 +6,7 @@ import uuid
 
 base_cfg = {
     "name": "test_rotation_sensor",
-    "world": "TestWorld",
+    "world": "ExampleLevel",
     "main_agent": "sphere0",
     "agents": [
         {
@@ -29,7 +29,7 @@ def test_rotation_sensor_after_teleport():
     rotate the agent
 
     """
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
     with holoocean.environments.HolodeckEnvironment(scenario=base_cfg,
                                                    binary_path=binary_path,

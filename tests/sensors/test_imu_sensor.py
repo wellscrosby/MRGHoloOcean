@@ -45,7 +45,7 @@ def test_imu_sensor_acceleration(config):
 
     with holoocean.environments.HolodeckEnvironment(scenario=config,
                                                    binary_path=binary_path,
-                                                   show_viewport=True,
+                                                   show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
         #let it land and then start moving forward
         for _ in range(100):
@@ -89,7 +89,7 @@ def test_imu_sensor_angular_velocity(config):
 
     with holoocean.environments.HolodeckEnvironment(scenario=config,
                                                    binary_path=binary_path,
-                                                   show_viewport=True,
+                                                   show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
         #let it land and then start moving forward
         for _ in range(100):

@@ -5,7 +5,7 @@ from tests.utils.equality import almost_equal
 
 uav_config = {
     "name": "test_prop_spawning",
-    "world": "TestWorld",
+    "world": "ExampleLevel",
     "main_agent": "uav0",
     "agents": [
         {
@@ -28,7 +28,7 @@ def test_static_prop():
     the agent from falling.
     """
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
     with holoocean.environments.HolodeckEnvironment(scenario=uav_config,
                                                    binary_path=binary_path,
@@ -54,7 +54,7 @@ def test_sim_physics_prop():
     and rams the agent.
     """
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
     with holoocean.environments.HolodeckEnvironment(scenario=uav_config,
                                                    binary_path=binary_path,

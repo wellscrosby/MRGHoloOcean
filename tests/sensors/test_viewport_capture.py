@@ -3,6 +3,7 @@ import uuid
 import cv2
 import os
 import time
+import pytest
 
 from tests.utils.equality import mean_square_err
 
@@ -27,7 +28,8 @@ base_cfg = {
     ]
 }
 
-
+@pytest.mark.skipif("DefaultWorlds" not in holoocean.installed_packages(),
+                    reason='DefaultWorlds package not installed')
 def test_viewport_capture(resolution, request):
     """Validates that the ViewportCapture camera is working at the expected resolutions
 
@@ -63,7 +65,8 @@ def test_viewport_capture(resolution, request):
 
         assert err < 1000, "The expected screenshot did not match the actual screenshot!"
 
-
+@pytest.mark.skipif("DefaultWorlds" not in holoocean.installed_packages(),
+                    reason='DefaultWorlds package not installed')
 def test_viewport_capture_after_teleport(env_1024, request):
     """Validates that the ViewportCapture is updated after teleporting the camera
     to a different location. 
