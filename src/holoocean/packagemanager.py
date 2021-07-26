@@ -165,7 +165,7 @@ def scenario_info(scenario_name="", scenario=None, base_indent=0):
         _print_agent_info(scenario["agents"], base_indent)
 
 
-def install(package_name, branch=None, commit=None, url=None):
+def install(package_name, url=None, branch=None, commit=None):
     """Installs a holodeck package.
 
     Args:

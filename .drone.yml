@@ -20,7 +20,7 @@ steps:
   - echo $BRANCH
   # Install, and run tests
   - pip install .
-  - python3 -c "import holoocean; holoocean.install(\"Ocean\", \"https://robots.et.byu.edu/holo/Ocean/$BRANCH/latest.zip\")"
+  - python3 -c "import holoocean; holoocean.install(\"Ocean\", branch=\"$BRANCH\")"
   - py.test
 
 
