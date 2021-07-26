@@ -280,15 +280,16 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 
 			int32 j=0,k;
 			float a,aa,b,bb,c,cos,elevDiff;
+			Octree *close, *other;
 			// remove ones that are in the shadow of bin j
 			while(j < binLeafs.Num()){
 				k = binLeafs.Num()-1;
-				Octree* close = binLeafs.GetData()[j];
+				close = binLeafs.GetData()[j];
 				a = close->locSpherical.X;
 				aa = a*a;
 
 				while(k > j){
-					Octree* other = binLeafs.GetData()[k];
+					other = binLeafs.GetData()[k];
 					--k;
 
 					// if it's definitely out
@@ -300,7 +301,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 					b = FMath::Sqrt(bb);
 					c = other->locSpherical.X;
 					cos = (aa + bb - c*c) / (2*a*b);
-					// TODO: This is 100% the line holding us up, figure out how to do this more efficiently
+
 					if(cos < shadowCos) binLeafs.RemoveAt(k+1);
 				}
 				++j;
