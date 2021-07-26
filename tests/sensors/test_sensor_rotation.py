@@ -1,5 +1,7 @@
 import cv2, os
 from tests.utils.equality import mean_square_err
+import holoocean
+import pytest
 
 @pytest.mark.skipif("DefaultWorlds" not in holoocean.installed_packages(),
                     reason='DefaultWorlds package not installed')
