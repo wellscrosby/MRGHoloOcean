@@ -1,10 +1,8 @@
 import holodeck
-from holodeck import sensors
-import holodeck.command
+#from holodeck import sensors
+#import holodeck.command
 import uuid
 import copy
-
-from tests.utils.equality import almost_equal
 
 uav_config_v1 = {
     "name": "test",
@@ -60,7 +58,6 @@ def test_transmittable():
         command = [0, 0, 10, 50]
         for _ in range (20):
             state, reward, terminal, _ = env.step(command)
-            # env.agents.get("uav0")._client.command_center.enqueue_command(SendOpticalMessageCommand("uav0","OpticalModemSensor", "uav1", "OpticalModemSensor"))
             env.agents.get("uav0")._client.command_center.enqueue_command(holodeck.command.SendOpticalMessageCommand("uav0", "OpticalModemSensor","uav1", "OpticalModemSensor"))
 
         assert env.agents.get("uav1").sensors.get("OpticalModemSensor").sensor_data != None, "Receiving modem did not receive data when it should have."
@@ -231,3 +228,6 @@ def test_obstructed_view():
             env.agents.get("uav0")._client.command_center.enqueue_command(holodeck.command.SendOpticalMessageCommand("uav0","OpticalModemSensor", "uav1", "OpticalModemSensor"))
 
         assert env.agents.get("uav1").sensors.get("OpticalModemSensor").sensor_data == None, "Receiving modem received data when it should not have done so."
+
+        if __name__ == "__main__":
+            test_transmittable()
