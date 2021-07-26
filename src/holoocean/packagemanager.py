@@ -15,7 +15,7 @@ from threading import Thread
 from holoocean import util
 from holoocean.exceptions import HolodeckException, NotFoundException
 
-BACKEND_URL = "https://s3.amazonaws.com/holodeckworlds/"
+BACKEND_URL = "https://robots.et.byu.edu/holo/"
 
 
 def _get_from_backend(rel_url):
@@ -40,7 +40,7 @@ def available_packages():
         List of package names
     """
     # Get the index json file from the backend
-    url = "packages/{ver}/available".format(ver=util.get_holodeck_version())
+    url = "{ver}/available".format(ver=util.get_holodeck_version())
     try:
         index = _get_from_backend(url)
         index = json.loads(index)
@@ -165,7 +165,7 @@ def scenario_info(scenario_name="", scenario=None, base_indent=0):
         _print_agent_info(scenario["agents"], base_indent)
 
 
-def install(package_name, url=None):
+def install(package_name, branch=None, commit=None, url=None):
     """Installs a holodeck package.
 
     Args:
@@ -186,12 +186,23 @@ def install(package_name, url=None):
             pprint.pprint(packages, width=10, indent=4, stream=sys.stderr)
             return
 
-        # example: %backend%/packages/0.1.0/DefaultWorlds/Linux.zip
-        url = "{backend_url}packages/{holodeck_version}/{package_name}/{platform}.zip".format(
+        if branch is not None:
+            if util.get_os_key() != "Linux":
+                print(f"Can't install from branch when using {util.get_os_key()}")
+                return
+            if commit is None:
+                commit = "latest"
+
+        else:
+            branch = "v{holodeck_version}".format(holodeck_version=util.get_holodeck_version())
+            commit = util.get_os_key()
+
+        # example: %backend%/Ocean/v0.1.0/Linux.zip
+        url = "{backend_url}{package_name}/{branch}/{platform}.zip".format(
                     backend_url=BACKEND_URL,
-                    holodeck_version=util.get_holodeck_version(),
+                    branch=branch,
                     package_name=package_name,
-                    platform=util.get_os_key())
+                    platform=commit)
 
     install_path = os.path.join(holodeck_path, "worlds", package_name)
 
