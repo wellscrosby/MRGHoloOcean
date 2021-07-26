@@ -922,7 +922,7 @@ class OpticalModemSensor(HolodeckSensor):
     @property
     def sensor_data(self):
         
-        if self._sensor_data_buffer:
+        if self._sensor_data_buffer[0] > 0:
             data = ["type", self._sensor_data_buffer, self._sensor_data_buffer[1:]]
         else:
             data = None
