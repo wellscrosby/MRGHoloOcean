@@ -54,7 +54,11 @@ Scenario File
    {
       "name": "{Scenario Name}",
       "world": "{world it is associated with}",
-      "lcm_provider": "{Optional, where to publish lcm to}"
+      "lcm_provider": "{Optional, where to publish lcm to}",
+      "env_min": [-10, -10, -10],
+      "env_max": [10, 10, 10],
+      "octree_min": 0.1,
+      "octree_max": 5,
       "agents":[
          "array of agent objects"
       ],
@@ -74,6 +78,24 @@ environment is created. For more information about weather options, see
 
 .. note::
    The first agent in the ``agents`` array is the "main agent"
+
+.. _`configure-octree`:
+
+Configuring Octree
+~~~~~~~~~~~~~~~~~~
+
+When using a form of sonar sensor and initializing the world, an Octree will either be
+created or loaded from a cache. The parameters of these can be set using the ``env_min``,
+``env_max``, ``octree_min``, and ``octree_max``. The octrees are cached in the octree folder
+in the worlds folder. See :ref:`package-locations`.
+
+``env_min``/``env_max`` are used to set the upper/lower bounds of the environment. They should 
+be set in :ref:`package-structure`, but the values set here will override it.
+
+``octree_min``/``octree_max`` are used to set the minimum/maximum size of the octree. ``octree_min``
+can go as low as .01 (1cm), and then the octree will double in size till it reaches ``octree_max``.
+
+
 
 Agent objects
 ~~~~~~~~~~~~~
