@@ -935,7 +935,7 @@ class OpticalModemSensor(HolodeckSensor):
 
     @property
     def dtype(self):
-        return bool
+        return np.bool8
 
     @property
     def data_shape(self):
