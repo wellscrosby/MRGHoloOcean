@@ -25,6 +25,7 @@
 #include "DVLSensor.h"
 #include "PoseSensor.h"
 #include "AcousticBeaconSensor.h"
+#include "DepthSensor.h"
 
 #include "Command.h"
 #include "AddSensorCommand.generated.h"
