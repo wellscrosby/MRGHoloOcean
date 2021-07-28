@@ -80,7 +80,7 @@ bool UOpticalModemSensor::IsSensorOriented(UOpticalModemSensor* Sensor, FVector 
     float Angle = FMath::RadiansToDegrees(UKismetMathLibrary::Acos(UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(Sensor->GetForwardVector()), UKismetMathLibrary::Normal(LocalToSensor))));
     UE_LOG(LogHolodeck, Log, TEXT("angle = %f"), Angle);
 
-    if (1 *NoiseLaserAngle < Angle && Angle < NoiseLaserAngle *-1) {
+    if (-1 * NoiseLaserAngle < Angle && Angle < NoiseLaserAngle) {
         return true;
     }
     else {
