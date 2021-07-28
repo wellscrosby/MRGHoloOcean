@@ -13,7 +13,7 @@ echo "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠�
 
 #move our worlds into it
 mkdir Content/Worlds
-mv holodeck-ocean-worlds/* Content/Worlds/
+mv our_worlds/* Content/Worlds/
 
 # Package it up
 echo "👉 Starting Packaging Process..."
@@ -46,9 +46,10 @@ cd ..
 
 echo "👉 Moving $commit.zip into final folder..."
 mkdir final
+mkdir tag
 mv "dist/$commit.zip" final
 cp final/$commit.zip final/latest.zip
-
+cp final/$commit.zip tag/Linux.zip
 
 echo "👉 Done packaging package $commit"
 
