@@ -38,7 +38,7 @@ def test_depth_sensor_falling():
     cfg = deepcopy(uav_config)
 
     # Spawn the UAV 10 meters up
-    cfg["agents"][0]["location"] = [0, 0, 5]
+    cfg["agents"][0]["location"] = [0, 0, 10]
 
     binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
 
@@ -65,8 +65,11 @@ def test_depth_sensor_falling():
         assert almost_equal(last_location, new_location), "The UAV did not seem to settle!"
 
 
-def test_depth_sensor_noise(config):
+def test_depth_sensor_noise():
     """Make sure turning on noise actually turns it on"""
+
+    config = deepcopy(uav_config)
+
     binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
 
     with holodeck.environments.HolodeckEnvironment(scenario=config,
@@ -76,4 +79,4 @@ def test_depth_sensor_noise(config):
         #let it land and then start moving forward
         for _ in range(100):
             state = env.tick()
-            assert not np.allclose(state['IMUSensor'], state['noise'])
+            assert not np.allclose(state['DepthSensor'], state['noise'])
