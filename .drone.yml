@@ -15,7 +15,7 @@ steps:
   image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
   commands:
   # Find what branch we need to pull from
-  - BRANCH_EXISTS=$(git ls-remote --heads https://bitbucket.org/frostlab/holodeck-ocean-engine.git ${DRONE_BRANCH} | wc -l)
+  - BRANCH_EXISTS=$(git ls-remote --heads https://bitbucket.org/frostlab/holoocean-engine.git ${DRONE_BRANCH} | wc -l)
   - if test "$BRANCH_EXISTS" = "1"; then BRANCH=${DRONE_BRANCH}; else BRANCH=develop; fi
   - echo $BRANCH
   # Install, and run tests
