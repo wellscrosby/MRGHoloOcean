@@ -103,7 +103,7 @@ uav_config_v2 = {
                 }
             ],
             "control_scheme": 1,
-            "location": [-5, 6.5, .25],
+            "location": [-5, 3, .25],
             "rotation": [0, 0, 90]
         }
     ]
