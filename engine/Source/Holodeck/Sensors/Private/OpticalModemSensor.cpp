@@ -33,7 +33,7 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
         DrawDebugLine(GetWorld(), GetComponentLocation(), GetForwardVector() * NoiseMaxDistance * 100, DebugColor, false, .01,ECC_WorldStatic, 1.F);
     }
 }
-	
+
 bool UOpticalModemSensor::CanTransmit() {
 
     // get coordinates of other sensor in local frame
