@@ -17,7 +17,7 @@ void UOpticalModemSensor::InitializeSensor() {
 
 void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	//check if your parent pointer is valid, and if the sensor is on. Then get the velocity and buffer, then send the data to it. 
-    bool BoolBuffer = static_cast<bool>(Buffer);
+    int* BoolBuffer = static_cast<int*>(Buffer);
     if (Parent != nullptr && bOn) {
 		// if someone starting transmitting
 		if (FromSensor) {
@@ -35,6 +35,7 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 }
 
 bool UOpticalModemSensor::CanTransmit() {
+    int data[4] = [0,0,0,0];
 
     // get coordinates of other sensor in local frame
     FVector SendingSensor = this->GetComponentLocation();
@@ -48,12 +49,15 @@ bool UOpticalModemSensor::CanTransmit() {
 
     //Max guaranteed range of modem is 50 meters
     if (Dist <= NoiseMaxDistance) {
+        data[0] = 1;
     
         // Calculate if sensors are facing each other within 120 degrees
         //--> Difference in angle needs to be -60 < x < 60 
         //--> Check both sensors to make sure both are in acceptable orientations
 
         if (IsSensorOriented(this, SendToReceive) && IsSensorOriented(FromSensor, ReceiveToSend)) {
+            data[1] = 1;
+        
             // Calculate if rangefinder and dist are equal or not.
 
             FCollisionQueryParams QueryParams = FCollisionQueryParams();
@@ -67,12 +71,23 @@ bool UOpticalModemSensor::CanTransmit() {
             UE_LOG(LogHolodeck, Log, TEXT("range = %f  object = %s"), Range, *Hit.GetActor()->GetName());
             
             if (Dist == Range) {
-                return true;
+                data[2] = 1;
+                //return true;
+            }
+            else {
+                data[2] = -1;
             }
         }
+        else{
+            data[1] = -1
+        }
     }
-
-    return false;
+    else{
+        data[0] = -1;
+    }
+    data[3] = 1;
+    return data;
+    //return false;
 }
 
 

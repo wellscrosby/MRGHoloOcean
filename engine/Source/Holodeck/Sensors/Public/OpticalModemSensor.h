@@ -52,7 +52,7 @@ private:
 
     UPrimitiveComponent* Parent;
     bool IsSensorOriented(UOpticalModemSensor* Sensor, FVector LocalToSensor);
-    bool CanTransmit();
+    int* CanTransmit();
     TMap<FString, FColor> ColorMap;
     void FillColorMap();
     MultivariateNormal<1> DistanceNoise;
