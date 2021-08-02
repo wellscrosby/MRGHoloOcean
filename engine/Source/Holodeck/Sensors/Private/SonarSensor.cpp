@@ -126,6 +126,7 @@ void USonarSensor::initOctree(){
 
 		// get all our leafs ready
 		// TODO: calculate what these values should be
+		// TODO: This needs to be moved somewhere to make sure it happens to every sonar
 		TArray<Octree*>& octree = getOctree();
 		leafs.Reserve(10000);
 		tempLeafs.Reserve(octree.Num());
@@ -133,7 +134,7 @@ void USonarSensor::initOctree(){
 			tempLeafs.Add(TArray<Octree*>());
 			tempLeafs[i].Reserve(1000);
 		}
-		for(int i=0;i<BinsAzimuth;i++){
+		for(int i=0;i<BinsAzimuth*BinsElev;i++){
 			sortedLeafs.Add(TArray<Octree*>());
 			sortedLeafs[i].Reserve(200);
 		}
@@ -144,10 +145,13 @@ void USonarSensor::InitializeSensor() {
 
 	OctreeMax = Controller->GetServer()->OctreeMax;
 	OctreeMin = Controller->GetServer()->OctreeMin;
+
+	BinsElev = (int) Elevation*2;
 	
 	// Get size of each bin
 	RangeRes = (MaxRange - MinRange) / BinsRange;
 	AzimuthRes = Azimuth / BinsAzimuth;
+	ElevRes = Elevation / BinsElev;
 
 	minAzimuth = -Azimuth/2;
 	maxAzimuth = Azimuth/2;
@@ -253,9 +257,8 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			leafs += tl;
 		}
 
+
 		// GET THE DOT PRODUCT, REMOVE BACKSIDE OF ANYTHING
-		Benchmarker time;
-		time.Start();
 		FVector compLoc = this->GetComponentLocation();
 		ParallelFor(leafs.Num(), [&](int32 i){
 			Octree* l = leafs.GetData()[i]; 
@@ -269,37 +272,36 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			if(val > 0) l->val = val;
 			else leafs.GetData()[i] = nullptr;
 		});
-		time.End();
-		UE_LOG(LogHolodeck, Warning, TEXT("Calc: %f"), time.CalcMs());
 
-		// SORT THEM INTO AZIMUTH BINS
-		time.Start();
+
+		// SORT THEM INTO AZIMUTH/ELEVATION BINS
 		for(Octree* l : leafs){
 			if(l == nullptr) continue;
 
 			int32 aBin = (int)((l->locSpherical.Y - minAzimuth)/ AzimuthRes);
+			int32 eBin = (int)((l->locSpherical.Z - minElev)/ ElevRes);
 			// Sometimes we get float->int rounding errors
 			if(aBin == BinsAzimuth) --aBin;
-			sortedLeafs[aBin].Add(l);
+
+			int32 idx = eBin*BinsAzimuth + aBin;
+			sortedLeafs[idx].Add(l);
 		}
-		time.End();
-		UE_LOG(LogHolodeck, Warning, TEXT("Sort: %f"), time.CalcMs());
-		time.Start();
+
 
 		// HANDLE SHADOWING
 		// TODO: Do these degree params need to be check for larger octree sizes?
 		float shadowAngle = 1;
 		float shadowCos = -FMath::Cos(shadowAngle*Pi/180);
-		ParallelFor(BinsAzimuth, [&](int32 aBin){
-			TArray<Octree*>& binLeafs = sortedLeafs.GetData()[aBin]; 
+		ParallelFor(BinsAzimuth*BinsElev, [&](int32 i){
+			TArray<Octree*>& binLeafs = sortedLeafs.GetData()[i]; 
 
 			// sort from closest to farthest
 			binLeafs.Sort([](const Octree& a, const Octree& b){
 				return a.locSpherical.X < b.locSpherical.X;
 			});
 
-			int32 j=0,k,rBin,idx;
-			float a,aa,b,bb,c,cos,elevDiff;
+			int32 j=0,k,rBin,aBin,idx;
+			float a,aa,b,bb,c,cos;
 			Octree *close, *other;
 			// Iterate through, adding in contributions
 			while(j < binLeafs.Num()){
@@ -307,6 +309,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 				close = binLeafs.GetData()[j];
 
 				// Compute what bin it goes in
+				aBin = (int)((close->locSpherical.Y - minAzimuth)/ AzimuthRes);
 				rBin = (int)((close->locSpherical.X - MinRange) / RangeRes);
 				idx = rBin*BinsAzimuth + aBin;
 
@@ -319,25 +322,18 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 				aa = a*a;
 				while(k > j){
 					other = binLeafs.GetData()[k];
-					--k;
-
-					// if it's definitely out
-					elevDiff = FMath::Abs(close->locSpherical.Z - other->locSpherical.Z);
-					if(elevDiff > 1) continue;
-
-					// do better math for checking
 					bb = FVector::DistSquared(close->loc, other->loc);
 					b = FMath::Sqrt(bb);
 					c = other->locSpherical.X;
 					cos = (aa + bb - c*c) / (2*a*b);
 
-					if(cos < shadowCos) binLeafs.RemoveAt(k+1);
+					if(cos < shadowCos) binLeafs.RemoveAt(k);
+
+					--k;
 				}
 				++j;
 			}
 		});
-		time.End();
-		UE_LOG(LogHolodeck, Warning, TEXT("Shadows: %f"), time.CalcMs());
 
 		
 		// MOVE THEM INTO BUFFER
@@ -351,12 +347,14 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			}
 		}
 
-		// draw outlines of our region
+
+		// draw points inside our region
 		if(ViewOctree){
 			for( Octree* l : leafs){
 				DrawDebugPoint(GetWorld(), l->loc, 5, FColor::Red, false, .03*TicksPerCapture);
 			}
 		}
+		// draw outlines of our region
 		if(ViewRegion){
 			FTransform tran = this->GetComponentTransform();
 			
@@ -377,9 +375,6 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			DrawDebugLine(GetWorld(), spherToEuc(MinRange, maxAzimuth, minElev, tran), spherToEuc(MinRange, maxAzimuth, maxElev, tran), FColor::Green, false, .03*TicksPerCapture, ECC_WorldStatic, 1.f);
 			DrawDebugLine(GetWorld(), spherToEuc(MaxRange, minAzimuth, minElev, tran), spherToEuc(MaxRange, minAzimuth, maxElev, tran), FColor::Green, false, .03*TicksPerCapture, ECC_WorldStatic, 1.f);
 			DrawDebugLine(GetWorld(), spherToEuc(MaxRange, maxAzimuth, minElev, tran), spherToEuc(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, .03*TicksPerCapture, ECC_WorldStatic, 1.f);
-		}
-
-		// Reset everything for next timestep
-		
+		}		
 	}
 }

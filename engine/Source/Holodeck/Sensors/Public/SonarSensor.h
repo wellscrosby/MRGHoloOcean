@@ -71,6 +71,9 @@ protected:
 	int BinsAzimuth = 128;
 
 	UPROPERTY(EditAnywhere)
+	int BinsElev;
+
+	UPROPERTY(EditAnywhere)
 	bool ViewRegion = false;
 
 	UPROPERTY(EditAnywhere)
@@ -94,6 +97,7 @@ private:
 	// various computations we want to cache
 	float RangeRes;
 	float AzimuthRes;
+	float ElevRes;
 	float minAzimuth;
 	float maxAzimuth;
 	float minElev;
