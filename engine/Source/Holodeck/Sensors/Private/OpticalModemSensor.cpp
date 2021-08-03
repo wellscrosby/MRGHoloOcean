@@ -34,8 +34,9 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
     }
 }
 
-bool UOpticalModemSensor::CanTransmit() {
-    int data[4] = [0,0,0,0];
+int* UOpticalModemSensor::CanTransmit() {
+    static int data [4] = {0,0,0,0};
+    
 
     // get coordinates of other sensor in local frame
     FVector SendingSensor = this->GetComponentLocation();
@@ -79,7 +80,7 @@ bool UOpticalModemSensor::CanTransmit() {
             }
         }
         else{
-            data[1] = -1
+            data[1] = -1;
         }
     }
     else{
