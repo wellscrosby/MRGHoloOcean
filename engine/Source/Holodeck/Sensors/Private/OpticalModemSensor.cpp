@@ -68,10 +68,9 @@ int* UOpticalModemSensor::CanTransmit() {
 
             bool TraceResult = GetWorld()->LineTraceSingleByChannel(Hit, SendingSensor, ReceiveSensor, ECollisionChannel::ECC_Visibility, QueryParams);
            
-            float Range = (TraceResult && Hit.GetComponent() == FromSensor->Parent ? Dist : Hit.Distance);
-            UE_LOG(LogHolodeck, Log, TEXT("range = %f  object = %s"), Range, *Hit.GetActor()->GetName());
+            bool Range = (TraceResult && Hit.GetComponent() == FromSensor->Parent);
             
-            if (Dist == Range) {
+            if (Range) {
                 data[2] = 1;
                 //return true;
             }
@@ -87,6 +86,7 @@ int* UOpticalModemSensor::CanTransmit() {
         data[0] = -1;
     }
     data[3] = 1;
+    UE_LOG(LogHolodeck, Log, TEXT("Transmit status distance: %d orientation: %d range: %d transmitted: %d"), data[0], data[1], data[2], data[3]);
     return data;
     //return false;
 }
