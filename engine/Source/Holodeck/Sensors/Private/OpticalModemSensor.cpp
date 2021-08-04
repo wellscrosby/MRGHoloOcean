@@ -23,7 +23,16 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 		if (FromSensor) {
             NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
             NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
-            BoolBuffer = this->CanTransmit();
+
+            int* temp = this->CanTransmit();
+            for (unsigned int i = 0; i < 4; i++) {
+                BoolBuffer[i] = temp[i];
+            }
+            UE_LOG(LogHolodeck, Log, TEXT("Buffer status distance: %d orientation: %d range: %d transmitted: %d"), BoolBuffer[0], BoolBuffer[1], BoolBuffer[2], BoolBuffer[3]);
+
+            // BoolBuffer = this->CanTransmit();
+            
+
 		}
     }
     
