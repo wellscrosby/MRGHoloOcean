@@ -16,21 +16,16 @@ void UOpticalModemSensor::InitializeSensor() {
 }
 
 void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
-	//check if your parent pointer is valid, and if the sensor is on. Then get the velocity and buffer, then send the data to it. 
-    int* BoolBuffer = static_cast<int*>(Buffer);
+	//check if your parent pointer is valid, and if the sensor is on. Then get the buffer before sending the data to it. 
+    bool BoolBuffer = static_cast<bool>(Buffer);
     if (Parent != nullptr && bOn) {
 		// if someone starting transmitting
 		if (FromSensor) {
             NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
             NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
 
-            int* temp = this->CanTransmit();
-            for (unsigned int i = 0; i < 4; i++) {
-                BoolBuffer[i] = temp[i];
-            }
-            UE_LOG(LogHolodeck, Log, TEXT("Buffer status distance: %d orientation: %d range: %d transmitted: %d"), BoolBuffer[0], BoolBuffer[1], BoolBuffer[2], BoolBuffer[3]);
-
-            // BoolBuffer = this->CanTransmit();
+            BoolBuffer = this->CanTransmit();
+            UE_LOG(LogHolodeck, Log, TEXT("Buffer status = %s"), (BoolBuffer ? TEXT("true") : TEXT("false") ) );
             
 
 		}
@@ -39,13 +34,11 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 
     if (LaserDebug) {
         DrawDebugCone(GetWorld(), GetComponentLocation(), GetForwardVector(), NoiseMaxDistance * 100, FMath::DegreesToRadians(NoiseLaserAngle), FMath::DegreesToRadians(NoiseLaserAngle), DebugNumSides, DebugColor, false, .01, ECC_WorldStatic, 1.F);
-        DrawDebugLine(GetWorld(), GetComponentLocation(), GetForwardVector() * NoiseMaxDistance * 100, DebugColor, false, .01,ECC_WorldStatic, 1.F);
+        // DrawDebugLine(GetWorld(), GetComponentLocation(), GetForwardVector() * NoiseMaxDistance * 100, DebugColor, false, .01,ECC_WorldStatic, 1.F);
     }
 }
 
-int* UOpticalModemSensor::CanTransmit() {
-    static int data [4] = {0,0,0,0};
-    
+bool UOpticalModemSensor::CanTransmit() {    
 
     // get coordinates of other sensor in local frame
     FVector SendingSensor = this->GetComponentLocation();
@@ -57,17 +50,16 @@ int* UOpticalModemSensor::CanTransmit() {
     UE_LOG(LogHolodeck, Log, TEXT("Dist = %f  MaxDistance = %f"), Dist, NoiseMaxDistance);
     UE_LOG(LogHolodeck, Log, TEXT("SensorLocation = %s  ParentLocation = %s"), *SendingSensor.ToString(), *Parent->GetComponentLocation().ToString())
 
+    bool transmit;
+
     //Max guaranteed range of modem is 50 meters
     if (Dist <= NoiseMaxDistance) {
-        data[0] = 1;
     
         // Calculate if sensors are facing each other within 120 degrees
         //--> Difference in angle needs to be -60 < x < 60 
         //--> Check both sensors to make sure both are in acceptable orientations
 
-        if (IsSensorOriented(this, SendToReceive) && IsSensorOriented(FromSensor, ReceiveToSend)) {
-            data[1] = 1;
-        
+        if (IsSensorOriented(this, SendToReceive) && IsSensorOriented(FromSensor, ReceiveToSend)) {        
             // Calculate if rangefinder and dist are equal or not.
 
             FCollisionQueryParams QueryParams = FCollisionQueryParams();
@@ -80,23 +72,30 @@ int* UOpticalModemSensor::CanTransmit() {
             bool Range = (TraceResult && Hit.GetComponent() == FromSensor->Parent);
             
             if (Range) {
-                data[2] = 1;
-                //return true;
+                // return true;
+                transmit = true;
+                UE_LOG(LogHolodeck, Log, TEXT("Transmit success"));
+
             }
             else {
-                data[2] = -1;
+                transmit = false;
+                UE_LOG(LogHolodeck, Log, TEXT("Transmit failed due to range"));
+                UE_LOG(LogHolodeck, Log, TEXT("Range = %f"), Hit.Distance);
+
             }
         }
         else{
-            data[1] = -1;
+            transmit = false;
+            UE_LOG(LogHolodeck, Log, TEXT("Transmit failed due to orientation"));
         }
     }
     else{
-        data[0] = -1;
+        transmit = false;
+        UE_LOG(LogHolodeck, Log, TEXT("Transmit failed due to distance"));
+
     }
-    data[3] = 1;
-    UE_LOG(LogHolodeck, Log, TEXT("Transmit status distance: %d orientation: %d range: %d transmitted: %d"), data[0], data[1], data[2], data[3]);
-    return data;
+    UE_LOG(LogHolodeck, Log, TEXT("Transmit status = %s"), (transmit ? TEXT("true") : TEXT("false") ) );
+    return transmit;
     //return false;
 }
 
