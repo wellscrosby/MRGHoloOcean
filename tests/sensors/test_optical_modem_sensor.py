@@ -14,15 +14,6 @@ uav_config_v1 = {
             "agent_type": "UavAgent",
             "sensors": [
                 {
-                    "sensor_type": "LocationSensor",
-                },
-                {
-                    "sensor_type": "VelocitySensor"
-                },
-                {
-                    "sensor_type": "RGBCamera"
-                },
-                {
                     "sensor_type": "OpticalModemSensor"
                 }
             ],
@@ -58,9 +49,10 @@ def test_transmittable():
         command = [0, 0, 10, 50]
         for _ in range (20):
             state, reward, terminal, _ = env.step(command)
-            env.agents.get("uav0")._client.command_center.enqueue_command(holodeck.command.SendOpticalMessageCommand("uav0", "OpticalModemSensor","uav1", "OpticalModemSensor"))
+            env.send_optical_message(0, 1, "Message")
 
         assert env.agents.get("uav1").sensors.get("OpticalModemSensor").sensor_data != None, "Receiving modem did not receive data when it should have."
+        assert state["uav1"]["OpticalModemSensor"]
 
 uav_config_v2 = {
     "name": "test",
@@ -239,15 +231,6 @@ uav_config_v5 = {
             "agent_type": "UavAgent",
             "sensors": [
                 {
-                    "sensor_type": "LocationSensor",
-                },
-                {
-                    "sensor_type": "VelocitySensor"
-                },
-                {
-                    "sensor_type": "RGBCamera"
-                },
-                {
                     "sensor_type": "OpticalModemSensor",
                     "configuration": {
                         "MaxDistance": 3,
@@ -298,8 +281,8 @@ def test_distance_noise():
             if env.agents.get("uav1").sensors.get("OpticalModemSensor").sensor_data != None:
                 tests_passed += 1
 
-        assert tests_passed != num_tests, "All messages sent when some should have failed due to noise variation."
-        assert tests_passed != 0, "All messages failed when some should have passed due to noise variation."
+        assert tests_passed < num_tests, "All messages sent when some should have failed due to noise variation."
+        assert tests_passed > 0, "All messages failed when some should have passed due to noise variation."
 
 uav_config_v6 = {
     "name": "test",
@@ -310,15 +293,6 @@ uav_config_v6 = {
             "agent_name": "uav0",
             "agent_type": "UavAgent",
             "sensors": [
-                {
-                    "sensor_type": "LocationSensor",
-                },
-                {
-                    "sensor_type": "VelocitySensor"
-                },
-                {
-                    "sensor_type": "RGBCamera"
-                },
                 {
                     "sensor_type": "OpticalModemSensor",
                     "configuration": {
@@ -370,5 +344,5 @@ def test_angle_noise():
             if env.agents.get("uav1").sensors.get("OpticalModemSensor").sensor_data != None:
                 tests_passed += 1
 
-        assert tests_passed != num_tests, "All messages sent when some should have failed due to noise variation."
-        assert tests_passed != 0, "All messages failed when some should have passed due to noise variation."
+        assert tests_passed < num_tests, "All messages sent when some should have failed due to noise variation."
+        assert tests_passed > 0, "All messages failed when some should have passed due to noise variation."
