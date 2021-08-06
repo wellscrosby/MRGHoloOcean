@@ -18,10 +18,8 @@ void UOpticalModemSensor::InitializeSensor() {
 void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	//check if your parent pointer is valid, and if the sensor is on. Then get the buffer before sending the data to it. 
     bool* BoolBuffer = static_cast<bool*>(Buffer);
-    UE_LOG(LogHolodeck, Log, TEXT("Checking parent"));
     if (Parent != nullptr && bOn) {
 		// if someone starting transmitting
-        UE_LOG(LogHolodeck, Log, TEXT("Checking sensor"));
 
 		if (FromSensor) {
             NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
@@ -47,8 +45,7 @@ bool UOpticalModemSensor::CanTransmit() {
     FVector ReceiveToSend = SendingSensor - ReceiveSensor;
 
     float Dist = SendToReceive.Size() / 100;
-    UE_LOG(LogHolodeck, Log, TEXT("Dist = %f  MaxDistance = %f"), Dist, NoiseMaxDistance);
-    UE_LOG(LogHolodeck, Log, TEXT("SensorLocation = %s  ParentLocation = %s"), *SendingSensor.ToString(), *Parent->GetActorLocation().ToString())
+    UE_LOG(LogHolodeck, Log, TEXT("Optical Modem: Dist = %f  MaxDistance = %f"), Dist, NoiseMaxDistance);
 
     bool transmit;
 
@@ -74,24 +71,24 @@ bool UOpticalModemSensor::CanTransmit() {
             if (Range) {
                 // return true;
                 transmit = true;
-                UE_LOG(LogHolodeck, Log, TEXT("Transmit success"));
+                UE_LOG(LogHolodeck, Log, TEXT("Optical Modem: Transmit success"));
 
             }
             else {
                 transmit = false;
-                UE_LOG(LogHolodeck, Log, TEXT("Transmit failed due to range"));
-                UE_LOG(LogHolodeck, Log, TEXT("Range = %f"), Hit.Distance);
+                UE_LOG(LogHolodeck, Log, TEXT("Optical Modem: Transmit failed due to range"));
+                UE_LOG(LogHolodeck, Log, TEXT("Optical Modem: Range = %f"), Hit.Distance);
 
             }
         }
         else{
             transmit = false;
-            UE_LOG(LogHolodeck, Log, TEXT("Transmit failed due to orientation"));
+            UE_LOG(LogHolodeck, Log, TEXT("Optical Modem: Transmit failed due to orientation"));
         }
     }
     else{
         transmit = false;
-        UE_LOG(LogHolodeck, Log, TEXT("Transmit failed due to distance"));
+        UE_LOG(LogHolodeck, Log, TEXT("Optical Modem: Transmit failed due to distance"));
 
     }
     return transmit;
@@ -100,10 +97,9 @@ bool UOpticalModemSensor::CanTransmit() {
 
 
 bool UOpticalModemSensor::IsSensorOriented(UOpticalModemSensor* Sensor, FVector LocalToSensor) {
-    float Angle = FMath::RadiansToDegrees(UKismetMathLibrary::Acos(UKismetMathLibrary::Dot_VectorVector(
-        UKismetMathLibrary::Normal(Sensor->GetForwardVector()), 
-        UKismetMathLibrary::Normal(LocalToSensor))));
-    UE_LOG(LogHolodeck, Log, TEXT("angle = %f"), Angle);
+    float DotProduct = UKismetMathLibrary::Dot_VectorVector(KismetMathLibrary::Normal(Sensor->GetForwardVector()), UKismetMathLibrary::Normal(LocalToSensor))
+    float Angle = FMath::RadiansToDegrees(UKismetMathLibrary::Acos(DotProduct));
+    UE_LOG(LogHolodeck, Log, TEXT("Optical Modem: angle = %f"), Angle);
 
     if (-1 * NoiseLaserAngle < Angle && Angle < NoiseLaserAngle) {
         return true;
