@@ -65,7 +65,7 @@ def test_random_depth(config, num):
     num_ticks = 100
     depth = np.random.rand()*10
     config["agents"][0]["sensors"][0]["configuration"]["Depth"] = depth
-    config["agents"][0]["sensors"][0]["configuration"]["DepthStd"] = 1
+    config["agents"][0]["sensors"][0]["configuration"]["DepthSigma"] = 1
 
     binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
 
