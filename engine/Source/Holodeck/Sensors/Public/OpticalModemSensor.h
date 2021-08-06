@@ -50,7 +50,7 @@ protected:
 
 private:
 
-    UPrimitiveComponent* Parent;
+    AActor* Parent;
     bool IsSensorOriented(UOpticalModemSensor* Sensor, FVector LocalToSensor);
     bool CanTransmit();
     TMap<FString, FColor> ColorMap;

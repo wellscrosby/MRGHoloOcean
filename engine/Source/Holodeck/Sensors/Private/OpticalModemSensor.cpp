@@ -10,7 +10,7 @@ UOpticalModemSensor::UOpticalModemSensor() {
 void UOpticalModemSensor::InitializeSensor() {
 	Super::InitializeSensor();
 	//You need to get the pointer to the object the sensor is attached to. 
-	Parent = Cast<UPrimitiveComponent>(this->GetAttachParent());
+	Parent = this->GetAttachmentRootActor();
     NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
     NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
 }
@@ -18,14 +18,17 @@ void UOpticalModemSensor::InitializeSensor() {
 void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	//check if your parent pointer is valid, and if the sensor is on. Then get the buffer before sending the data to it. 
     bool* BoolBuffer = static_cast<bool*>(Buffer);
+    UE_LOG(LogHolodeck, Log, TEXT("Checking parent"));
     if (Parent != nullptr && bOn) {
 		// if someone starting transmitting
+        UE_LOG(LogHolodeck, Log, TEXT("Checking sensor"));
+
 		if (FromSensor) {
             NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
             NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
 
             BoolBuffer[0] = this->CanTransmit();
-            UE_LOG(LogHolodeck, Log, TEXT("Buffer status = %s"), (BoolBuffer ? TEXT("true") : TEXT("false") ) );
+            UE_LOG(LogHolodeck, Log, TEXT("Buffer status = %s"), (BoolBuffer[0] ? TEXT("true") : TEXT("false") ) );
             
 
 		}
@@ -48,7 +51,7 @@ bool UOpticalModemSensor::CanTransmit() {
 
     float Dist = SendToReceive.Size() / 100;
     UE_LOG(LogHolodeck, Log, TEXT("Dist = %f  MaxDistance = %f"), Dist, NoiseMaxDistance);
-    UE_LOG(LogHolodeck, Log, TEXT("SensorLocation = %s  ParentLocation = %s"), *SendingSensor.ToString(), *Parent->GetComponentLocation().ToString())
+    UE_LOG(LogHolodeck, Log, TEXT("SensorLocation = %s  ParentLocation = %s"), *SendingSensor.ToString(), *Parent->GetActorLocation().ToString())
 
     bool transmit;
 
@@ -63,13 +66,15 @@ bool UOpticalModemSensor::CanTransmit() {
             // Calculate if rangefinder and dist are equal or not.
 
             FCollisionQueryParams QueryParams = FCollisionQueryParams();
-            QueryParams.AddIgnoredComponent(Parent);
+            QueryParams.AddIgnoredActor(Parent);
 
             FHitResult Hit = FHitResult();
 
             bool TraceResult = GetWorld()->LineTraceSingleByChannel(Hit, SendingSensor, ReceiveSensor, ECollisionChannel::ECC_Visibility, QueryParams);
            
-            bool Range = (TraceResult && Hit.GetComponent() == FromSensor->Parent);
+            bool Range = (TraceResult && Hit.GetActor() == FromSensor->Parent);
+            
+            UE_LOG(LogHolodeck, Log, TEXT("Hit Component: %s"), *Hit.ToString());
             
             if (Range) {
                 // return true;
