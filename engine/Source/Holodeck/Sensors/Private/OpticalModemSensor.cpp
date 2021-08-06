@@ -27,10 +27,7 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
             NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
             NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
 
-            BoolBuffer[0] = this->CanTransmit();
-            UE_LOG(LogHolodeck, Log, TEXT("Buffer status = %s"), (BoolBuffer[0] ? TEXT("true") : TEXT("false") ) );
-            
-
+            BoolBuffer[0] = this->CanTransmit();            
 		}
     }
     
@@ -73,9 +70,7 @@ bool UOpticalModemSensor::CanTransmit() {
             bool TraceResult = GetWorld()->LineTraceSingleByChannel(Hit, SendingSensor, ReceiveSensor, ECollisionChannel::ECC_Visibility, QueryParams);
            
             bool Range = (TraceResult && Hit.GetActor() == FromSensor->Parent);
-            
-            UE_LOG(LogHolodeck, Log, TEXT("Hit Component: %s"), *Hit.ToString());
-            
+                        
             if (Range) {
                 // return true;
                 transmit = true;
@@ -99,14 +94,15 @@ bool UOpticalModemSensor::CanTransmit() {
         UE_LOG(LogHolodeck, Log, TEXT("Transmit failed due to distance"));
 
     }
-    UE_LOG(LogHolodeck, Log, TEXT("Transmit status = %s"), (transmit ? TEXT("true") : TEXT("false") ) );
     return transmit;
     //return false;
 }
 
 
 bool UOpticalModemSensor::IsSensorOriented(UOpticalModemSensor* Sensor, FVector LocalToSensor) {
-    float Angle = FMath::RadiansToDegrees(UKismetMathLibrary::Acos(UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(Sensor->GetForwardVector()), UKismetMathLibrary::Normal(LocalToSensor))));
+    float Angle = FMath::RadiansToDegrees(UKismetMathLibrary::Acos(UKismetMathLibrary::Dot_VectorVector(
+        UKismetMathLibrary::Normal(Sensor->GetForwardVector()), 
+        UKismetMathLibrary::Normal(LocalToSensor))));
     UE_LOG(LogHolodeck, Log, TEXT("angle = %f"), Angle);
 
     if (-1 * NoiseLaserAngle < Angle && Angle < NoiseLaserAngle) {
