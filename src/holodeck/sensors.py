@@ -902,7 +902,7 @@ class OpticalModemSensor(HolodeckSensor):
 
         super(OpticalModemSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
-    def send_message(self, id_to, msg_type, msg_data):
+    def send_message(self, id_to, msg_data):
          # Clean out id_to parameters
         if id_to == -1 or id_to == "all":
             id_to = list(self.__class__.instances.keys())
@@ -916,19 +916,17 @@ class OpticalModemSensor(HolodeckSensor):
             self._client.command_center.enqueue_command(command)
 
             modem.msg_data = msg_data
-            modem.msg_type = msg_type
         
 
     @property
     def sensor_data(self):
         if len(self._sensor_data_buffer) > 0 and self._sensor_data_buffer:
-            data = ["type", self._sensor_data_buffer, "message data"]
+            data = modem.msg_data
         else:
             data = None
 
         # reset buffer
         self.msg_data = None
-        self.msg_type = None
         return data
 
     @property
