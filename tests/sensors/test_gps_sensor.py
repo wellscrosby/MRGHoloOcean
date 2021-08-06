@@ -77,7 +77,7 @@ def test_random_depth(config, num):
                                                    uuid=str(uuid.uuid4())) as env:
 
         count = 0
-        for _ in num_ticks:
+        for _ in range(num_ticks):
             state = env.tick()
             if "GPSSensor" in state:
                 count += 1
