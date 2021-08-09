@@ -937,6 +937,9 @@ class OpticalModemSensor(HolodeckSensor):
     def data_shape(self):
         return [1]
 
+    def reset(self):
+        self.__class__.instances = dict()
+
     
         
 ######################################################################################

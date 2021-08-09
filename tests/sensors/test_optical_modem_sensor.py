@@ -48,6 +48,8 @@ def test_transmittable():
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
+        env.reset()
+
         command = [0, 0, 10, 50]
         for _ in range (20):
             env.send_optical_message(0, 1, "Message")
@@ -101,12 +103,12 @@ def test_within_max_distance():
     global uav_config_v2
     cfg = copy.deepcopy(uav_config_v2)
 
-
-
     with holodeck.environments.HolodeckEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
+        env.reset()
+
         command = [0, 0, 10, 50]
         state, reward, terminal, _ = env.step(command)
         for i in range (20):
@@ -156,6 +158,8 @@ def test_not_oriented():
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
+        env.reset()
+
         command = [0, 0, 10, 50]
         for i in range (20):
             env.send_optical_message(0, 1, "Message")
@@ -204,6 +208,8 @@ def test_obstructed_view():
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
+        env.reset()
+        
         command = [0, 0, 10, 50]
 
         for _ in range(300):
@@ -259,6 +265,8 @@ def test_distance_noise():
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
+        env.reset()
+
         command = [0, 0, 10, 50]
         for _ in range (num_tests):
             env.send_optical_message(0, 1, "Message")
@@ -322,6 +330,8 @@ def test_angle_noise():
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
+        env.reset()
+
         command = [0, 0, 10, 50]
         for _ in range (num_tests):
             env.send_optical_message(0, 1, "Message")
