@@ -4,6 +4,8 @@ import holodeck
 import uuid
 import copy
 
+from numpy import equal
+
 uav_config_v1 = {
     "name": "test",
     "world": "Rooms",
@@ -48,11 +50,11 @@ def test_transmittable():
                                                    uuid=str(uuid.uuid4())) as env:
         command = [0, 0, 10, 50]
         for _ in range (20):
-            state, reward, terminal, _ = env.step(command)
             env.send_optical_message(0, 1, "Message")
+            state, reward, terminal, _ = env.step(command)
 
-        assert env.agents.get("uav1").sensors.get("OpticalModemSensor").sensor_data != None, "Receiving modem did not receive data when it should have."
-        assert state["uav1"]["OpticalModemSensor"]
+        assert "OpticalModemSensor" in state["uav1"], "Receiving modem did not receive data when it should have."
+        assert state["uav1"]["OpticalModemSensor"] == "Message", "Wrong message received."
 
 uav_config_v2 = {
     "name": "test",
@@ -63,15 +65,6 @@ uav_config_v2 = {
             "agent_name": "uav0",
             "agent_type": "UavAgent",
             "sensors": [
-                {
-                    "sensor_type": "LocationSensor",
-                },
-                {
-                    "sensor_type": "VelocitySensor"
-                },
-                {
-                    "sensor_type": "RGBCamera"
-                },
                 {
                     "sensor_type": "OpticalModemSensor",
                     "configuration": {
@@ -117,10 +110,9 @@ def test_within_max_distance():
         command = [0, 0, 10, 50]
         state, reward, terminal, _ = env.step(command)
         for i in range (20):
+            env.send_optical_message(0, 1, "Message")
             env.tick()
-            env.agents.get("uav0")._client.command_center.enqueue_command(holodeck.command.SendOpticalMessageCommand("uav0","OpticalModemSensor", "uav1", "OpticalModemSensor"))
-
-        assert env.agents.get("uav1").sensors.get("OpticalModemSensor").sensor_data == None, "Receiving modem received data when it should not have done so."
+        assert "OpticalModemSensor" not in state["uav1"], "Receiving modem received data when it should not have done so."
 
 uav_config_v3 = {
     "name": "test",
@@ -166,10 +158,9 @@ def test_not_oriented():
                                                    uuid=str(uuid.uuid4())) as env:
         command = [0, 0, 10, 50]
         for i in range (20):
+            env.send_optical_message(0, 1, "Message")
             state, reward, terminal, _ = env.step(command)
-            env.agents.get("uav0")._client.command_center.enqueue_command(holodeck.command.SendOpticalMessageCommand("uav0","OpticalModemSensor", "uav1", "OpticalModemSensor"))
-
-        assert env.agents.get("uav1").sensors.get("OpticalModemSensor").sensor_data == None, "Receiving modem received data when it should not have done so."
+        assert "OpticalModemSensor" not in state["uav1"], "Receiving modem received data when it should not have done so."
 
 uav_config_v4 = {
     "name": "test",
@@ -216,10 +207,9 @@ def test_obstructed_view():
         command = [0, 0, 10, 50]
 
         for _ in range(300):
+            env.send_optical_message(0, 1, "Message")
             state, reward, terminal, _ = env.step(command)
-            env.agents.get("uav0")._client.command_center.enqueue_command(holodeck.command.SendOpticalMessageCommand("uav0","OpticalModemSensor", "uav1", "OpticalModemSensor"))
-
-        assert env.agents.get("uav1").sensors.get("OpticalModemSensor").sensor_data == None, "Receiving modem received data when it should not have done so."
+        assert "OpticalModemSensor" not in state["uav1"], "Receiving modem received data when it should not have done so."
 
 uav_config_v5 = {
     "name": "test",
@@ -234,7 +224,7 @@ uav_config_v5 = {
                     "sensor_type": "OpticalModemSensor",
                     "configuration": {
                         "MaxDistance": 3,
-                        "DistanceSigma": 10
+                        "DistanceSigma": 1
                     }
                 }
             ],
@@ -247,11 +237,7 @@ uav_config_v5 = {
             "agent_type": "UavAgent",
             "sensors": [
                 {
-                    "sensor_type": "OpticalModemSensor",
-                    "configuration": {
-                        "MaxDistance": 3,
-                        "DistanceSigma": 10
-                    }
+                    "sensor_type": "OpticalModemSensor"
                 }
             ],
             "control_scheme": 1,
@@ -275,10 +261,10 @@ def test_distance_noise():
                                                    uuid=str(uuid.uuid4())) as env:
         command = [0, 0, 10, 50]
         for _ in range (num_tests):
+            env.send_optical_message(0, 1, "Message")
             state, reward, terminal, _ = env.step(command)
-            env.agents.get("uav0")._client.command_center.enqueue_command(holodeck.command.SendOpticalMessageCommand("uav0", "OpticalModemSensor","uav1", "OpticalModemSensor"))
-
-            if env.agents.get("uav1").sensors.get("OpticalModemSensor").sensor_data != None:
+            print(state)
+            if "OpticalModemSensor" in state["uav1"] and state["uav1"]["OpticalModemSensor"] == "Message":
                 tests_passed += 1
 
         assert tests_passed < num_tests, "All messages sent when some should have failed due to noise variation."
@@ -297,7 +283,7 @@ uav_config_v6 = {
                     "sensor_type": "OpticalModemSensor",
                     "configuration": {
                         "MaxDistance": 6,
-                        "AngleSigma": 30
+                        "AngleSigma": 20
                     }
                 }
             ],
@@ -313,7 +299,7 @@ uav_config_v6 = {
                     "sensor_type": "OpticalModemSensor",
                     "configuration": {
                         "MaxDistance": 6,
-                        "AngleSigma": 30
+                        "AngleSigma": 20
                     }
                 }
             ],
@@ -338,10 +324,10 @@ def test_angle_noise():
                                                    uuid=str(uuid.uuid4())) as env:
         command = [0, 0, 10, 50]
         for _ in range (num_tests):
+            env.send_optical_message(0, 1, "Message")
             state, reward, terminal, _ = env.step(command)
-            env.agents.get("uav0")._client.command_center.enqueue_command(holodeck.command.SendOpticalMessageCommand("uav0", "OpticalModemSensor","uav1", "OpticalModemSensor"))
-
-            if env.agents.get("uav1").sensors.get("OpticalModemSensor").sensor_data != None:
+            print(state)
+            if "OpticalModemSensor" in state["uav1"] and state["uav1"]["OpticalModemSensor"] == "Message":
                 tests_passed += 1
 
         assert tests_passed < num_tests, "All messages sent when some should have failed due to noise variation."

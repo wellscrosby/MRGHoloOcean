@@ -921,7 +921,7 @@ class OpticalModemSensor(HolodeckSensor):
     @property
     def sensor_data(self):
         if len(self._sensor_data_buffer) > 0 and self._sensor_data_buffer:
-            data = modem.msg_data
+            data = self.msg_data
         else:
             data = None
 
