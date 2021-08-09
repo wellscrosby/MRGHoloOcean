@@ -97,7 +97,7 @@ bool UOpticalModemSensor::CanTransmit() {
 
 
 bool UOpticalModemSensor::IsSensorOriented(UOpticalModemSensor* Sensor, FVector LocalToSensor) {
-    float DotProduct = UKismetMathLibrary::Dot_VectorVector(KismetMathLibrary::Normal(Sensor->GetForwardVector()), UKismetMathLibrary::Normal(LocalToSensor))
+    float DotProduct = UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(Sensor->GetForwardVector()), UKismetMathLibrary::Normal(LocalToSensor));
     float Angle = FMath::RadiansToDegrees(UKismetMathLibrary::Acos(DotProduct));
     UE_LOG(LogHolodeck, Log, TEXT("Optical Modem: angle = %f"), Angle);
 
