@@ -44,12 +44,12 @@ bool UOpticalModemSensor::CanTransmit() {
     FVector ReceiveToSend = SendingSensor - ReceiveSensor;
 
     float Dist = SendToReceive.Size() / 100;
-    UE_LOG(LogHolodeck, Log, TEXT("Optical Modem: Dist = %f  MaxDistance = %f"), Dist, NoiseMaxDistance);
+    UE_LOG(LogHolodeck, Log, TEXT("Optical Modem: Dist = %f  MaxDistance = %f"), Dist, FromSensor->NoiseMaxDistance);
 
     bool transmit;
 
     //Max guaranteed range of modem is 50 meters
-    if (Dist <= NoiseMaxDistance) {
+    if (Dist <= FromSensor->NoiseMaxDistance) {
     
         // Calculate if sensors are facing each other within 120 degrees
         //--> Difference in angle needs to be -60 < x < 60 
