@@ -20,11 +20,10 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
     bool* BoolBuffer = static_cast<bool*>(Buffer);
     if (Parent != nullptr && bOn) {
 		// if someone starting transmitting
-
+        NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
+        NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
 		if (FromSensor) {
-            NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
-            NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
-
+            
             BoolBuffer[0] = this->CanTransmit();            
 		}
     }
