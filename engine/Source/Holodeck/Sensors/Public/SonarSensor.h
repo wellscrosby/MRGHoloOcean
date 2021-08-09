@@ -71,7 +71,13 @@ protected:
 	int BinsAzimuth = 128;
 
 	UPROPERTY(EditAnywhere)
-	bool ViewDebug = false;
+	int BinsElev;
+
+	UPROPERTY(EditAnywhere)
+	bool ViewRegion = false;
+
+	UPROPERTY(EditAnywhere)
+	bool ViewOctree = false;
 
 	UPROPERTY(EditAnywhere)
 	int TicksPerCapture = 1;
@@ -91,6 +97,7 @@ private:
 	// various computations we want to cache
 	float RangeRes;
 	float AzimuthRes;
+	float ElevRes;
 	float minAzimuth;
 	float maxAzimuth;
 	float minElev;
@@ -98,10 +105,14 @@ private:
 	float sinOffset;
 	float sqrt2;
 	float OctreeMax;
+	float OctreeMin;
 
 	// initialize + reserve vectors once
 	TArray<Octree*> leafs;
+	// Used to hold leafs when parallelized filtering happens
 	TArray<TArray<Octree*>> tempLeafs;
+	// Used to hold leafs when parallelized sorting happens
+	TArray<TArray<Octree*>> sortedLeafs;
 	int32* count;
 	
 	// for adding noise

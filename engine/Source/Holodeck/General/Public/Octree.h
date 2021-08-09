@@ -69,4 +69,5 @@ class Octree
         FVector normal;
         TArray<Octree*> leafs;	
         FVector locSpherical;
+        float val;
 };
