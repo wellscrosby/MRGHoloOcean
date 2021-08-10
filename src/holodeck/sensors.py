@@ -742,6 +742,39 @@ class DepthSensor(HolodeckSensor):
     def data_shape(self):
         return [1]
 
+class GPSSensor(HolodeckSensor):
+    """Gets the location of the agent in the world if the agent is close enough to the surface.
+
+    Returns coordinates in ``[x, y, z]`` format (see :ref:`coordinate-system`)
+
+    **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the
+    following options:
+
+    - ``Sigma``/``Cov``: Covariance/Std of measurement. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
+    - ``Depth``: How deep in the water we can still receive GPS messages in meters. Defaults to 2m.
+    - ``DepthSigma``/``DepthCov``: Covariance/Std of depth. Must be a scalar. Defaults to 0 => no noise.
+
+    """
+
+    sensor_type = "GPSSensor"
+
+    @property
+    def dtype(self):
+        return np.float32
+
+    @property
+    def data_shape(self):
+        return [3]
+
+    @property
+    def sensor_data(self):
+        if ~np.any(np.isnan(self._sensor_data_buffer)):
+            return self._sensor_data_buffer
+        else:
+            return None
+            
 class PoseSensor(HolodeckSensor):
     """Gets the forward, right, and up vector for the agent.
     Returns a 2D numpy array of
@@ -1013,6 +1046,7 @@ class SensorDefinition:
         "DepthSensor": DepthSensor,
         "OpticalModemSensor": OpticalModemSensor,
         "SonarSensor": SonarSensor,
+        "GPSSensor": GPSSensor,
     }
 
     def get_config_json_string(self):
