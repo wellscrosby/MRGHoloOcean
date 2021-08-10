@@ -24,6 +24,7 @@ from holodeck.weather import WeatherController
 from holodeck.lcm import SensorData
 
 from holodeck.sensors import AcousticBeaconSensor
+from holodeck.sensors import OpticalModemSensor
 
 class HolodeckEnvironment:
     """Proxy for communicating with a Holodeck world
@@ -808,6 +809,8 @@ class HolodeckEnvironment:
         return None  # Not implemented for other types
 
 
+######################### HOLODECK-OCEAN CUSTOM #############################
+
 ######################## ACOUSTIC BEACON HELPERS ###########################
 
     def send_acoustic_message(self, id_from, id_to, msg_type, msg_data):
@@ -828,3 +831,23 @@ class HolodeckEnvironment:
     @property
     def beacons_status(self):
         return [i.status for i in AcousticBeaconSensor.instances.values()]
+
+####################### OPTICAL MODEM HELPERS ###############################
+
+    def send_optical_message(self, id_from, id_to, msg_data):
+        """Sends data between various instances of OpticalModemSensor
+
+        Args:
+            id_from (:obj: `int`): The integer ID of the transmitting modem.
+            id_to (:obj: `int`): The integer ID of the receiving modem.
+        """
+
+        OpticalModemSensor.instances[id_from].send_message(id_to, msg_data)
+
+    @property
+    def modems(self):
+        return OpticalModemSensor.instances
+
+    @property
+    def modems_id(self):
+        return list(OpticalModemSensor.instances.keys())
