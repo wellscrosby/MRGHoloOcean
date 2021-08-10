@@ -36,7 +36,7 @@ void UDVLSensor::ParseSensorParms(FString ParmsJson) {
 
 	}
 	else {
-		UE_LOG(LogHolodeck, Fatal, TEXT("ULocationSensor::ParseSensorParms:: Unable to parse json."));
+		UE_LOG(LogHolodeck, Fatal, TEXT("UDVLSensor::ParseSensorParms:: Unable to parse json."));
 	}
 }
 
