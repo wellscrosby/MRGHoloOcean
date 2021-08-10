@@ -17,6 +17,7 @@
 #include "RemoveSensorCommand.h"
 #include "RotateSensorCommand.h"
 #include "SendAcousticMessageCommand.h"
+#include "SendOpticalMessageCommand.h"
 
 #include "CommandFactory.generated.h"
 
