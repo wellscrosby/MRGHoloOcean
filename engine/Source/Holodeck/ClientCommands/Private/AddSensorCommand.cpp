@@ -47,7 +47,8 @@ void UAddSensorCommand::Execute() {
 										{ "DVLSensor", UDVLSensor::StaticClass() },
 										{ "PoseSensor", UPoseSensor::StaticClass() },
 										{ "AcousticBeaconSensor", UAcousticBeaconSensor::StaticClass() },
-										{ "DepthSensor", UDepthSensor::StaticClass() }, };
+										{ "DepthSensor", UDepthSensor::StaticClass() },
+										{ "OpticalModemSensor", UOpticalModemSensor::StaticClass() }, };
 
 	FString AgentName = StringParams[0].c_str();
 	FString SensorName = StringParams[1].c_str();
