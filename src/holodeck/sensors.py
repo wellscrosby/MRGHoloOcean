@@ -4,7 +4,7 @@ import json
 import numpy as np
 import holodeck
 
-from holodeck.command import RGBCameraRateCommand, RotateSensorCommand, CustomCommand, SendAcousticMessageCommand
+from holodeck.command import RGBCameraRateCommand, RotateSensorCommand, CustomCommand, SendAcousticMessageCommand, SendOpticalMessageCommand
 from holodeck.exceptions import HolodeckConfigurationException
 from holodeck.lcm import SensorData
 
@@ -754,7 +754,7 @@ class AcousticBeaconSensor(HolodeckSensor):
         self.sending_to = []
         
         # assign an id
-        # TODO This could posisbly assign a later to be used id
+        # TODO This could possibly assign a later to be used id
         # For safety either give all beacons id's or none of them
         curr_ids = set(i.id for i in self.__class__.instances.values())
         if 'id' in config and config['id'] not in curr_ids:
@@ -861,6 +861,87 @@ class AcousticBeaconSensor(HolodeckSensor):
     def reset(self):
         self.__class__.instances = dict()
 
+class OpticalModemSensor(HolodeckSensor):
+    """Handles communication between agents using an optical modem.
+
+    **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the
+    following options:
+
+    - ``MaxDistance``: Max Distance in meters of OpticalModem. (default 50)
+    - ``DebugNumSides``: Number of sides on the debug cone. (default 72)
+    - ``LaserAngle``: Angle of lasers from origin. Measured in degrees. (default 60)
+    - ``LaserDebug``: Show debug traces. (default false)
+    - ``DistanceSigma``: Determines the standard deviation of the noise of MaxDistance. (defualt 0)
+    - ``AngleSigma``: Determines the standard deviation of the noise of LaserAngle. (default 0)
+    - ``DistanceCov``: Determines the covariance of the noise of MaxDistance. (defualt 0)
+    - ``AngleCov``: Determines the covariance of the noise of LaserAngle. (default 0)
+
+    """
+    sensor_type = "OpticalModemSensor"
+    instances = dict()
+
+    def __init__(self, client, agent_name, agent_type, name="OpticalModemSensor",  config=None):
+        self.sending_to = []
+        
+        # assign an id
+        # TODO This could possibly assign a later to be used id
+        # For safety either give all beacons id's or none of them
+        curr_ids = set(i.id for i in self.__class__.instances.values())
+        if 'id' in config and config['id'] not in curr_ids:
+            self.id = config['id']
+        elif len(curr_ids) == 0:
+            self.id = 0
+        else:
+            all_ids = set(range(max(curr_ids)+2))
+            self.id = min( all_ids - curr_ids )
+        
+        # keep running list of all beacons
+        self.__class__.instances[self.id] = self
+
+        super(OpticalModemSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+
+    def send_message(self, id_to, msg_data):
+         # Clean out id_to parameters
+        if id_to == -1 or id_to == "all":
+            id_to = list(self.__class__.instances.keys())
+            id_to.remove(self.id)
+        if isinstance(id_to, int):
+            id_to = [id_to]
+
+        for i in id_to:
+            modem = self.__class__.instances[i]
+            command = SendOpticalMessageCommand(self.agent_name, self.name, modem.agent_name, modem.name)
+            self._client.command_center.enqueue_command(command)
+
+            modem.msg_data = msg_data
+        
+
+    @property
+    def sensor_data(self):
+        if len(self._sensor_data_buffer) > 0 and self._sensor_data_buffer:
+            data = self.msg_data
+        else:
+            data = None
+
+        # reset buffer
+        self.msg_data = None
+        return data
+
+    @property
+    def dtype(self):
+        return np.bool8
+
+    @property
+    def data_shape(self):
+        return [1]
+
+    def reset(self):
+        self.__class__.instances = dict()
+
+    
+        
 ######################################################################################
 class SensorDefinition:
     """A class for new sensors and their parameters, to be used for adding new sensors.
@@ -903,6 +984,7 @@ class SensorDefinition:
         "DVLSensor": DVLSensor,
         "PoseSensor": PoseSensor,
         "AcousticBeaconSensor": AcousticBeaconSensor,
+        "OpticalModemSensor": OpticalModemSensor,
         "SonarSensor": SonarSensor,
     }
 
