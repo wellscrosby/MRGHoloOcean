@@ -716,6 +716,32 @@ class DVLSensor(HolodeckSensor):
     def data_shape(self):
         return [3]
 
+class DepthSensor(HolodeckSensor):
+    """Pressure/Depth Sensor.
+
+    Returns a 1D numpy array of::
+
+       [position_z]
+
+     **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the
+    following options:
+
+    - ``Sigma``/``Cov``: Covariance/Std to be applied, a scalar. Defaults to 0 => no noise.
+
+    """
+
+    sensor_type = "DepthSensor"
+
+    @property
+    def dtype(self):
+        return np.float32
+
+    @property
+    def data_shape(self):
+        return [1]
+
 class PoseSensor(HolodeckSensor):
     """Gets the forward, right, and up vector for the agent.
     Returns a 2D numpy array of
@@ -984,6 +1010,7 @@ class SensorDefinition:
         "DVLSensor": DVLSensor,
         "PoseSensor": PoseSensor,
         "AcousticBeaconSensor": AcousticBeaconSensor,
+        "DepthSensor": DepthSensor,
         "OpticalModemSensor": OpticalModemSensor,
         "SonarSensor": SonarSensor,
     }
