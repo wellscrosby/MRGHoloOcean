@@ -16,17 +16,10 @@ void UDepthSensor::ParseSensorParms(FString ParmsJson) {
 		if (JsonParsed->HasTypedField<EJson::Number>("Sigma")) {
 			mvn.initSigma(JsonParsed->GetNumberField("Sigma"));
 		}
-		if (JsonParsed->HasTypedField<EJson::Array>("Sigma")) {
-			mvn.initSigma(JsonParsed->GetArrayField("Sigma"));
-		}
-
 		if (JsonParsed->HasTypedField<EJson::Number>("Cov")) {
 			mvn.initCov(JsonParsed->GetNumberField("Cov"));
 		}
-		if (JsonParsed->HasTypedField<EJson::Array>("Cov")) {
-			mvn.initCov(JsonParsed->GetArrayField("Cov"));
-		}
-
+		
 	}
 	else {
 		UE_LOG(LogHolodeck, Fatal, TEXT("UDepthSensor::ParseSensorParms:: Unable to parse json."));
