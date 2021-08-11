@@ -170,24 +170,29 @@ void UHolodeckServer::makeOctree(UWorld* World){
 
         // check if it's been cached
 		if(FPaths::DirectoryExists(filePath)){
-			UE_LOG(LogHolodeck, Warning, TEXT("HolodeckServer::Loading Octree.."));
-			octree = Octree::fromJson(filePath);
+			UE_LOG(LogHolodeck, Log, TEXT("HolodeckServer::Loading Octree.."));
+			octree = Octree::fromFolder(filePath);
 		}
 		else{
-			UE_LOG(LogHolodeck, Warning, TEXT("HolodeckServer::Making Octree.."));
+			UE_LOG(LogHolodeck, Log, TEXT("HolodeckServer::Making/Saving Octree.."));
 			// Otherwise, make the octrees
-			FVector nCells = (EnvMax - EnvMin) / OctreeMax;
-			for(int i = 0; i < nCells.X; i++) {
-				for(int j = 0; j < nCells.Y; j++) {
-					for(int k = 0; k < nCells.Z; k++) {
+			FIntVector nCells = FIntVector((EnvMax - EnvMin) / OctreeMax) + FIntVector(1);
+            int32 total = nCells.X * nCells.Y * nCells.Z;
+			for(int32 i = 0; i < nCells.X; i++) {
+				for(int32 j = 0; j < nCells.Y; j++) {
+					for(int32 k = 0; k < nCells.Z; k++) {
 						FVector center = FVector(i*OctreeMax, j*OctreeMax, k*OctreeMax) + EnvMin;
-						Octree::makeOctree(center, OctreeMax, World, octree, OctreeMin);
-					}
+						bool made = Octree::makeOctree(center, OctreeMax, World, octree, OctreeMin);
+                        if(made){
+                            octree.Last()->toJson(filePath);
+                            octree.Last()->unload();
+                        }
+                        float percent = 100.0*(i*nCells.Y*nCells.Z + j*nCells.Z + k)/total; 
+                        UE_LOG(LogHolodeck, Log, TEXT("Creating Octree %f"), percent); 
+                    }
 				}
 			}
-			// save for next time
-			UE_LOG(LogHolodeck, Warning, TEXT("HolodeckServer::Saving Octree.. to %s"), *filePath);
-			Octree::toJson(octree, filePath);
+
 		}
     }
 }

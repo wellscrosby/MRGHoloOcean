@@ -16,7 +16,13 @@ FHitResult Octree::hit = FHitResult();
 
 FCollisionQueryParams Octree::params = Octree::init_params();
 
-void Octree::makeOctree(FVector center, float size, UWorld* World, TArray<Octree*>& parent, float minBox, FString actorName){
+float sign(float val){
+    bool s = signbit(val);
+    if(s) return -1.0;
+    else return 1.0;
+}
+
+bool Octree::makeOctree(FVector center, float size, UWorld* World, TArray<Octree*>& parent, float minBox, FString actorName){
     /*
     * There's a bug in UE4 4.22 where if you're sweep has length less than KINDA_SMALL_NUMBER it doesn't do anything
     * https://answers.unrealengine.com/questions/887018/422-spheretraceforobjects-node-is-not-working-anym.html
@@ -58,16 +64,26 @@ void Octree::makeOctree(FVector center, float size, UWorld* World, TArray<Octree
             // if it's all the way broken down, save the normal
             else{
                 child->normal = hit.Normal;
+
+                // clean normal
+                if(isnan(child->normal.X)) child->normal.X = sign(child->normal.X); 
+                if(isnan(child->normal.Y)) child->normal.Y = sign(child->normal.Y); 
+                if(isnan(child->normal.Z)) child->normal.Z = sign(child->normal.Z); 
+                if(hit.Normal.ContainsNaN()){
+                    UE_LOG(LogHolodeck, Warning, TEXT("Found position: %s"), *child->loc.ToString());
+                    UE_LOG(LogHolodeck, Warning, TEXT("Found nan: %s"), *child->normal.ToString());
+                }
                 // DrawDebugLine(World, center, center+hit.Normal*minBox/2, FColor::Blue, true, 100, ECC_WorldStatic, 1.f);
                 // DrawDebugBox(World, center, FVector(size/2), FColor::Green, true, 2, ECC_WorldStatic, .5f);
             }
 
             parent.Add(child);
+            return true;
         }
 	}
-    else{
-        // DrawDebugBox(World, center, FVector(size/2), FColor::Red, true, 2, ECC_WorldStatic, .5f);
-    }
+
+    // DrawDebugBox(World, center, FVector(size/2), FColor::Red, true, 2, ECC_WorldStatic, .5f);
+    return false;
 
 }
 
@@ -84,33 +100,30 @@ int Octree::numLeafs(){
     }
 }
 
-void Octree::toJson(TArray<Octree*>& trees, FString filePath){
+void Octree::toJson(FString filePath){
     // make directory
     FFileManagerGeneric().MakeDirectory(*filePath, true);
 
-    // iterate through all trees
-    for(int i=0;i<trees.Num();i++){
-        // calculate buffer size and make writer
-        int num = trees[i]->numLeafs()*100;
-        char* buffer = new char[num]();
-        gason::JSonBuilder doc(buffer, num-1);
+    // calculate buffer size and make writer
+    int num = numLeafs()*100;
+    char* buffer = new char[num]();
+    gason::JSonBuilder doc(buffer, num-1);
 
-        // fill in buffer
-        trees[i]->toJson(doc);
+    // fill in buffer
+    toJson(doc);
 
-        if( doc.isBufferAdequate() ){
-            // String to file
-            FString filename = filePath + "/" + FString::FromInt(i) + ".json";
-            FILE* fp = fopen(TCHAR_TO_ANSI(*filename), "w+t");
-            fwrite(buffer, strlen(buffer), 1, fp);
-            fclose(fp);
-        }
-        else{
-            UE_LOG(LogHolodeck, Warning, TEXT("Octree: The buffer is too small and the output json for file %d.json is not valid."), i);
-        }
-
-        delete[] buffer;
+    if( doc.isBufferAdequate() ){
+        // String to file
+        file = filePath + "/" + FString::FromInt((int)loc.X) + "_" + FString::FromInt((int)loc.Y) + "_" + FString::FromInt((int)loc.Z) + ".json";
+        FILE* fp = fopen(TCHAR_TO_ANSI(*file), "w+t");
+        fwrite(buffer, strlen(buffer), 1, fp);
+        fclose(fp);
     }
+    else{
+        UE_LOG(LogHolodeck, Warning, TEXT("Octree: The buffer is too small and the output json for file %s is not valid."), *file);
+    }
+
+    delete[] buffer;
 }
 
 void Octree::toJson(gason::JSonBuilder& doc){
@@ -139,17 +152,13 @@ void Octree::toJson(gason::JSonBuilder& doc){
     doc.endObject();
 }
 
-TArray<Octree*> Octree::fromJson(FString filePath){
-    TArray<Octree*> trees;
-    gason::JsonAllocator allocator;
+void Octree::load(){
+    // if it's not already loaded
+    if(leafs.Num() == 0){
+        UE_LOG(LogHolodeck, Warning, TEXT("Loading Octree %s"), *file);
 
-    // get files to iterate over
-    TArray<FString> files;
-    FFileManagerGeneric().FindFiles(files, *filePath);
-
-    for(FString& file : files){
         // load file to a string
-        file = filePath + "/" + file;
+        gason::JsonAllocator allocator;
         std::ifstream t(TCHAR_TO_ANSI(*file));
         std::string str((std::istreambuf_iterator<char>(t)),
                         std::istreambuf_iterator<char>());
@@ -159,19 +168,45 @@ TArray<Octree*> Octree::fromJson(FString filePath){
         char* endptr;
         gason::JsonValue json;
         int status = gason::jsonParse(source, &endptr, &json, allocator);
-        // pull data from json, and put in array
-        if (status == gason::JSON_PARSE_OK) {
-            fromJson(json, trees);
+
+        // load in leafs
+        for(gason::JsonNode* o : json){
+            if(o->key[0] == 'l'){
+                for(gason::JsonNode* l : o->value){
+                    load(l->value, leafs);
+                }
+            }
         }
-        else{
-            UE_LOG(LogHolodeck, Warning, TEXT("Octree: Parsing json failed on file %s!"), *file);
-        }
+    }
+}
+
+TArray<Octree*> Octree::fromFolder(FString filePath){
+    TArray<Octree*> trees;
+    gason::JsonAllocator allocator;
+
+    // get files to iterate over
+    TArray<FString> files;
+    FFileManagerGeneric().FindFiles(files, *filePath);
+
+    for(FString& file : files){
+        // pull position from filename
+        TArray<FString> out;
+        file.ParseIntoArray(out, TEXT("_"), true);
+        FVector position = FVector(FCString::Atof(*out[0]), FCString::Atof(*out[1]), FCString::Atof(*out[2]));
+
+        // load file to a string
+        file = filePath + "/" + file;
+        
+        Octree* child = new Octree(position);
+        child->file = file;
+
+        trees.Add(child);
     }
 
     return trees;
 }
 
-void Octree::fromJson(gason::JsonValue& json, TArray<Octree*>& parent){
+void Octree::load(gason::JsonValue& json, TArray<Octree*>& parent){
     Octree* child = new Octree;
     for(gason::JsonNode* o : json){
         if(o->key[0] == 'p'){
@@ -180,7 +215,7 @@ void Octree::fromJson(gason::JsonValue& json, TArray<Octree*>& parent){
         }
         if(o->key[0] == 'l'){
             for(gason::JsonNode* l : o->value){
-                fromJson(l->value, child->leafs);
+                load(l->value, child->leafs);
             }
         }
         if(o->key[0] == 'n'){

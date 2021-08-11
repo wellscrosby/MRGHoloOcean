@@ -170,7 +170,7 @@ bool USonarSensor::inRange(Octree* tree, float size){
 	FTransform SensortoWorld = this->GetComponentTransform();
 	// if it's not a leaf, we use a bigger search area
 	float offset = 0;
-	if(tree->leafs.Num() != 0){
+	if(size != OctreeMin){
 		float radius = size/sqrt2;
 		offset = radius/sinOffset;
 		SensortoWorld.AddToTranslation( -this->GetForwardVector()*offset );
@@ -200,14 +200,21 @@ bool USonarSensor::inRange(Octree* tree, float size){
 void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& rLeafs, float size){
 	bool in = inRange(tree, size);
 	if(in){
-		if(tree->leafs.Num() == 0){
+		if(size == OctreeMin){
 			rLeafs.Add(tree);
+			return;
 		}
-		else{
-			for(Octree* l : tree->leafs){
-				leafsInRange(l, rLeafs, size/2);
-			}
+
+		if(size == OctreeMax){
+			tree->load();
 		}
+
+		for(Octree* l : tree->leafs){
+			leafsInRange(l, rLeafs, size/2);
+		}
+	}
+	else if(size == OctreeMax){
+		tree->unload();
 	}
 }
 

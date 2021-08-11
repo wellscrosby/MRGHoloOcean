@@ -34,21 +34,33 @@ class Octree
     public:
         Octree(){};
 		Octree(FVector loc) : loc(loc) {};
-		~Octree(){
-			for(Octree* leaf : leafs){
-				delete leaf;
-			}
-		}
+		~Octree(){ 
+            for(Octree* leaf : leafs){
+                delete leaf;
+            }
+            leafs.Reset();
+        }
 
-        static void makeOctree(FVector center, float size, UWorld* World, TArray<Octree*>& parent, float minBox=16, FString actorName="");
+        static bool makeOctree(FVector center, float size, UWorld* World, TArray<Octree*>& parent, float minBox=16, FString actorName="");
 
-        // functions for loading/saving octrees
-        static void toJson(TArray<Octree*>& trees, FString filePath);
-        static TArray<Octree*> fromJson(FString filePath);
+        void unload(){
+            if(leafs.Num() != 0){
+                // UE_LOG(LogHolodeck, Warning, TEXT("Unloading Octree %s"), *file);
+                for(Octree* leaf : leafs){
+                    delete leaf;
+                }
+                leafs.Reset();
+            }
+        }
+        void load();
+        static void load(gason::JsonValue& json, TArray<Octree*>& parent);
 
-        // helpers for loading/saving
+        // functions for loading empty octrees
+        static TArray<Octree*> fromFolder(FString filePath);
+
+        // helpers for saving
+        void toJson(FString filePath);
         void toJson(gason::JSonBuilder& doc);
-        static void fromJson(gason::JsonValue& json, TArray<Octree*>& parent);
 		
         // ignore actors
         static void ignoreActor(const AActor * InIgnoreActor){
@@ -64,6 +76,8 @@ class Octree
             p.bFindInitialOverlaps = true;
             return p;
         }
+
+        FString file;
 
         FVector loc;
         FVector normal;
