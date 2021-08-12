@@ -56,6 +56,9 @@ protected:
 	float MaxRange = 3000;
 
 	UPROPERTY(EditAnywhere)
+	float InitOctreeRange = 9000;
+
+	UPROPERTY(EditAnywhere)
 	float MinRange = 300;
 
 	UPROPERTY(EditAnywhere)
@@ -122,6 +125,6 @@ private:
 	// use for skipping frames
 	int TickCounter = 0;
 
-	bool inRange(Octree* tree, float size);
-	void leafsInRange(Octree* tree, TArray<Octree*>& leafs, float size);
+	bool inRange(Octree* tree);
+	void leafsInRange(Octree* tree, TArray<Octree*>& leafs);
 };

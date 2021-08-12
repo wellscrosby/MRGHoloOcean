@@ -14,26 +14,23 @@
 #include <fstream>
 #include <streambuf>
 
-// #include "Octree.generated.h"
-
-/**
- * 
- */
-// UCLASS()
-// class VOXELTEST_API UOctree : public UObject
-// {
-// 	GENERATED_BODY()
-
 class Octree
 {
 	private:
-	    static FHitResult hit;
+        // Globals used for calculations
         static TArray<FVector> corners;
         static FCollisionQueryParams params;
+        static FVector offset;
+        static float cornerSize;
 
     public:
+        static float OctreeMax;
+        static float OctreeMin;
+        static UWorld* World;
+
         Octree(){};
-		Octree(FVector loc) : loc(loc) {};
+		Octree(FVector loc, float size) : size(size), loc(loc) {};
+		Octree(FVector loc, float size, FString file) : size(size), loc(loc), file(file) {};
 		~Octree(){ 
             for(Octree* leaf : leafs){
                 delete leaf;
@@ -41,11 +38,12 @@ class Octree
             leafs.Reset();
         }
 
-        static bool makeOctree(FVector center, float size, UWorld* World, TArray<Octree*>& parent, float minBox=16, FString actorName="");
+        static Octree* newHeadOctree(FVector center, float octreeSize, FString filePath, FString actorName="");
+        static void makeOctree(FVector center, float octreeSize, TArray<Octree*>& parent, FString actorName="");
 
         void unload(){
             if(leafs.Num() != 0){
-                // UE_LOG(LogHolodeck, Warning, TEXT("Unloading Octree %s"), *file);
+                UE_LOG(LogHolodeck, Warning, TEXT("Unloading Octree %s"), *file);
                 for(Octree* leaf : leafs){
                     delete leaf;
                 }
@@ -55,11 +53,8 @@ class Octree
         void load();
         static void load(gason::JsonValue& json, TArray<Octree*>& parent);
 
-        // functions for loading empty octrees
-        static TArray<Octree*> fromFolder(FString filePath);
-
         // helpers for saving
-        void toJson(FString filePath);
+        void toJson();
         void toJson(gason::JSonBuilder& doc);
 		
         // ignore actors
@@ -77,11 +72,20 @@ class Octree
             return p;
         }
 
+        // Given to all
+        float size;
+        FVector loc;
+
+        // Given to octree's that have been saved/loaded from file
         FString file;
 
-        FVector loc;
+        // Given to each non-leaf
+        TArray<Octree*> leafs;
+
+        // Given to each leaf 
         FVector normal;
-        TArray<Octree*> leafs;	
+
+        // Used during computations
         FVector locSpherical;
         float val;
 };

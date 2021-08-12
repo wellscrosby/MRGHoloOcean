@@ -103,7 +103,7 @@ void AHolodeckBuoyantAgent::makeOctree(){
 			for(int j = 0; j < nCells.Y; j++) {
 				for(int k = 0; k < nCells.Z; k++) {
 					FVector center = FVector(i*OctreeMax, j*OctreeMax, k*OctreeMax) + BoundingBox.Min + OctreeMax/4 + GetActorLocation();
-					Octree::makeOctree(center, OctreeMax, GetWorld(), octreeGlobal, OctreeMin, GetName());
+					Octree::makeOctree(center, OctreeMax, octreeGlobal, GetName());
 				}
 			}
 		}

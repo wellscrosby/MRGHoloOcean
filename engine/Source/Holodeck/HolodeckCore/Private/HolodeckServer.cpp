@@ -164,35 +164,67 @@ void UHolodeckServer::LogSystemError(const std::string& errorMessage) {
 
 void UHolodeckServer::makeOctree(UWorld* World){
     if(octree.Num() == 0){
+        Octree::OctreeMin = OctreeMin;
+        Octree::OctreeMax = OctreeMax;
+        Octree::World = World;
+
         // Get caching/loading location
         FString filePath = FPaths::ProjectDir() + "Octrees/" + World->GetMapName();
 		filePath += "/" + FString::FromInt(OctreeMin) + "_" + FString::FromInt(OctreeMax);
+        FString rootFile = filePath + "/" + "root.csv";
 
-        // check if it's been cached
-		if(FPaths::DirectoryExists(filePath)){
-			UE_LOG(LogHolodeck, Log, TEXT("HolodeckServer::Loading Octree.."));
-			octree = Octree::fromFolder(filePath);
-		}
-		else{
-			UE_LOG(LogHolodeck, Log, TEXT("HolodeckServer::Making/Saving Octree.."));
-			// Otherwise, make the octrees
-			FIntVector nCells = FIntVector((EnvMax - EnvMin) / OctreeMax) + FIntVector(1);
+        // if we've already saved what root nodes should be, open 'em up
+        if(FPaths::FileExists(rootFile)){
+            // Get ready
+            FString fileData;
+            TArray<FString> lines;
+            TArray<FString> data;
+            FVector center;
+
+            // Load data
+            FFileHelper::LoadFileToString(fileData, *rootFile);
+            fileData.ParseIntoArray(lines, TEXT("\n"), true);
+            for(FString l : lines){
+                l.ParseIntoArray(data, TEXT(" "), true);
+                center = FVector(l[0], l[1], l[2]);
+                FString filename = filePath + "/" + FString::FromInt((int)center.X) + "_" 
+                                                + FString::FromInt((int)center.Y) + "_" 
+                                                + FString::FromInt((int)center.Z) + ".json";
+                Octree* o = new Octree(center, OctreeMax, filename);
+                octree.Add(o);
+            }
+        }
+        // otherwise figure it out!
+        else{
+            UE_LOG(LogHolodeck, Log, TEXT("HolodeckServer::Initializing Octree.."));
+            // Otherwise, make the octrees
+            FIntVector nCells = FIntVector((EnvMax - EnvMin) / OctreeMax) + FIntVector(1);
             int32 total = nCells.X * nCells.Y * nCells.Z;
-			for(int32 i = 0; i < nCells.X; i++) {
-				for(int32 j = 0; j < nCells.Y; j++) {
-					for(int32 k = 0; k < nCells.Z; k++) {
-						FVector center = FVector(i*OctreeMax, j*OctreeMax, k*OctreeMax) + EnvMin;
-						bool made = Octree::makeOctree(center, OctreeMax, World, octree, OctreeMin);
-                        if(made){
-                            octree.Last()->toJson(filePath);
-                            octree.Last()->unload();
+            for(int32 i = 0; i < nCells.X; i++) {
+                for(int32 j = 0; j < nCells.Y; j++) {
+                    for(int32 k = 0; k < nCells.Z; k++) {
+                        FVector center = FVector(i*OctreeMax, j*OctreeMax, k*OctreeMax) + EnvMin;
+                        Octree* o = Octree::newHeadOctree(center, OctreeMax, filePath);
+                        if(o){
+                            octree.Add(o);
                         }
+
                         float percent = 100.0*(i*nCells.Y*nCells.Z + j*nCells.Z + k)/total; 
                         UE_LOG(LogHolodeck, Log, TEXT("Creating Octree %f"), percent); 
                     }
-				}
-			}
+                }
+            }
 
-		}
+            // Save these!
+            FString root = "";
+            for(Octree* o : octree){
+                root += FString::FromInt((int)o->loc.X)
+                         + " " + FString::FromInt((int)o->loc.Y)
+                         + " " + FString::FromInt((int)o->loc.Z)
+                         + "\n";
+            }
+            FFileHelper::SaveStringToFile(root, *rootFile);
+        }
+
     }
 }

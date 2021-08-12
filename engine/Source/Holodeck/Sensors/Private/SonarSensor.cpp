@@ -69,6 +69,10 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 			MaxRange = JsonParsed->GetNumberField("MaxRange")*100;
 		}
 
+		if (JsonParsed->HasTypedField<EJson::Number>("InitOctreeRange")) {
+			MaxRange = JsonParsed->GetNumberField("InitOctreeRange")*100;
+		}
+
 		if (JsonParsed->HasTypedField<EJson::Number>("MinRange")) {
 			MinRange = JsonParsed->GetNumberField("MinRange")*100;
 		}
@@ -116,18 +120,33 @@ void USonarSensor::initOctree(){
 		}
 		// make/load octree
 		Controller->GetServer()->makeOctree(GetWorld());
-		Octree::resetParams();
+		// Octree::resetParams();
 
 		// initialize small octree for each agent
-		for(auto& agent : Controller->GetServer()->AgentMap){
-			AHolodeckBuoyantAgent* bouyantActor = static_cast<AHolodeckBuoyantAgent*>(agent.Value);
-			bouyantActor->makeOctree();
-		}
+		// for(auto& agent : Controller->GetServer()->AgentMap){
+		// 	AHolodeckBuoyantAgent* bouyantActor = static_cast<AHolodeckBuoyantAgent*>(agent.Value);
+		// 	bouyantActor->makeOctree();
+		// }
 
 		// get all our leafs ready
 		// TODO: calculate what these values should be
 		// TODO: This needs to be moved somewhere to make sure it happens to every sonar
 		TArray<Octree*>& octree = getOctree();
+		FVector loc = this->GetComponentLocation();
+		TArray<Octree*> toMake;
+		for(Octree* tree : octree){
+			if((loc - tree->loc).Size() < InitOctreeRange){
+				toMake.Add(tree);
+			}
+		}
+		UE_LOG(LogHolodeck, Warning, TEXT("toMake size: %d"), toMake.Num());
+		ParallelFor(toMake.Num(), [&](int32 i){
+			toMake.GetData()[i]->load();
+			toMake.GetData()[i]->unload();
+		});
+		UE_LOG(LogHolodeck, Warning, TEXT("Finished initial building"));
+
+
 		leafs.Reserve(10000);
 		tempLeafs.Reserve(octree.Num());
 		for(int i=0;i<octree.Num();i++){
@@ -166,12 +185,12 @@ void USonarSensor::InitializeSensor() {
 	count = new int32[BinsRange*BinsAzimuth]();
 }
 
-bool USonarSensor::inRange(Octree* tree, float size){
+bool USonarSensor::inRange(Octree* tree){
 	FTransform SensortoWorld = this->GetComponentTransform();
 	// if it's not a leaf, we use a bigger search area
 	float offset = 0;
-	if(size != OctreeMin){
-		float radius = size/sqrt2;
+	if(tree->size != OctreeMin){
+		float radius = tree->size/sqrt2;
 		offset = radius/sinOffset;
 		SensortoWorld.AddToTranslation( -this->GetForwardVector()*offset );
 		offset += radius;
@@ -197,23 +216,23 @@ bool USonarSensor::inRange(Octree* tree, float size){
 	return true;
 }	
 
-void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& rLeafs, float size){
-	bool in = inRange(tree, size);
+void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& rLeafs){
+	bool in = inRange(tree);
 	if(in){
-		if(size == OctreeMin){
+		if(tree->size == OctreeMin){
 			rLeafs.Add(tree);
 			return;
 		}
 
-		if(size == OctreeMax){
+		if(tree->size == OctreeMax){
 			tree->load();
 		}
 
 		for(Octree* l : tree->leafs){
-			leafsInRange(l, rLeafs, size/2);
+			leafsInRange(l, rLeafs);
 		}
 	}
-	else if(size == OctreeMax){
+	else if(tree->size == OctreeMax){
 		tree->unload();
 	}
 }
@@ -258,7 +277,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 
 		// FILTER TO GET THE LEAFS WE WANT
 		ParallelFor(octree.Num(), [&](int32 i){
-			leafsInRange(octree.GetData()[i], tempLeafs.GetData()[i], OctreeMax);
+			leafsInRange(octree.GetData()[i], tempLeafs.GetData()[i]);
 		});
 		for(auto& tl : tempLeafs){
 			leafs += tl;
