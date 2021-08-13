@@ -27,11 +27,36 @@ float sign(float val){
     else return 1.0;
 }
 
-void Octree::initOctree(float min, float max, FVector eMin, FVector eMax){
-    OctreeMin = min;
-    OctreeMax = max;
-    EnvMin = eMin;
-    EnvMax = eMax;
+void Octree::initOctree(){
+    // Load environment size
+    if (!FParse::Value(FCommandLine::Get(), TEXT("EnvMinX="), EnvMin.X)) EnvMin.X = -10;
+    if (!FParse::Value(FCommandLine::Get(), TEXT("EnvMinY="), EnvMin.Y)) EnvMin.Y = -10;
+    if (!FParse::Value(FCommandLine::Get(), TEXT("EnvMinZ="), EnvMin.Z)) EnvMin.Z = -10;
+    if (!FParse::Value(FCommandLine::Get(), TEXT("EnvMaxX="), EnvMax.X)) EnvMax.X = 10;
+    if (!FParse::Value(FCommandLine::Get(), TEXT("EnvMaxY="), EnvMax.Y)) EnvMax.Y = 10;
+    if (!FParse::Value(FCommandLine::Get(), TEXT("EnvMaxZ="), EnvMax.Z)) EnvMax.Z = 10;
+    // Clean environment size
+    FVector min = FVector((int)FGenericPlatformMath::Min(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Min(-1*EnvMin.Y, -1*EnvMax.Y), (int)FGenericPlatformMath::Min(EnvMin.Z, EnvMax.Z));
+    FVector max = FVector((int)FGenericPlatformMath::Max(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Max(-1*EnvMin.Y, -1*EnvMax.Y), (int)FGenericPlatformMath::Max(EnvMin.Z, EnvMax.Z));
+    EnvMin = min*100;
+    EnvMax = max*100;
+    UE_LOG(LogHolodeck, Log, TEXT("EnvMin: %s"), *EnvMin.ToString());
+    UE_LOG(LogHolodeck, Log, TEXT("EnvMax: %s"), *EnvMax.ToString());
+
+    // Get octree min/max
+    float tempVal;
+    if (!FParse::Value(FCommandLine::Get(), TEXT("OctreeMin="), tempVal)) tempVal = .1;
+    OctreeMin = (tempVal*100);
+    if (!FParse::Value(FCommandLine::Get(), TEXT("OctreeMax="), tempVal)) tempVal = 5;
+    OctreeMax = (tempVal*100);
+
+    // Make max a multiple of min
+    tempVal = OctreeMin;
+    while(tempVal <= OctreeMax){
+        tempVal *= 2;
+    }
+    OctreeMax = tempVal;
+    UE_LOG(LogHolodeck, Log, TEXT("OctreeMin: %f, OctreeMax: %f"), OctreeMin, OctreeMax);
 }
 
 TArray<Octree*> Octree::getOctreeRoots(UWorld* w){

@@ -89,8 +89,8 @@ void AHolodeckBuoyantAgent::ShowSurfacePoints(){
 void AHolodeckBuoyantAgent::makeOctree(){
 	if(octreeGlobal.Num() == 0){
 		UE_LOG(LogHolodeck, Warning, TEXT("HolodeckBuoyantAgent::Making Octree.."));
-		int OctreeMin = Server->OctreeMin;
-		int OctreeMax = Server->OctreeMax;
+		int OctreeMin = Octree::OctreeMin;
+		int OctreeMax = Octree::OctreeMax;
 		// Shrink to the smallest cube the actor fits in
 		float extent = BoundingBox.GetExtent().GetAbsMax()*2;
 		while(OctreeMax/2 > extent){
@@ -107,7 +107,7 @@ void AHolodeckBuoyantAgent::makeOctree(){
 				}
 			}
 		}
-		Server->octree += octreeGlobal;
+		// Server->octree += octreeGlobal;
 
 		// Convert our global octree to a local one
 		for( Octree* tree : octreeGlobal){

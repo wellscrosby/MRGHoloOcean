@@ -40,7 +40,7 @@ class Octree
             leafs.Reset();
         }
 
-        static void initOctree(float min, float max, FVector eMin, FVector eMax);
+        static void initOctree();
         static TArray<Octree*> getOctreeRoots(UWorld* w);
         static Octree* newHeadOctree(FVector center, float octreeSize, FString filePath, FString actorName="");
         static void makeOctree(FVector center, float octreeSize, TArray<Octree*>& parent, FString actorName="");

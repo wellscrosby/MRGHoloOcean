@@ -94,7 +94,6 @@ private:
 
 	// holds our implementation of Octrees
 	TArray<Octree*> octree;
-	TArray<Octree*>& getOctree(){ return Controller->GetServer()->octree; }
 	void viewLeafs(Octree* tree);
 	void initOctree();
 

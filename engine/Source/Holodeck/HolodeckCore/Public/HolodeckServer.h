@@ -123,17 +123,6 @@ public:
 	/* Stores pointers to all the agents within the world. */
 	TMap<FString, AHolodeckAgent*> AgentMap;
 
-	/**
-	* MakeOctree
-	* If an octree of the environment hasn't been made, it makes one
-	*/
-	float OctreeMin;
-	float OctreeMax;
-	FVector EnvMin;
-	FVector EnvMax;
-	TArray<Octree*> octree;
-	void makeOctree(UWorld* World);
-
 private:
 
 	FString UUID;

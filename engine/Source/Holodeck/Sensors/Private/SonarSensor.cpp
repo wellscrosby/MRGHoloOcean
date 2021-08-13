@@ -166,8 +166,8 @@ void USonarSensor::initOctree(){
 void USonarSensor::InitializeSensor() {
 	Super::InitializeSensor();
 
-	OctreeMax = Controller->GetServer()->OctreeMax;
-	OctreeMin = Controller->GetServer()->OctreeMin;
+	OctreeMax = Octree::OctreeMax;
+	OctreeMin = Octree::OctreeMin;
 
 	BinsElev = (int) Elevation;
 	
@@ -289,7 +289,6 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 		for(auto& tl : tempLeafs){
 			leafs += tl;
 		}
-		UE_LOG(LogHolodeck, Warning, TEXT("OctreeMin: %d"), OctreeMin);
 
 		// GET THE DOT PRODUCT, REMOVE BACKSIDE OF ANYTHING
 		FVector compLoc = this->GetComponentLocation();

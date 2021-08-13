@@ -71,3 +71,4 @@ Content/HolodeckContent/Bots/HuntingSpider/*
 
 # sonar data files
 *.json
+*.csv
