@@ -41,7 +41,7 @@ void USonarSensor::BeginDestroy() {
 	Super::BeginDestroy();
 
 	for(Octree* t : octree){
-		delete t;
+		if(!t->isAgent) delete t;
 	}
 	octree.Empty();
 
@@ -75,7 +75,7 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("InitOctreeRange")) {
-			MaxRange = JsonParsed->GetNumberField("InitOctreeRange")*100;
+			InitOctreeRange = JsonParsed->GetNumberField("InitOctreeRange")*100;
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("MinRange")) {
@@ -118,36 +118,36 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 
 void USonarSensor::initOctree(){
 	if(octree.Num() == 0){
-		// This is done here b/c Server doesn't have inheritance info of AHolodeckAgent
+		// initialize small octree for each agent
+		for(auto& agent : Controller->GetServer()->AgentMap){
+			AHolodeckBuoyantAgent* bouyantActor = static_cast<AHolodeckBuoyantAgent*>(agent.Value);
+			octree += bouyantActor->makeOctree();
+		}
+		
+		// Ignore necessary agents to make world one
 		for(auto& agent : Controller->GetServer()->AgentMap){
 			AActor* actor = static_cast<AActor*>(agent.Value);
 			Octree::ignoreActor(actor);
 		}
 		// make/load octree
-		octree = Octree::getOctreeRoots(GetWorld());
-		// Octree::resetParams();
-
-		// initialize small octree for each agent
-		// for(auto& agent : Controller->GetServer()->AgentMap){
-		// 	AHolodeckBuoyantAgent* bouyantActor = static_cast<AHolodeckBuoyantAgent*>(agent.Value);
-		// 	bouyantActor->makeOctree();
-		// }
+		octree = Octree::makeEnvOctreeRoots(GetWorld());
 
 		// get all our leafs ready
 		// TODO: calculate what these values should be
 		// TODO: This needs to be moved somewhere to make sure it happens to every sonar
 		FVector loc = this->GetComponentLocation();
+		float offset = InitOctreeRange + Octree::OctreeMax/sqrt2;
 		TArray<Octree*> toMake;
 		for(Octree* tree : octree){
-			if((loc - tree->loc).Size() < InitOctreeRange){
+			if((loc - tree->loc).Size() < offset){
 				toMake.Add(tree);
 			}
 		}
+		UE_LOG(LogHolodeck, Warning, TEXT("SonarSensor::Initial building num: %d"), toMake.Num());
 		ParallelFor(toMake.Num(), [&](int32 i){
 			toMake.GetData()[i]->load();
 			toMake.GetData()[i]->unload();
 		});
-
 
 		leafs.Reserve(10000);
 		tempLeafs.Reserve(octree.Num());

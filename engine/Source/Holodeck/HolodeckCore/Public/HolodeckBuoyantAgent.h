@@ -52,7 +52,7 @@ public:
 	void ShowBoundingBox();
 	void ShowSurfacePoints();
 
-	void makeOctree();
+	TArray<Octree*> makeOctree();
 	// octree in global coordinates in octree
 	TArray<Octree*> octreeGlobal;
 	// we store the octree in the actor coordinates in octreeClean, 

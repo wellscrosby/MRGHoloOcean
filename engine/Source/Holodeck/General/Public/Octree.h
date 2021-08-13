@@ -22,13 +22,24 @@ class Octree
         static FCollisionQueryParams params;
         static FVector offset;
         static float cornerSize;
+        static FVector EnvMin;
+        static FVector EnvMax;
+        static UWorld* World;
+
+        static void loadJson(gason::JsonValue& json, TArray<Octree*>& parent, float size);
+        void toJson(gason::JSonBuilder& doc);
+
+        static FCollisionQueryParams init_params(){
+            FCollisionQueryParams p;
+            p.bTraceComplex = false;
+            p.TraceTag = "";
+            p.bFindInitialOverlaps = true;
+            return p;
+        }
 
     public:
         static float OctreeMax;
         static float OctreeMin;
-        static FVector EnvMin;
-        static FVector EnvMax;
-        static UWorld* World;
 
         Octree(){};
 		Octree(FVector loc, float size) : size(size), loc(loc) {};
@@ -40,47 +51,37 @@ class Octree
             leafs.Reset();
         }
 
+        // Used to setup octree globals
         static void initOctree();
-        static TArray<Octree*> getOctreeRoots(UWorld* w);
-        static Octree* newHeadOctree(FVector center, float octreeSize, FString filePath, FString actorName="");
-        static void makeOctree(FVector center, float octreeSize, TArray<Octree*>& parent, FString actorName="");
 
-        void unload(){
-            if(leafs.Num() != 0){
-                UE_LOG(LogHolodeck, Log, TEXT("Unloading Octree %s"), *file);
-                for(Octree* leaf : leafs){
-                    delete leaf;
-                }
-                leafs.Reset();
-            }
-        }
+        // Figures out where octree roots are
+        static TArray<Octree*> makeEnvOctreeRoots(UWorld* w);
+
+        // iterative constructs octree
+        static Octree* makeOctree(FVector center, float octreeSize, bool recurse, FString actorName="");
+
+        void unload();
         void load();
-        static void loadJson(gason::JsonValue& json, TArray<Octree*>& parent, float size);
 
         // helpers for saving
         void toJson();
-        void toJson(gason::JSonBuilder& doc);
 		
         // ignore actors
         static void ignoreActor(const AActor * InIgnoreActor){
             params.AddIgnoredActor(InIgnoreActor);
         }
         static void resetParams(){ params = init_params(); }
+
         int numLeafs();
 
-        static FCollisionQueryParams init_params(){
-            FCollisionQueryParams p;
-            p.bTraceComplex = false;
-            p.TraceTag = "";
-            p.bFindInitialOverlaps = true;
-            return p;
-        }
-
+        // Used to check if it's a dynamic octree for an agent
+        bool isAgent;
+        
         // Given to all
         float size;
         FVector loc;
 
-        // Given to octree's that have been saved/loaded from file
+        // Given to octree roots that have been saved/loaded from file
         FString file;
 
         // Given to each non-leaf

@@ -44,6 +44,13 @@ void AHolodeckBuoyantAgent::BeginDestroy() {
 		}
 		octreeLocal.Empty();
 	}
+
+	if(octreeGlobal.Num() != 0){
+		for(Octree* t : octreeGlobal){
+			delete t;
+		}
+		octreeGlobal.Empty();
+	}
 }
 
 void AHolodeckBuoyantAgent::ApplyBuoyantForce(){
@@ -86,9 +93,9 @@ void AHolodeckBuoyantAgent::ShowSurfacePoints(){
 	}
 }
 
-void AHolodeckBuoyantAgent::makeOctree(){
+TArray<Octree*> AHolodeckBuoyantAgent::makeOctree(){
 	if(octreeGlobal.Num() == 0){
-		UE_LOG(LogHolodeck, Warning, TEXT("HolodeckBuoyantAgent::Making Octree.."));
+		UE_LOG(LogHolodeck, Log, TEXT("HolodeckBuoyantAgent::Making Octree"));
 		int OctreeMin = Octree::OctreeMin;
 		int OctreeMax = Octree::OctreeMax;
 		// Shrink to the smallest cube the actor fits in
@@ -103,17 +110,23 @@ void AHolodeckBuoyantAgent::makeOctree(){
 			for(int j = 0; j < nCells.Y; j++) {
 				for(int k = 0; k < nCells.Z; k++) {
 					FVector center = FVector(i*OctreeMax, j*OctreeMax, k*OctreeMax) + BoundingBox.Min + OctreeMax/4 + GetActorLocation();
-					Octree::makeOctree(center, OctreeMax, octreeGlobal, GetName());
+					Octree* l = Octree::makeOctree(center, OctreeMax, true, GetName());
+					if(l){
+						l->isAgent = true;
+						l->file = "AGENT";
+						octreeGlobal.Add(l);
+					}
 				}
 			}
 		}
-		// Server->octree += octreeGlobal;
 
 		// Convert our global octree to a local one
 		for( Octree* tree : octreeGlobal){
 			cleanOctree(tree, octreeLocal);
 		}
 	}
+
+	return octreeGlobal;
 }
 
 void AHolodeckBuoyantAgent::cleanOctree(Octree* globalFrame, TArray<Octree*>& results){
