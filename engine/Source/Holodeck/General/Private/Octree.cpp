@@ -40,8 +40,8 @@ void Octree::initOctree(){
     FVector max = FVector((int)FGenericPlatformMath::Max(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Max(-1*EnvMin.Y, -1*EnvMax.Y), (int)FGenericPlatformMath::Max(EnvMin.Z, EnvMax.Z));
     EnvMin = min*100;
     EnvMax = max*100;
-    UE_LOG(LogHolodeck, Log, TEXT("EnvMin: %s"), *EnvMin.ToString());
-    UE_LOG(LogHolodeck, Log, TEXT("EnvMax: %s"), *EnvMax.ToString());
+    UE_LOG(LogHolodeck, Log, TEXT("Octree:: EnvMin: %s"), *EnvMin.ToString());
+    UE_LOG(LogHolodeck, Log, TEXT("Octree:: EnvMax: %s"), *EnvMax.ToString());
 
     // Get octree min/max
     float tempVal;
@@ -56,7 +56,7 @@ void Octree::initOctree(){
         tempVal *= 2;
     }
     OctreeMax = tempVal;
-    UE_LOG(LogHolodeck, Log, TEXT("OctreeMin: %f, OctreeMax: %f"), OctreeMin, OctreeMax);
+    UE_LOG(LogHolodeck, Log, TEXT("Octree:: OctreeMin: %f, OctreeMax: %f"), OctreeMin, OctreeMax);
 }
 
 TArray<Octree*> Octree::getOctreeRoots(UWorld* w){
@@ -70,7 +70,7 @@ TArray<Octree*> Octree::getOctreeRoots(UWorld* w){
 
     // if we've already saved what root nodes should be, open 'em up
     if(FPaths::FileExists(rootFile)){
-        UE_LOG(LogHolodeck, Log, TEXT("HolodeckServer::Loading Octree roots.."));
+        UE_LOG(LogHolodeck, Log, TEXT("Octree::Loading Octree roots"));
         // Get ready
         FString fileData;
         TArray<FString> lines;
@@ -92,10 +92,10 @@ TArray<Octree*> Octree::getOctreeRoots(UWorld* w){
     }
     // otherwise figure it out!
     else{
-        UE_LOG(LogHolodeck, Log, TEXT("HolodeckServer::Setting up Octree roots.."));
+        UE_LOG(LogHolodeck, Log, TEXT("Octree::Making Octree roots"));
         // Otherwise, make the octrees
         FIntVector nCells = FIntVector((EnvMax - EnvMin) / OctreeMax) + FIntVector(1);
-        int32 total = nCells.X * nCells.Y * nCells.Z;
+        // int32 total = nCells.X * nCells.Y * nCells.Z;
         for(int32 i = 0; i < nCells.X; i++) {
             for(int32 j = 0; j < nCells.Y; j++) {
                 for(int32 k = 0; k < nCells.Z; k++) {
@@ -105,8 +105,8 @@ TArray<Octree*> Octree::getOctreeRoots(UWorld* w){
                         octree.Add(o);
                     }
 
-                    float percent = 100.0*(i*nCells.Y*nCells.Z + j*nCells.Z + k)/total; 
-                    UE_LOG(LogHolodeck, Log, TEXT("Creating Octree %f"), percent); 
+                    // float percent = 100.0*(i*nCells.Y*nCells.Z + j*nCells.Z + k)/total; 
+                    // UE_LOG(LogHolodeck, Log, TEXT("Creating Octree %f"), percent); 
                 }
             }
         }

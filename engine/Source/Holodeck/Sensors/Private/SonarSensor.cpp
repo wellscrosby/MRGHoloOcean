@@ -143,12 +143,10 @@ void USonarSensor::initOctree(){
 				toMake.Add(tree);
 			}
 		}
-		UE_LOG(LogHolodeck, Warning, TEXT("toMake size: %d"), toMake.Num());
 		ParallelFor(toMake.Num(), [&](int32 i){
 			toMake.GetData()[i]->load();
 			toMake.GetData()[i]->unload();
 		});
-		UE_LOG(LogHolodeck, Warning, TEXT("Finished initial building"));
 
 
 		leafs.Reserve(10000);
@@ -165,9 +163,6 @@ void USonarSensor::initOctree(){
 }
 void USonarSensor::InitializeSensor() {
 	Super::InitializeSensor();
-
-	OctreeMax = Octree::OctreeMax;
-	OctreeMin = Octree::OctreeMin;
 
 	BinsElev = (int) Elevation;
 	
@@ -193,7 +188,7 @@ bool USonarSensor::inRange(Octree* tree){
 	FTransform SensortoWorld = this->GetComponentTransform();
 	// if it's not a leaf, we use a bigger search area
 	float offset = 0;
-	if(tree->size != OctreeMin){
+	if(tree->size != Octree::OctreeMin){
 		float radius = tree->size/sqrt2;
 		offset = radius/sinOffset;
 		SensortoWorld.AddToTranslation( -this->GetForwardVector()*offset );
@@ -223,12 +218,12 @@ bool USonarSensor::inRange(Octree* tree){
 void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& rLeafs){
 	bool in = inRange(tree);
 	if(in){
-		if(tree->size == OctreeMin){
+		if(tree->size == Octree::OctreeMin){
 			rLeafs.Add(tree);
 			return;
 		}
 
-		if(tree->size == OctreeMax){
+		if(tree->size == Octree::OctreeMax){
 			tree->load();
 		}
 
@@ -236,8 +231,8 @@ void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& rLeafs){
 			leafsInRange(l, rLeafs);
 		}
 	}
-	else if(tree->size == OctreeMax){
-		// tree->unload();
+	else if(tree->size == Octree::OctreeMax){
+		tree->unload();
 	}
 }
 

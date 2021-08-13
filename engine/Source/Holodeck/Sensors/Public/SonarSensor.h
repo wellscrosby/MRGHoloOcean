@@ -107,8 +107,6 @@ private:
 	float maxElev;
 	float sinOffset;
 	float sqrt2;
-	float OctreeMax;
-	float OctreeMin;
 
 	// initialize + reserve vectors once
 	TArray<Octree*> leafs;
