@@ -132,23 +132,25 @@ void USonarSensor::initOctree(){
 		// make/load octree
 		octree = Octree::makeEnvOctreeRoots(GetWorld());
 
-		// get all our leafs ready
-		// TODO: calculate what these values should be
-		// TODO: This needs to be moved somewhere to make sure it happens to every sonar
+
+		// Premake octrees within range
 		FVector loc = this->GetComponentLocation();
 		float offset = InitOctreeRange + Octree::OctreeMax/sqrt2;
 		TArray<Octree*> toMake;
 		for(Octree* tree : octree){
-			if((loc - tree->loc).Size() < offset){
+			if((loc - tree->loc).Size() < offset && !FPaths::FileExists(tree->file)){
 				toMake.Add(tree);
 			}
 		}
-		UE_LOG(LogHolodeck, Warning, TEXT("SonarSensor::Initial building num: %d"), toMake.Num());
+		UE_LOG(LogHolodeck, Log, TEXT("SonarSensor::Initial building num: %d"), toMake.Num());
 		ParallelFor(toMake.Num(), [&](int32 i){
 			toMake.GetData()[i]->load();
 			toMake.GetData()[i]->unload();
 		});
 
+		// get all our leafs ready
+		// TODO: calculate what these values should be
+		// TODO: This needs to be moved somewhere to make sure it happens to every sonar
 		leafs.Reserve(10000);
 		tempLeafs.Reserve(octree.Num());
 		for(int i=0;i<octree.Num();i++){

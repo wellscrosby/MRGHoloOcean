@@ -262,7 +262,7 @@ void Octree::load(){
     if(leafs.Num() == 0){
         // if it's been saved as a json, load it
         if(FPaths::FileExists(file)){
-            UE_LOG(LogHolodeck, Log, TEXT("Loading Octree %s"), *file);
+            // UE_LOG(LogHolodeck, Log, TEXT("Loading Octree %s"), *file);
             // load file to a string
             gason::JsonAllocator allocator;
             std::ifstream t(TCHAR_TO_ANSI(*file));
@@ -287,7 +287,7 @@ void Octree::load(){
 
         // Otherwise build it & save for later
         else{
-            UE_LOG(LogHolodeck, Log, TEXT("Making Octree %s"), *file);
+            // UE_LOG(LogHolodeck, Log, TEXT("Making Octree %s"), *file);
             for(FVector off : corners){
                 Octree* l = makeOctree(loc+(off*size/4), size/2, true);
                 if(l) leafs.Add(l);
