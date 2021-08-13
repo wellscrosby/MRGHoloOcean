@@ -26,6 +26,8 @@ class Octree
     public:
         static float OctreeMax;
         static float OctreeMin;
+        static FVector EnvMin;
+        static FVector EnvMax;
         static UWorld* World;
 
         Octree(){};
@@ -38,12 +40,14 @@ class Octree
             leafs.Reset();
         }
 
+        static void initOctree(float min, float max, FVector eMin, FVector eMax);
+        static TArray<Octree*> getOctreeRoots(UWorld* w);
         static Octree* newHeadOctree(FVector center, float octreeSize, FString filePath, FString actorName="");
         static void makeOctree(FVector center, float octreeSize, TArray<Octree*>& parent, FString actorName="");
 
         void unload(){
             if(leafs.Num() != 0){
-                UE_LOG(LogHolodeck, Warning, TEXT("Unloading Octree %s"), *file);
+                UE_LOG(LogHolodeck, Log, TEXT("Unloading Octree %s"), *file);
                 for(Octree* leaf : leafs){
                     delete leaf;
                 }
@@ -51,7 +55,7 @@ class Octree
             }
         }
         void load();
-        static void load(gason::JsonValue& json, TArray<Octree*>& parent);
+        static void loadJson(gason::JsonValue& json, TArray<Octree*>& parent, float size);
 
         // helpers for saving
         void toJson();

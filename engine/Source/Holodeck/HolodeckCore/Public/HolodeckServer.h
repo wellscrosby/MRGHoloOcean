@@ -129,6 +129,8 @@ public:
 	*/
 	float OctreeMin;
 	float OctreeMax;
+	FVector EnvMin;
+	FVector EnvMax;
 	TArray<Octree*> octree;
 	void makeOctree(UWorld* World);
 
@@ -138,8 +140,6 @@ private:
 	std::map<std::string, std::unique_ptr<HolodeckSharedMemory>> Memory;
 	bool bIsRunning;
 
-	FVector EnvMin;
-	FVector EnvMax;
 
 	#if PLATFORM_WINDOWS
 	HANDLE LockingSemaphore1;

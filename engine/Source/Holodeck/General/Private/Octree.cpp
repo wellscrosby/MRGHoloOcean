@@ -17,12 +17,87 @@ float Octree::cornerSize = 0.1;
 FCollisionQueryParams Octree::params = Octree::init_params();
 float Octree::OctreeMax;
 float Octree::OctreeMin;
+FVector Octree::EnvMin;
+FVector Octree::EnvMax;
 UWorld* Octree::World;
 
 float sign(float val){
     bool s = signbit(val);
     if(s) return -1.0;
     else return 1.0;
+}
+
+void Octree::initOctree(float min, float max, FVector eMin, FVector eMax){
+    OctreeMin = min;
+    OctreeMax = max;
+    EnvMin = eMin;
+    EnvMax = eMax;
+}
+
+TArray<Octree*> Octree::getOctreeRoots(UWorld* w){
+    TArray<Octree*> octree;
+    World = w;
+
+    // Get caching/loading location
+    FString filePath = FPaths::ProjectDir() + "Octrees/" + World->GetMapName();
+    filePath += "/" + FString::FromInt(OctreeMin) + "_" + FString::FromInt(OctreeMax);
+    FString rootFile = filePath + "/" + "root.csv";
+
+    // if we've already saved what root nodes should be, open 'em up
+    if(FPaths::FileExists(rootFile)){
+        UE_LOG(LogHolodeck, Log, TEXT("HolodeckServer::Loading Octree roots.."));
+        // Get ready
+        FString fileData;
+        TArray<FString> lines;
+        TArray<FString> data;
+        FVector center;
+
+        // Load data
+        FFileHelper::LoadFileToString(fileData, *rootFile);
+        fileData.ParseIntoArray(lines, TEXT("\n"), true);
+        for(FString l : lines){
+            l.ParseIntoArray(data, TEXT(" "), true);
+            center = FVector(FCString::Atof(*data[0]), FCString::Atof(*data[1]), FCString::Atof(*data[2]));
+            FString filename = filePath + "/" + FString::FromInt((int)center.X) + "_" 
+                                            + FString::FromInt((int)center.Y) + "_" 
+                                            + FString::FromInt((int)center.Z) + ".json";
+            Octree* o = new Octree(center, OctreeMax, filename);
+            octree.Add(o);
+        }
+    }
+    // otherwise figure it out!
+    else{
+        UE_LOG(LogHolodeck, Log, TEXT("HolodeckServer::Setting up Octree roots.."));
+        // Otherwise, make the octrees
+        FIntVector nCells = FIntVector((EnvMax - EnvMin) / OctreeMax) + FIntVector(1);
+        int32 total = nCells.X * nCells.Y * nCells.Z;
+        for(int32 i = 0; i < nCells.X; i++) {
+            for(int32 j = 0; j < nCells.Y; j++) {
+                for(int32 k = 0; k < nCells.Z; k++) {
+                    FVector center = FVector(i*OctreeMax, j*OctreeMax, k*OctreeMax) + EnvMin;
+                    Octree* o = Octree::newHeadOctree(center, OctreeMax, filePath);
+                    if(o){
+                        octree.Add(o);
+                    }
+
+                    float percent = 100.0*(i*nCells.Y*nCells.Z + j*nCells.Z + k)/total; 
+                    UE_LOG(LogHolodeck, Log, TEXT("Creating Octree %f"), percent); 
+                }
+            }
+        }
+
+        // Save these, so we don't have to figure it out again
+        FString root = "";
+        for(Octree* o : octree){
+            root += FString::FromInt((int)o->loc.X)
+                        + " " + FString::FromInt((int)o->loc.Y)
+                        + " " + FString::FromInt((int)o->loc.Z)
+                        + "\n";
+        }
+        FFileHelper::SaveStringToFile(root, *rootFile);
+    }
+
+    return octree;
 }
 
 Octree* Octree::newHeadOctree(FVector center, float octreeSize, FString filePath, FString actorName){
@@ -164,7 +239,7 @@ void Octree::toJson(gason::JSonBuilder& doc){
             .addValue((int)loc[2])
         .endArray();
 
-    if(leafs.Num() != 0){
+    if(size != OctreeMin){
         doc.startArray("l");
         for(Octree* l : leafs){
             l->toJson(doc);
@@ -187,7 +262,7 @@ void Octree::load(){
     if(leafs.Num() == 0){
         // if it's been saved as a json, load it
         if(FPaths::FileExists(file)){
-            UE_LOG(LogHolodeck, Warning, TEXT("Loading Octree %s"), *file);
+            UE_LOG(LogHolodeck, Log, TEXT("Loading Octree %s"), *file);
             // load file to a string
             gason::JsonAllocator allocator;
             std::ifstream t(TCHAR_TO_ANSI(*file));
@@ -204,7 +279,7 @@ void Octree::load(){
             for(gason::JsonNode* o : json){
                 if(o->key[0] == 'l'){
                     for(gason::JsonNode* l : o->value){
-                        load(l->value, leafs);
+                        loadJson(l->value, leafs, size/2);
                     }
                 }
             }
@@ -212,7 +287,7 @@ void Octree::load(){
 
         // Otherwise build it & save for later
         else{
-            UE_LOG(LogHolodeck, Warning, TEXT("Making Octree %s"), *file);
+            UE_LOG(LogHolodeck, Log, TEXT("Making Octree %s"), *file);
             for(FVector off : corners){
                 makeOctree(loc+(off*size/4), size/2, leafs);
             }
@@ -222,7 +297,7 @@ void Octree::load(){
     }
 }
 
-void Octree::load(gason::JsonValue& json, TArray<Octree*>& parent){
+void Octree::loadJson(gason::JsonValue& json, TArray<Octree*>& parent, float size){
     Octree* child = new Octree;
     for(gason::JsonNode* o : json){
         if(o->key[0] == 'p'){
@@ -231,7 +306,7 @@ void Octree::load(gason::JsonValue& json, TArray<Octree*>& parent){
         }
         if(o->key[0] == 'l'){
             for(gason::JsonNode* l : o->value){
-                load(l->value, child->leafs);
+                loadJson(l->value, child->leafs, size/2);
             }
         }
         if(o->key[0] == 'n'){
@@ -239,6 +314,6 @@ void Octree::load(gason::JsonValue& json, TArray<Octree*>& parent){
             child->normal = FVector(arr->value.toNumber(), arr->next->value.toNumber(), arr->next->next->value.toNumber());
         }
     }
-
+    child->size = size;
     parent.Add(child);
 }

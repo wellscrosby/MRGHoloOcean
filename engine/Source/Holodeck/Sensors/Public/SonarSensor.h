@@ -56,7 +56,7 @@ protected:
 	float MaxRange = 3000;
 
 	UPROPERTY(EditAnywhere)
-	float InitOctreeRange = 9000;
+	float InitOctreeRange = 3000;
 
 	UPROPERTY(EditAnywhere)
 	float MinRange = 300;
@@ -93,6 +93,7 @@ private:
 	AActor* Parent;
 
 	// holds our implementation of Octrees
+	TArray<Octree*> octree;
 	TArray<Octree*>& getOctree(){ return Controller->GetServer()->octree; }
 	void viewLeafs(Octree* tree);
 	void initOctree();

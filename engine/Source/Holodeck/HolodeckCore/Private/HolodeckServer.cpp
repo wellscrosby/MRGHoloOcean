@@ -12,12 +12,12 @@ UHolodeckServer::UHolodeckServer() {
 UHolodeckServer::~UHolodeckServer() {
     Kill();
 
-    if(octree.Num() != 0){
-		for(Octree* t : octree){
-			delete t;
-		}
-		octree.Empty();
-	}
+    // if(octree.Num() != 0){
+	// 	for(Octree* t : octree){
+	// 		delete t;
+	// 	}
+	// 	octree.Empty();
+	// }
 }
 
 void UHolodeckServer::Start() {
@@ -39,8 +39,8 @@ void UHolodeckServer::Start() {
     if (!FParse::Value(FCommandLine::Get(), TEXT("EnvMaxY="), EnvMax.Y)) EnvMax.Y = 10;
     if (!FParse::Value(FCommandLine::Get(), TEXT("EnvMaxZ="), EnvMax.Z)) EnvMax.Z = 10;
     // Clean environment size
-    FVector min = FVector((int)FGenericPlatformMath::Min(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Min(EnvMin.Y, EnvMax.Y), (int)FGenericPlatformMath::Min(EnvMin.Z, EnvMax.Z));
-    FVector max = FVector((int)FGenericPlatformMath::Max(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Max(EnvMin.Y, EnvMax.Y), (int)FGenericPlatformMath::Max(EnvMin.Z, EnvMax.Z));
+    FVector min = FVector((int)FGenericPlatformMath::Min(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Min(-1*EnvMin.Y, -1*EnvMax.Y), (int)FGenericPlatformMath::Min(EnvMin.Z, EnvMax.Z));
+    FVector max = FVector((int)FGenericPlatformMath::Max(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Max(-1*EnvMin.Y, -1*EnvMax.Y), (int)FGenericPlatformMath::Max(EnvMin.Z, EnvMax.Z));
     EnvMin = min*100;
     EnvMax = max*100;
     UE_LOG(LogHolodeck, Log, TEXT("EnvMin: %s"), *EnvMin.ToString());
@@ -60,6 +60,9 @@ void UHolodeckServer::Start() {
     }
     OctreeMax = tempVal;
     UE_LOG(LogHolodeck, Log, TEXT("OctreeMin: %d, OctreeMax: %d"), OctreeMin, OctreeMax);
+
+    // Pass those values to Octree
+    Octree::initOctree(OctreeMin, OctreeMax, EnvMin, EnvMax);
 
 #if PLATFORM_WINDOWS
     auto LoadingSemaphore = OpenSemaphore(EVENT_ALL_ACCESS, false, *(LOADING_SEMAPHORE_PATH + UUID));
@@ -175,6 +178,7 @@ void UHolodeckServer::makeOctree(UWorld* World){
 
         // if we've already saved what root nodes should be, open 'em up
         if(FPaths::FileExists(rootFile)){
+            UE_LOG(LogHolodeck, Log, TEXT("HolodeckServer::Loading Octree roots.."));
             // Get ready
             FString fileData;
             TArray<FString> lines;
@@ -196,7 +200,7 @@ void UHolodeckServer::makeOctree(UWorld* World){
         }
         // otherwise figure it out!
         else{
-            UE_LOG(LogHolodeck, Log, TEXT("HolodeckServer::Initializing Octree.."));
+            UE_LOG(LogHolodeck, Log, TEXT("HolodeckServer::Setting up Octree roots.."));
             // Otherwise, make the octrees
             FIntVector nCells = FIntVector((EnvMax - EnvMin) / OctreeMax) + FIntVector(1);
             int32 total = nCells.X * nCells.Y * nCells.Z;

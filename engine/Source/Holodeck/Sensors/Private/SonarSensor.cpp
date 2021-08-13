@@ -40,6 +40,11 @@ USonarSensor::USonarSensor() {
 void USonarSensor::BeginDestroy() {
 	Super::BeginDestroy();
 
+	for(Octree* t : octree){
+		delete t;
+	}
+	octree.Empty();
+
 	delete[] count;
 }
 
@@ -112,14 +117,14 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 }
 
 void USonarSensor::initOctree(){
-	if(getOctree().Num() == 0){
+	if(octree.Num() == 0){
 		// This is done here b/c Server doesn't have inheritance info of AHolodeckAgent
 		for(auto& agent : Controller->GetServer()->AgentMap){
 			AActor* actor = static_cast<AActor*>(agent.Value);
 			Octree::ignoreActor(actor);
 		}
 		// make/load octree
-		Controller->GetServer()->makeOctree(GetWorld());
+		octree = Octree::getOctreeRoots(GetWorld());
 		// Octree::resetParams();
 
 		// initialize small octree for each agent
@@ -131,7 +136,6 @@ void USonarSensor::initOctree(){
 		// get all our leafs ready
 		// TODO: calculate what these values should be
 		// TODO: This needs to be moved somewhere to make sure it happens to every sonar
-		TArray<Octree*>& octree = getOctree();
 		FVector loc = this->GetComponentLocation();
 		TArray<Octree*> toMake;
 		for(Octree* tree : octree){
@@ -233,7 +237,7 @@ void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& rLeafs){
 		}
 	}
 	else if(tree->size == OctreeMax){
-		tree->unload();
+		// tree->unload();
 	}
 }
 
@@ -266,7 +270,6 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 		float* result = static_cast<float*>(Buffer);
 		std::fill(result, result+BinsRange*BinsAzimuth, 0);
 		std::fill(count, count+BinsRange*BinsAzimuth, 0);
-		TArray<Octree*>& octree = getOctree();
 		leafs.Reset();
 		for(auto& tl: tempLeafs){
 			tl.Reset();
@@ -276,13 +279,17 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 		}
 
 		// FILTER TO GET THE LEAFS WE WANT
+		// for(Octree* t: octree){
+		// 	UE_LOG(LogHolodeck, Warning, TEXT("Octree p: %s"), *t->loc.ToString());
+		// 	viewLeafs(t);
+		// }
 		ParallelFor(octree.Num(), [&](int32 i){
 			leafsInRange(octree.GetData()[i], tempLeafs.GetData()[i]);
 		});
 		for(auto& tl : tempLeafs){
 			leafs += tl;
 		}
-
+		UE_LOG(LogHolodeck, Warning, TEXT("OctreeMin: %d"), OctreeMin);
 
 		// GET THE DOT PRODUCT, REMOVE BACKSIDE OF ANYTHING
 		FVector compLoc = this->GetComponentLocation();
