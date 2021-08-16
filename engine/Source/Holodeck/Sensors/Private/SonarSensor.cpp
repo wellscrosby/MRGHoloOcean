@@ -117,6 +117,16 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 }
 
 void USonarSensor::initOctree(){
+	// We delay making trees till the message has been printed to the screen
+	if(toMake.Num() != 0 && TickCounter > 2){
+		UE_LOG(LogHolodeck, Log, TEXT("SonarSensor::Initial building num: %d"), toMake.Num());
+		ParallelFor(toMake.Num(), [&](int32 i){
+			toMake.GetData()[i]->load();
+			toMake.GetData()[i]->unload();
+		});
+		toMake.Empty();
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Finished."));
+	}
 	if(octree.Num() == 0){
 		// initialize small octree for each agent
 		for(auto& agent : Controller->GetServer()->AgentMap){
@@ -132,21 +142,16 @@ void USonarSensor::initOctree(){
 		// make/load octree
 		octree = Octree::makeEnvOctreeRoots(GetWorld());
 
-
 		// Premake octrees within range
 		FVector loc = this->GetComponentLocation();
 		float offset = InitOctreeRange + Octree::OctreeMax/sqrt2;
-		TArray<Octree*> toMake;
 		for(Octree* tree : octree){
 			if((loc - tree->loc).Size() < offset && !FPaths::FileExists(tree->file)){
 				toMake.Add(tree);
 			}
 		}
-		UE_LOG(LogHolodeck, Log, TEXT("SonarSensor::Initial building num: %d"), toMake.Num());
-		ParallelFor(toMake.Num(), [&](int32 i){
-			toMake.GetData()[i]->load();
-			toMake.GetData()[i]->unload();
-		});
+		if(toMake.Num() != 0)
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Premaking %d Octrees, will take some time..."), toMake.Num()));
 
 		// get all our leafs ready
 		// TODO: calculate what these values should be
@@ -159,7 +164,7 @@ void USonarSensor::initOctree(){
 		}
 		for(int i=0;i<BinsAzimuth*BinsElev;i++){
 			sortedLeafs.Add(TArray<Octree*>());
-			sortedLeafs[i].Reserve(200);
+			sortedLeafs[i].Reserve(1000);
 		}
 	}
 }
@@ -259,7 +264,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 	// We initialize this here to make sure all agents are loaded
 	// This does nothing if it's already been loaded
 	initOctree();
-	
+
 	TickCounter++;
 	if(TickCounter == TicksPerCapture){
 		// reset things and get ready
@@ -379,8 +384,10 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 
 		// draw points inside our region
 		if(ViewOctree){
-			for( Octree* l : leafs){
-				if(l != nullptr) DrawDebugPoint(GetWorld(), l->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
+			for( TArray<Octree*> bins : sortedLeafs){
+				for( Octree* l : bins){
+					DrawDebugPoint(GetWorld(), l->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
+				}
 			}
 		}
 		// draw outlines of our region

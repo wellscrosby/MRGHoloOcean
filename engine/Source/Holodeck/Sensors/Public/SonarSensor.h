@@ -108,6 +108,8 @@ private:
 	float sinOffset;
 	float sqrt2;
 
+	// What octrees we initally make
+	TArray<Octree*> toMake;
 	// initialize + reserve vectors once
 	TArray<Octree*> leafs;
 	// Used to hold leafs when parallelized filtering happens
