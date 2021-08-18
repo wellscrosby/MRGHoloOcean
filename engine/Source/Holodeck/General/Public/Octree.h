@@ -92,5 +92,6 @@ class Octree
 
         // Used during computations
         FVector locSpherical;
+        FIntVector idx;
         float val;
 };

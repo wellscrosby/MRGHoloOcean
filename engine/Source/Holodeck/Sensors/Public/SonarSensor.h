@@ -68,13 +68,13 @@ protected:
 	float Elevation = 20;
 
 	UPROPERTY(EditAnywhere)
-	int BinsRange = 300;
+	int32 BinsRange = 300;
 
 	UPROPERTY(EditAnywhere)
-	int BinsAzimuth = 128;
+	int32 BinsAzimuth = 128;
 
 	UPROPERTY(EditAnywhere)
-	int BinsElev;
+	int32 BinsElev;
 
 	UPROPERTY(EditAnywhere)
 	bool ViewRegion = false;

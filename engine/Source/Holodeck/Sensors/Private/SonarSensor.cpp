@@ -164,7 +164,7 @@ void USonarSensor::initOctree(){
 		}
 		for(int i=0;i<BinsAzimuth*BinsElev;i++){
 			sortedLeafs.Add(TArray<Octree*>());
-			sortedLeafs[i].Reserve(1000);
+			sortedLeafs[i].Reserve(10000);
 		}
 	}
 }
@@ -215,7 +215,7 @@ bool USonarSensor::inRange(Octree* tree){
 	if(minAzimuth >= tree->locSpherical.Y || tree->locSpherical.Y >= maxAzimuth) return false;
 
 	// check if elevation is in
-	tree->locSpherical.Z = ATan2Approx(FVector2D(locLocal.X, locLocal.Y).Size(), locLocal.Z);
+	tree->locSpherical.Z = ATan2Approx(locLocal.Size2D(), locLocal.Z);
 	if(minElev >= tree->locSpherical.Z || tree->locSpherical.Z >= maxElev) return false;
 	
 	// otherwise it's in!
@@ -280,6 +280,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			sl.Reset();
 		}
 
+
 		// FILTER TO GET THE LEAFS WE WANT
 		Benchmarker b;
 		b.Start();
@@ -301,11 +302,19 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 
 			// Compute impact normal
 			FVector normalImpact = compLoc - l->loc; 
-			normalImpact /= normalImpact.Size();
+			normalImpact.Normalize();
 
 			// compute contribution
 			float val = FVector::DotProduct(l->normal, normalImpact);
-			if(val > 0) l->val = val;
+			if(val > 0){
+				l->val = val;
+
+				// Compute bins while we're parallelized
+				l->idx.Y = (int32)((l->locSpherical.Y - minAzimuth)/ AzimuthRes);
+				l->idx.Z = (int32)((l->locSpherical.Z - minElev)/ ElevRes);
+				// Sometimes we get float->int rounding errors
+				if(l->idx.Y == BinsAzimuth) --l->idx.Y;
+			} 
 			else leafs.GetData()[i] = nullptr;
 		});
 		b.End();
@@ -317,19 +326,14 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 		for(Octree* l : leafs){
 			if(l == nullptr) continue;
 
-			int32 aBin = (int)((l->locSpherical.Y - minAzimuth)/ AzimuthRes);
-			int32 eBin = (int)((l->locSpherical.Z - minElev)/ ElevRes);
-			// Sometimes we get float->int rounding errors
-			if(aBin == BinsAzimuth) --aBin;
-
-			int32 idx = eBin*BinsAzimuth + aBin;
-			sortedLeafs[idx].Add(l);
+			int32 idx = l->idx.Z*BinsAzimuth + l->idx.Y;
+			sortedLeafs[idx].Emplace(l);
 		}
 		b.End();
 		UE_LOG(LogHolodeck, Warning, TEXT("SORT A/E BINS: %f"), b.CalcMs());
 
+
 		// HANDLE SHADOWING
-		// TODO: Do these degree params need to be check for larger octree sizes?
 		b.Start();
 		float eps = 16;
 		ParallelFor(BinsAzimuth*BinsElev, [&](int32 i){
@@ -340,15 +344,14 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 				return a.locSpherical.X < b.locSpherical.X;
 			});
 
-			int32 aBin, rBin, idx;
+			int32 idx;
 			float diff;
 			Octree* jth;
 			for(int j=0;j<binLeafs.Num()-1;j++){
 				jth = binLeafs.GetData()[j];
 				
-				aBin = (int)((jth->locSpherical.Y - minAzimuth)/ AzimuthRes);
-				rBin = (int)((jth->locSpherical.X - MinRange) / RangeRes);
-				idx = rBin*BinsAzimuth + aBin;
+				jth->idx.X = (int32)((jth->locSpherical.X - MinRange) / RangeRes);
+				idx = jth->idx.X*BinsAzimuth + jth->idx.Y;
 				result[idx] += jth->val;
 				++count[idx];
 				
