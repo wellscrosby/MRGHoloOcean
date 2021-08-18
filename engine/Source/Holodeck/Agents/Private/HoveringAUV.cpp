@@ -13,6 +13,7 @@ AHoveringAUV::AHoveringAUV() {
 	AIControllerClass = LoadClass<AController>(NULL, TEXT("/Script/Holodeck.HoveringAUVController"), NULL, LOAD_None, NULL);
 	AutoPossessAI = EAutoPossessAI::PlacedInWorld;
 
+	// This values are all pulled from the solidworks file
 	this->Volume = .03554577;	
 	this->CenterBuoyancy = FVector(-5.96, 0.29, -1.85); 
 	this->CenterMass = FVector(-5.9, 0.46, -2.82);
