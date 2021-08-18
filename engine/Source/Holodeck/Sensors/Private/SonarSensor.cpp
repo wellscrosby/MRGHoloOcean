@@ -102,8 +102,8 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 			ViewRegion = JsonParsed->GetBoolField("ViewRegion");
 		}
 
-		if (JsonParsed->HasTypedField<EJson::Boolean>("ViewOctree")) {
-			ViewOctree = JsonParsed->GetBoolField("ViewOctree");
+		if (JsonParsed->HasTypedField<EJson::Number>("ViewOctree")) {
+			ViewOctree = JsonParsed->GetIntegerField("ViewOctree");
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("TicksPerCapture")) {
@@ -378,10 +378,11 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 
 
 		// draw points inside our region
-		if(ViewOctree){
+		if(ViewOctree >= -1){
 			for( TArray<Octree*> bins : sortedLeafs){
 				for( Octree* l : bins){
-					DrawDebugPoint(GetWorld(), l->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
+					if(ViewOctree == -1 || ViewOctree == l->idx.Y)
+						DrawDebugPoint(GetWorld(), l->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
 				}
 			}
 		}

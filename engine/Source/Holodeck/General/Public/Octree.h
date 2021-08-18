@@ -19,6 +19,7 @@ class Octree
 	private:
         // Globals used for calculations
         static TArray<FVector> corners;
+        static TArray<FVector> sides;
         static FCollisionQueryParams params;
         static FVector offset;
         static float cornerSize;

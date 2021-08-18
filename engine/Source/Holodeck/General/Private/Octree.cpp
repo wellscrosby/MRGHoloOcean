@@ -12,8 +12,14 @@ TArray<FVector> Octree::corners = {FVector( 1,  1, 1),
                                     FVector(-1,  1, -1),
                                     FVector(-1, -1,  1),
                                     FVector(-1, -1, -1)};
+TArray<FVector> Octree::sides = {FVector( 0, 0, 1),
+                                    FVector( 0, 0,-1),
+                                    FVector( 0, 1, 0),
+                                    FVector( 0,-1, 0),
+                                    FVector( 1, 0, 0),
+                                    FVector(-1, 0, 0)};
 FVector Octree::offset = 10*FVector(KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER) / sqrt(2.9);
-float Octree::cornerSize = 0.1;
+float Octree::cornerSize = 0.01;
 FCollisionQueryParams Octree::params = Octree::init_params();
 float Octree::OctreeMax;
 float Octree::OctreeMin;
@@ -150,9 +156,13 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, bool recurse, FStri
         bool full = true;
         // check to see if each corner is overlapping
         float distToCorner = octreeSize/2 - cornerSize;
-        for(FVector corner : corners){
-            full = World->OverlapBlockingTestByChannel(center+(corner*distToCorner), FQuat::Identity, ECollisionChannel::ECC_Pawn, FCollisionShape::MakeBox(FVector(cornerSize)), params);
+        for(FVector side : sides){
             if(!full) break;
+            full = World->OverlapBlockingTestByChannel(center+(side*distToCorner), FQuat::Identity, ECollisionChannel::ECC_Pawn, FCollisionShape::MakeBox(FVector(cornerSize)), params);
+        }
+        for(FVector corner : corners){
+            if(!full) break;
+            full = World->OverlapBlockingTestByChannel(center+(corner*distToCorner), FQuat::Identity, ECollisionChannel::ECC_Pawn, FCollisionShape::MakeBox(FVector(cornerSize)), params);
         }
 
         if(!full){

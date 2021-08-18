@@ -80,7 +80,7 @@ protected:
 	bool ViewRegion = false;
 
 	UPROPERTY(EditAnywhere)
-	bool ViewOctree = false;
+	int ViewOctree = -10;
 
 	UPROPERTY(EditAnywhere)
 	int TicksPerCapture = 1;
