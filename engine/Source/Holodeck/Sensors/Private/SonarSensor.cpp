@@ -171,7 +171,7 @@ void USonarSensor::initOctree(){
 void USonarSensor::InitializeSensor() {
 	Super::InitializeSensor();
 
-	BinsElev = (int) Elevation;
+	BinsElev = (int) Elevation * 10;
 	
 	// Get size of each bin
 	RangeRes = (MaxRange - MinRange) / BinsRange;
@@ -281,18 +281,20 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 		}
 
 		// FILTER TO GET THE LEAFS WE WANT
-		// for(Octree* t: octree){
-		// 	UE_LOG(LogHolodeck, Warning, TEXT("Octree p: %s"), *t->loc.ToString());
-		// 	viewLeafs(t);
-		// }
+		Benchmarker b;
+		b.Start();
 		ParallelFor(octree.Num(), [&](int32 i){
 			leafsInRange(octree.GetData()[i], tempLeafs.GetData()[i]);
 		});
 		for(auto& tl : tempLeafs){
 			leafs += tl;
 		}
+		b.End();
+		UE_LOG(LogHolodeck, Warning, TEXT("FILTERING: %f"), b.CalcMs());
+
 
 		// GET THE DOT PRODUCT, REMOVE BACKSIDE OF ANYTHING
+		b.Start();
 		FVector compLoc = this->GetComponentLocation();
 		ParallelFor(leafs.Num(), [&](int32 i){
 			Octree* l = leafs.GetData()[i]; 
@@ -306,9 +308,12 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			if(val > 0) l->val = val;
 			else leafs.GetData()[i] = nullptr;
 		});
+		b.End();
+		UE_LOG(LogHolodeck, Warning, TEXT("REMOVE BACKSIDE: %f"), b.CalcMs());
 
 
 		// SORT THEM INTO AZIMUTH/ELEVATION BINS
+		b.Start();
 		for(Octree* l : leafs){
 			if(l == nullptr) continue;
 
@@ -320,12 +325,13 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			int32 idx = eBin*BinsAzimuth + aBin;
 			sortedLeafs[idx].Add(l);
 		}
-
+		b.End();
+		UE_LOG(LogHolodeck, Warning, TEXT("SORT A/E BINS: %f"), b.CalcMs());
 
 		// HANDLE SHADOWING
 		// TODO: Do these degree params need to be check for larger octree sizes?
-		float shadowAngle = 1;
-		float shadowCos = -FMath::Cos(shadowAngle*Pi/180);
+		b.Start();
+		float eps = 16;
 		ParallelFor(BinsAzimuth*BinsElev, [&](int32 i){
 			TArray<Octree*>& binLeafs = sortedLeafs.GetData()[i]; 
 
@@ -334,40 +340,26 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 				return a.locSpherical.X < b.locSpherical.X;
 			});
 
-			int32 j=0,k,rBin,aBin,idx;
-			float a,aa,b,bb,c,cos;
-			Octree *close, *other;
-			// Iterate through, adding in contributions
-			while(j < binLeafs.Num()){
-				k = binLeafs.Num()-1;
-				close = binLeafs.GetData()[j];
-
-				// Compute what bin it goes in
-				aBin = (int)((close->locSpherical.Y - minAzimuth)/ AzimuthRes);
-				rBin = (int)((close->locSpherical.X - MinRange) / RangeRes);
+			int32 aBin, rBin, idx;
+			float diff;
+			Octree* jth;
+			for(int j=0;j<binLeafs.Num()-1;j++){
+				jth = binLeafs.GetData()[j];
+				
+				aBin = (int)((jth->locSpherical.Y - minAzimuth)/ AzimuthRes);
+				rBin = (int)((jth->locSpherical.X - MinRange) / RangeRes);
 				idx = rBin*BinsAzimuth + aBin;
-
-				// TODO: use sigmoid here?
-				result[idx] += close->val;
+				result[idx] += jth->val;
 				++count[idx];
-
-				// remove ones that are in the shadow of bin j
-				a = close->locSpherical.X;
-				aa = a*a;
-				while(k > j){
-					other = binLeafs.GetData()[k];
-					bb = FVector::DistSquared(close->loc, other->loc);
-					b = FMath::Sqrt(bb);
-					c = other->locSpherical.X;
-					cos = (aa + bb - c*c) / (2*a*b);
-
-					if(cos < shadowCos) binLeafs.RemoveAt(k);
-
-					--k;
-				}
-				++j;
+				
+				// diff = FVector::Dist(jth->loc, binLeafs.GetData()[j+1]->loc);
+				diff = FMath::Abs(jth->locSpherical.X - binLeafs.GetData()[j+1]->locSpherical.X);
+				if(diff > eps) break;
 			}
+
 		});
+		b.End();
+		UE_LOG(LogHolodeck, Warning, TEXT("SHADOWING: %f"), b.CalcMs());
 
 		
 		// MOVE THEM INTO BUFFER
