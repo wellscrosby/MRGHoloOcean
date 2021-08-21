@@ -1,3 +1,5 @@
+// MIT License (c) 2021 BYU FRoStLab see LICENSE file
+
 #include "Holodeck.h"
 #include "OpticalModemSensor.h"
 #include "Json.h"

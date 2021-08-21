@@ -1,4 +1,4 @@
-// MIT License (c) 2020 BYU PCCL see LICENSE file
+// MIT License (c) 2021 BYU FRoStLab see LICENSE file
 
 #include "Holodeck.h"
 #include "HolodeckBuoyantAgent.h"
@@ -6,11 +6,15 @@
 void AHolodeckBuoyantAgent::InitializeAgent(){
 	Super::InitializeAgent();
 
+	// Get GravityVectority from world
+	AWorldSettings* WorldSettings = GetWorld()->GetWorldSettings(false, false);
+	Gravity = WorldSettings->GetGravityZ() / -100;
+
+	// Set Mass
+	RootMesh->SetMassOverrideInKg("", MassInKG);
 	// Set COM (have to do some calculation since it sets an offset)
 	FVector COM_curr = GetActorRotation().UnrotateVector( RootMesh->GetCenterOfMass() - GetActorLocation() );
 	RootMesh->SetCenterOfMass( CenterMass + OffsetToOrigin - COM_curr );
-	// Set Mass
-	RootMesh->SetMassOverrideInKg("", MassInKG);
 
 	// Set Bounding Box (if it hasn't been set by hand)
 	if(BoundingBox.GetExtent() == FVector(0, 0, 0))
@@ -52,6 +56,9 @@ void AHolodeckBuoyantAgent::ApplyBuoyantForce(){
 
     FVector COB_World = ActorLocation + ActorRotation.RotateVector(CenterBuoyancy + OffsetToOrigin);
 	RootMesh->AddForceAtLocation(BuoyantVector, COB_World);
+
+	FVector GravityVector = ConvertLinearVector(FVector(0, 0, -Gravity*MassInKG), ClientToUE);
+	RootMesh->AddForceAtLocation(GravityVector, RootMesh->GetCenterOfMass());
 }
 
 void AHolodeckBuoyantAgent::ShowBoundingBox(){

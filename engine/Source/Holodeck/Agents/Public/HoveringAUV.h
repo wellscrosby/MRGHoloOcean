@@ -1,4 +1,4 @@
-// MIT License (c) 2019 BYU PCCL see LICENSE file
+// MIT License (c) 2021 BYU FRoStLab see LICENSE file
 
 #pragma once
 
@@ -51,7 +51,7 @@ public:
 											FVector(-20.64, 18.23, -0.21) };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = BuoyancySettings)
-		bool Perfect= false;
+		bool Perfect= true;
 
 	void ApplyThrusters();
 

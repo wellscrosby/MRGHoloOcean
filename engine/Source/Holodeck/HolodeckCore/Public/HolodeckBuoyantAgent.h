@@ -1,4 +1,4 @@
-// MIT License (c) 2020 BYU PCCL see LICENSE file
+// MIT License (c) 2021 BYU FRoStLab see LICENSE file
 
 #pragma once
 
@@ -20,7 +20,7 @@ public:
 	void InitializeAgent() override;
 
 	const float WaterDensity = 997;
-	const float Gravity = 9.81;
+	float Gravity;
 
 	UPROPERTY(BlueprintReadWrite, Category = UAVMesh)
 		UStaticMeshComponent* RootMesh;
@@ -31,9 +31,9 @@ public:
 
 	// Physical parameters of vehicle
 	// These all MUST be set
-	float Volume;
-	FVector CenterBuoyancy;
-	FVector CenterMass;
+	float Volume; // in m^3
+	FVector CenterBuoyancy; // in cm
+	FVector CenterMass; // in cm
 	float MassInKG;
 
 	// Used for surface buoyancy.
