@@ -40,10 +40,7 @@ USonarSensor::USonarSensor() {
 void USonarSensor::BeginDestroy() {
 	Super::BeginDestroy();
 
-	for(Octree* t : octree){
-		if(!t->isAgent) delete t;
-	}
-	octree.Empty();
+	delete octree;
 
 	delete[] count;
 }
@@ -127,12 +124,12 @@ void USonarSensor::initOctree(){
 		toMake.Empty();
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Finished."));
 	}
-	if(octree.Num() == 0){
+	if(octree == nullptr){
 		// initialize small octree for each agent
-		for(auto& agent : Controller->GetServer()->AgentMap){
-			AHolodeckBuoyantAgent* bouyantActor = static_cast<AHolodeckBuoyantAgent*>(agent.Value);
-			octree += bouyantActor->makeOctree();
-		}
+		// for(auto& agent : Controller->GetServer()->AgentMap){
+		// 	AHolodeckBuoyantAgent* bouyantActor = static_cast<AHolodeckBuoyantAgent*>(agent.Value);
+		// 	octree += bouyantActor->makeOctree();
+		// }
 		
 		// Ignore necessary agents to make world one
 		for(auto& agent : Controller->GetServer()->AgentMap){
@@ -140,27 +137,38 @@ void USonarSensor::initOctree(){
 			Octree::ignoreActor(actor);
 		}
 		// make/load octree
-		octree = Octree::makeEnvOctreeRoots(GetWorld());
+		octree = Octree::makeEnvOctreeRoot(GetWorld());
 
 		// Premake octrees within range
 		FVector loc = this->GetComponentLocation();
+		// Offset by size of OctreeMax radius to get everything in range
 		float offset = InitOctreeRange + Octree::OctreeMax/sqrt2;
-		for(Octree* tree : octree){
-			if((loc - tree->loc).Size() < offset && !FPaths::FileExists(tree->file)){
-				toMake.Add(tree);
+		// recursively search for close leaves
+		std::function<void(Octree*, TArray<Octree*>&)> findCloseLeafs;
+		findCloseLeafs = [&offset, &loc, &findCloseLeafs](Octree* tree, TArray<Octree*>& list){
+			if(tree->size == Octree::OctreeMax){
+				if((loc - tree->loc).Size() < offset && !FPaths::FileExists(tree->file)){
+					list.Add(tree);
+				}
 			}
-		}
+			else{
+				for(Octree* l : tree->leafs){
+					findCloseLeafs(l, list);
+				}
+			}
+		};
+		findCloseLeafs(octree, toMake);
 		if(toMake.Num() != 0)
 			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Premaking %d Octrees, will take some time..."), toMake.Num()));
 
 		// get all our leafs ready
-		// TODO: calculate what these values should be
-		// TODO: This needs to be moved somewhere to make sure it happens to every sonar
-		leafs.Reserve(10000);
-		tempLeafs.Reserve(octree.Num());
-		for(int i=0;i<octree.Num();i++){
+		leafs.Reserve(100000);
+		// We need enough templeafs to cover all possible threads
+		// 1000 should be plenty
+		tempLeafs.Reserve(1000);
+		for(int i=0;i<1000;i++){
 			tempLeafs.Add(TArray<Octree*>());
-			tempLeafs[i].Reserve(1000);
+			tempLeafs[i].Reserve(1000000);
 		}
 		for(int i=0;i<BinsAzimuth*BinsElev;i++){
 			sortedLeafs.Add(TArray<Octree*>());
@@ -222,20 +230,16 @@ bool USonarSensor::inRange(Octree* tree){
 	return true;
 }	
 
-void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& rLeafs){
+void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& rLeafs, float stopAt){
 	bool in = inRange(tree);
 	if(in){
-		if(tree->size == Octree::OctreeMin){
+		if(tree->size == stopAt){
 			rLeafs.Add(tree);
 			return;
 		}
 
-		if(tree->size == Octree::OctreeMax){
-			tree->load();
-		}
-
 		for(Octree* l : tree->leafs){
-			leafsInRange(l, rLeafs);
+			leafsInRange(l, rLeafs, stopAt);
 		}
 	}
 	else if(tree->size == Octree::OctreeMax){
@@ -284,14 +288,24 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 		// FILTER TO GET THE LEAFS WE WANT
 		Benchmarker b;
 		b.Start();
-		ParallelFor(octree.Num(), [&](int32 i){
-			leafsInRange(octree.GetData()[i], tempLeafs.GetData()[i]);
+		leafsInRange(octree, leafs, Octree::OctreeMax);
+		b.End();
+		UE_LOG(LogHolodeck, Warning, TEXT("ROOT FILTER: %f"), b.CalcMs());
+
+		b.Start();
+		ParallelFor(leafs.Num(), [&](int32 i){
+			Octree* leaf = leafs.GetData()[i];
+			leaf->load();
+			for(Octree* l : leaf->leafs)
+				leafsInRange(l, tempLeafs.GetData()[i%1000], Octree::OctreeMin);
 		});
+		b.End();
+		UE_LOG(LogHolodeck, Warning, TEXT("LEAFS FILTER: %f, Leafs Searched: %d"), b.CalcMs(), leafs.Num());
+		
+		leafs.Reset();
 		for(auto& tl : tempLeafs){
 			leafs += tl;
 		}
-		b.End();
-		UE_LOG(LogHolodeck, Warning, TEXT("FILTERING: %f"), b.CalcMs());
 
 
 		// GET THE DOT PRODUCT, REMOVE BACKSIDE OF ANYTHING

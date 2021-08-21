@@ -93,7 +93,7 @@ private:
 	AActor* Parent;
 
 	// holds our implementation of Octrees
-	TArray<Octree*> octree;
+	Octree* octree = nullptr;
 	void viewLeafs(Octree* tree);
 	void initOctree();
 
@@ -126,5 +126,5 @@ private:
 	int TickCounter = 0;
 
 	bool inRange(Octree* tree);
-	void leafsInRange(Octree* tree, TArray<Octree*>& leafs);
+	void leafsInRange(Octree* tree, TArray<Octree*>& leafs, float stopAt);
 };

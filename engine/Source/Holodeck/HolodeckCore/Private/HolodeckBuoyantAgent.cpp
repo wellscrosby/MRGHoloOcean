@@ -94,37 +94,37 @@ void AHolodeckBuoyantAgent::ShowSurfacePoints(){
 }
 
 TArray<Octree*> AHolodeckBuoyantAgent::makeOctree(){
-	if(octreeGlobal.Num() == 0){
-		UE_LOG(LogHolodeck, Log, TEXT("HolodeckBuoyantAgent::Making Octree"));
-		int OctreeMin = Octree::OctreeMin;
-		int OctreeMax = Octree::OctreeMax;
-		// Shrink to the smallest cube the actor fits in
-		float extent = BoundingBox.GetExtent().GetAbsMax()*2;
-		while(OctreeMax/2 > extent){
-			OctreeMax /= 2;
-		}
+	// if(octreeGlobal.Num() == 0){
+	// 	UE_LOG(LogHolodeck, Log, TEXT("HolodeckBuoyantAgent::Making Octree"));
+	// 	int OctreeMin = Octree::OctreeMin;
+	// 	int OctreeMax = Octree::OctreeMax;
+	// 	// Shrink to the smallest cube the actor fits in
+	// 	float extent = BoundingBox.GetExtent().GetAbsMax()*2;
+	// 	while(OctreeMax/2 > extent){
+	// 		OctreeMax /= 2;
+	// 	}
 
-		// Otherwise, make the octrees
-		FVector nCells = (BoundingBox.Max - BoundingBox.Min) / OctreeMax;
-		for(int i = 0; i < nCells.X; i++) {
-			for(int j = 0; j < nCells.Y; j++) {
-				for(int k = 0; k < nCells.Z; k++) {
-					FVector center = FVector(i*OctreeMax, j*OctreeMax, k*OctreeMax) + BoundingBox.Min + OctreeMax/4 + GetActorLocation();
-					Octree* l = Octree::makeOctree(center, OctreeMax, true, GetName());
-					if(l){
-						l->isAgent = true;
-						l->file = "AGENT";
-						octreeGlobal.Add(l);
-					}
-				}
-			}
-		}
+	// 	// Otherwise, make the octrees
+	// 	FVector nCells = (BoundingBox.Max - BoundingBox.Min) / OctreeMax;
+	// 	for(int i = 0; i < nCells.X; i++) {
+	// 		for(int j = 0; j < nCells.Y; j++) {
+	// 			for(int k = 0; k < nCells.Z; k++) {
+	// 				FVector center = FVector(i*OctreeMax, j*OctreeMax, k*OctreeMax) + BoundingBox.Min + OctreeMax/4 + GetActorLocation();
+	// 				Octree* l = Octree::makeOctree(center, OctreeMax, true, GetName());
+	// 				if(l){
+	// 					l->isAgent = true;
+	// 					l->file = "AGENT";
+	// 					octreeGlobal.Add(l);
+	// 				}
+	// 			}
+	// 		}
+	// 	}
 
-		// Convert our global octree to a local one
-		for( Octree* tree : octreeGlobal){
-			cleanOctree(tree, octreeLocal);
-		}
-	}
+	// 	// Convert our global octree to a local one
+	// 	for( Octree* tree : octreeGlobal){
+	// 		cleanOctree(tree, octreeLocal);
+	// 	}
+	// }
 
 	return octreeGlobal;
 }

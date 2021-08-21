@@ -21,10 +21,12 @@ TArray<FVector> Octree::sides = {FVector( 0, 0, 1),
 FVector Octree::offset = 10*FVector(KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER) / sqrt(2.9);
 float Octree::cornerSize = 0.01;
 FCollisionQueryParams Octree::params = Octree::init_params();
+float Octree::OctreeRoot;
 float Octree::OctreeMax;
 float Octree::OctreeMin;
 FVector Octree::EnvMin;
 FVector Octree::EnvMax;
+FVector Octree::EnvCenter;
 UWorld* Octree::World;
 
 float sign(float val){
@@ -42,10 +44,10 @@ void Octree::initOctree(){
     if (!FParse::Value(FCommandLine::Get(), TEXT("EnvMaxY="), EnvMax.Y)) EnvMax.Y = 10;
     if (!FParse::Value(FCommandLine::Get(), TEXT("EnvMaxZ="), EnvMax.Z)) EnvMax.Z = 10;
     // Clean environment size
-    FVector min = FVector((int)FGenericPlatformMath::Min(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Min(-1*EnvMin.Y, -1*EnvMax.Y), (int)FGenericPlatformMath::Min(EnvMin.Z, EnvMax.Z));
-    FVector max = FVector((int)FGenericPlatformMath::Max(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Max(-1*EnvMin.Y, -1*EnvMax.Y), (int)FGenericPlatformMath::Max(EnvMin.Z, EnvMax.Z));
-    EnvMin = min*100;
-    EnvMax = max*100;
+    EnvMin = ConvertLinearVector(EnvMin, ClientToUE);
+    EnvMax = ConvertLinearVector(EnvMax, ClientToUE);
+    FVector min = FVector((int)FGenericPlatformMath::Min(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Min(EnvMin.Y, EnvMax.Y), (int)FGenericPlatformMath::Min(EnvMin.Z, EnvMax.Z));
+    FVector max = FVector((int)FGenericPlatformMath::Max(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Max(EnvMin.Y, EnvMax.Y), (int)FGenericPlatformMath::Max(EnvMin.Z, EnvMax.Z));
     UE_LOG(LogHolodeck, Log, TEXT("Octree:: EnvMin: %s"), *EnvMin.ToString());
     UE_LOG(LogHolodeck, Log, TEXT("Octree:: EnvMax: %s"), *EnvMax.ToString());
 
@@ -56,86 +58,58 @@ void Octree::initOctree(){
     if (!FParse::Value(FCommandLine::Get(), TEXT("OctreeMax="), tempVal)) tempVal = 5;
     OctreeMax = (tempVal*100);
 
-    // Make max a multiple of min
+    // Calculate where/how big is biggest octree
+    EnvCenter = (EnvMax + EnvMin) / 2;
+    OctreeRoot = (EnvMax - EnvMin).GetAbsMax();
+
+    // Make max/root a multiple of min
     tempVal = OctreeMin;
     while(tempVal <= OctreeMax){
         tempVal *= 2;
     }
     OctreeMax = tempVal;
-    UE_LOG(LogHolodeck, Log, TEXT("Octree:: OctreeMin: %f, OctreeMax: %f"), OctreeMin, OctreeMax);
+    while(tempVal <= OctreeRoot){
+        tempVal *= 2;
+    }
+    OctreeRoot = tempVal;
+    UE_LOG(LogHolodeck, Log, TEXT("Octree:: OctreeMin: %f, OctreeMax: %f, OctreeRoot: %f"), OctreeMin, OctreeMax, OctreeRoot);
 }
 
-TArray<Octree*> Octree::makeEnvOctreeRoots(UWorld* w){
-    TArray<Octree*> octree;
+Octree* Octree::makeEnvOctreeRoot(UWorld* w){
     World = w;
 
     // Get caching/loading location
     FString filePath = FPaths::ProjectDir() + "Octrees/" + World->GetMapName();
     filePath += "/min" + FString::FromInt(OctreeMin) + "_max" + FString::FromInt(OctreeMax);
-    FString rootFile = filePath + "/" + "roots.csv";
+    FString rootFile = filePath + "/" + "roots.json";
 
-    // if we've already saved what root nodes should be, open 'em up
-    if(FPaths::FileExists(rootFile)){
-        UE_LOG(LogHolodeck, Log, TEXT("Octree::Loading Octree roots"));
-        // Get ready
-        FString fileData;
-        TArray<FString> lines;
-        TArray<FString> data;
-        FVector center;
-
-        // Load data
-        FFileHelper::LoadFileToString(fileData, *rootFile);
-        fileData.ParseIntoArray(lines, TEXT("\n"), true);
-        for(FString l : lines){
-            l.ParseIntoArray(data, TEXT(" "), true);
-            center = FVector(FCString::Atof(*data[0]), FCString::Atof(*data[1]), FCString::Atof(*data[2]));
-            FString filename = filePath + "/" + FString::FromInt((int)center.X) + "_" 
-                                            + FString::FromInt((int)center.Y) + "_" 
-                                            + FString::FromInt((int)center.Z) + ".json";
-            Octree* o = new Octree(center, OctreeMax, filename);
-            octree.Add(o);
+    // load
+    UE_LOG(LogHolodeck, Log, TEXT("Octree::Making Octree root"));
+    Octree* root = new Octree(EnvCenter, OctreeRoot, OctreeMax, rootFile);
+    root->load();
+    
+    // set filename for all OctreeMax nodes
+    std::function<void(Octree*)> fix;
+    fix = [&filePath, &fix](Octree* tree){
+        if(tree->size == Octree::OctreeMax){
+            tree->sizeLeaf = Octree::OctreeMin;
+            tree->file = filePath + "/" + FString::FromInt((int)tree->loc.X) + "_" 
+                                        + FString::FromInt((int)tree->loc.Y) + "_" 
+                                        + FString::FromInt((int)tree->loc.Z) + ".json";
         }
-    }
-    // otherwise figure it out!
-    else{
-        UE_LOG(LogHolodeck, Log, TEXT("Octree::Making Octree roots"));
-        // Otherwise, make the octrees
-        FIntVector nCells = FIntVector((EnvMax - EnvMin) / OctreeMax) + FIntVector(1);
-        // int32 total = nCells.X * nCells.Y * nCells.Z;
-        for(int32 i = 0; i < nCells.X; i++) {
-            for(int32 j = 0; j < nCells.Y; j++) {
-                for(int32 k = 0; k < nCells.Z; k++) {
-                    FVector center = FVector(i*OctreeMax, j*OctreeMax, k*OctreeMax) + EnvMin;
-                    Octree* o = Octree::makeOctree(center, OctreeMax, false);
-                    if(o){
-                        FString filename = filePath + "/" + FString::FromInt((int)center.X) + "_" 
-                                                            + FString::FromInt((int)center.Y) + "_" 
-                                                            + FString::FromInt((int)center.Z) + ".json";
-                        o->file = filename;
-                        octree.Add(o);
-                    }
-
-                    // float percent = 100.0*(i*nCells.Y*nCells.Z + j*nCells.Z + k)/total; 
-                    // UE_LOG(LogHolodeck, Log, TEXT("Creating Octree %f"), percent); 
-                }
+        else{
+            for(Octree* l : tree->leafs){
+                fix(l);
             }
         }
+    };
 
-        // Save these, so we don't have to figure it out again
-        FString root = "";
-        for(Octree* o : octree){
-            root += FString::FromInt((int)o->loc.X)
-                        + " " + FString::FromInt((int)o->loc.Y)
-                        + " " + FString::FromInt((int)o->loc.Z)
-                        + "\n";
-        }
-        FFileHelper::SaveStringToFile(root, *rootFile);
-    }
-
-    return octree;
+    fix(root);
+    
+    return root;
 }
 
-Octree* Octree::makeOctree(FVector center, float octreeSize, bool recurse, FString actorName){
+Octree* Octree::makeOctree(FVector center, float octreeSize, float octreeMin, FString actorName){
     /*
     * There's a bug in UE4 4.22 where if you're sweep has length less than KINDA_SMALL_NUMBER it doesn't do anything
     * https://answers.unrealengine.com/questions/887018/422-spheretraceforobjects-node-is-not-working-anym.html
@@ -158,48 +132,46 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, bool recurse, FStri
         float distToCorner = octreeSize/2 - cornerSize;
         for(FVector side : sides){
             if(!full) break;
-            full = World->OverlapBlockingTestByChannel(center+(side*distToCorner), FQuat::Identity, ECollisionChannel::ECC_Pawn, FCollisionShape::MakeBox(FVector(cornerSize)), params);
+            full = World->OverlapBlockingTestByChannel(center+(side*distToCorner), FQuat::Identity, ECollisionChannel::ECC_WorldStatic, FCollisionShape::MakeBox(FVector(cornerSize)), params);
         }
         for(FVector corner : corners){
             if(!full) break;
-            full = World->OverlapBlockingTestByChannel(center+(corner*distToCorner), FQuat::Identity, ECollisionChannel::ECC_Pawn, FCollisionShape::MakeBox(FVector(cornerSize)), params);
+            full = World->OverlapBlockingTestByChannel(center+(corner*distToCorner), FQuat::Identity, ECollisionChannel::ECC_WorldStatic, FCollisionShape::MakeBox(FVector(cornerSize)), params);
         }
 
         if(!full){
             // make a tree to insert
-            Octree* child = new Octree(center, octreeSize);
+            Octree* child = new Octree(center, octreeSize, octreeMin);
             
-            if(recurse){
-                // if it still needs to be broken down, iterate through corners
-                if(octreeSize > OctreeMin){
-                    for(FVector off : corners){
-                        Octree* l = makeOctree(center+(off*octreeSize/4), octreeSize/2, recurse, actorName);
-                        if(l) child->leafs.Add(l);
-                    }
+            // if it still needs to be broken down, iterate through corners
+            if(octreeSize > octreeMin){
+                for(FVector off : corners){
+                    Octree* l = makeOctree(center+(off*octreeSize/4), octreeSize/2, octreeMin, recurse, actorName);
+                    if(l) child->leafs.Add(l);
                 }
+            }
 
-                // if it's all the way broken down, save the normal
-                else{
-                    child->normal = hit.Normal;
+            // if it's all the way broken down, save the normal
+            else if(octreeSize == Octree::OctreeMin){
+                child->normal = hit.Normal;
 
-                    // clean normal
-                    if(isnan(child->normal.X)) child->normal.X = sign(child->normal.X); 
-                    if(isnan(child->normal.Y)) child->normal.Y = sign(child->normal.Y); 
-                    if(isnan(child->normal.Z)) child->normal.Z = sign(child->normal.Z); 
-                    if(hit.Normal.ContainsNaN()){
-                        UE_LOG(LogHolodeck, Warning, TEXT("Found position: %s"), *child->loc.ToString());
-                        UE_LOG(LogHolodeck, Warning, TEXT("Found nan: %s"), *child->normal.ToString());
-                    }
-                    // DrawDebugLine(World, center, center+hit.Normal*OctreeMin/2, FColor::Blue, true, 100, ECC_WorldStatic, 1.f);
-                    // DrawDebugBox(World, center, FVector(size/2), FColor::Green, true, 2, ECC_WorldStatic, .5f);
+                // clean normal
+                if(isnan(child->normal.X)) child->normal.X = sign(child->normal.X); 
+                if(isnan(child->normal.Y)) child->normal.Y = sign(child->normal.Y); 
+                if(isnan(child->normal.Z)) child->normal.Z = sign(child->normal.Z); 
+                if(hit.Normal.ContainsNaN()){
+                    UE_LOG(LogHolodeck, Warning, TEXT("Found position: %s"), *child->loc.ToString());
+                    UE_LOG(LogHolodeck, Warning, TEXT("Found nan: %s"), *child->normal.ToString());
                 }
+                // DrawDebugLine(World, center, center+hit.Normal*OctreeMin/2, FColor::Blue, true, 100, ECC_WorldStatic, 1.f);
+                // DrawDebugBox(World, center, FVector(octreeSize/2), FColor::Green, true, 2, ECC_WorldStatic, 5.0f);
             }
 
             return child;
         }
 	}
 
-    // DrawDebugBox(World, center, FVector(size/2), FColor::Red, true, 2, ECC_WorldStatic, .5f);
+    // DrawDebugBox(World, center, FVector(octreeSize/2), FColor::Red, true, 2, ECC_WorldStatic, 5.0f);
     return nullptr;
 }
 
@@ -299,7 +271,7 @@ void Octree::load(){
         else{
             // UE_LOG(LogHolodeck, Log, TEXT("Making Octree %s"), *file);
             for(FVector off : corners){
-                Octree* l = makeOctree(loc+(off*size/4), size/2, true);
+                Octree* l = makeOctree(loc+(off*size/4), size/2, sizeLeaf, true);
                 if(l) leafs.Add(l);
             }
             toJson();

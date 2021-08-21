@@ -13,6 +13,7 @@
 #include <string>
 #include <fstream>
 #include <streambuf>
+#include <functional>
 
 class Octree
 {
@@ -27,6 +28,8 @@ class Octree
         static FVector EnvMax;
         static UWorld* World;
 
+        static FVector EnvCenter;
+
         static void loadJson(gason::JsonValue& json, TArray<Octree*>& parent, float size);
         void toJson(gason::JSonBuilder& doc);
 
@@ -38,13 +41,15 @@ class Octree
             return p;
         }
 
+        float sizeLeaf;
+
     public:
+        static float OctreeRoot;
         static float OctreeMax;
         static float OctreeMin;
 
         Octree(){};
-		Octree(FVector loc, float size) : size(size), loc(loc) {};
-		Octree(FVector loc, float size, FString file) : size(size), loc(loc), file(file) {};
+		Octree(FVector loc, float size, float sizeLeaf, FString file="") : sizeLeaf(sizeLeaf), size(size), loc(loc), file(file) {};
 		~Octree(){ 
             for(Octree* leaf : leafs){
                 delete leaf;
@@ -56,10 +61,10 @@ class Octree
         static void initOctree();
 
         // Figures out where octree roots are
-        static TArray<Octree*> makeEnvOctreeRoots(UWorld* w);
+        static Octree* makeEnvOctreeRoot(UWorld* w);
 
         // iterative constructs octree
-        static Octree* makeOctree(FVector center, float octreeSize, bool recurse, FString actorName="");
+        static Octree* makeOctree(FVector center, float octreeSize, float octreeMin, bool recurse, FString actorName="");
 
         void unload();
         void load();
