@@ -122,12 +122,20 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, float octreeMin, FS
     * This shouldn't effect octree generation speed if there's an overlap, but may make empty searches a smidge slower.
     */
     FHitResult hit = FHitResult();
-    bool occup = World->SweepSingleByChannel(hit, center, center+offset, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, FCollisionShape::MakeBox(FVector(octreeSize/2)), params);
-    occup = hit.bStartPenetrating;
+    bool occup;
+    if(octreeSize == Octree::OctreeMin){
+        bool occup = World->SweepSingleByChannel(hit, center, center+offset, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, FCollisionShape::MakeBox(FVector(octreeSize/2)), params);
+        occup = hit.bStartPenetrating;
+    }
+    else{
+        occup = World->OverlapBlockingTestByChannel(center, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, FCollisionShape::MakeBox(FVector(octreeSize/2)), params);
+    }
+
     // if we're making for an actor, make sure we're hitting it and not something else
     if(occup && actorName != "" && actorName != hit.GetActor()->GetName()){
         occup = false;
     }
+    // UE_LOG(LogHolodeck, Warning, TEXT("Center: %s, Hit: %d"), *center.ToString(), (int)occup);
 
     // if it's occupied
 	if(occup){
@@ -226,14 +234,14 @@ void Octree::toJson(gason::JSonBuilder& doc){
             .addValue((int)loc[2])
         .endArray();
 
-    if(size != OctreeMin){
+    if(leafs.Num() != 0){
         doc.startArray("l");
         for(Octree* l : leafs){
             l->toJson(doc);
         }
         doc.endArray();
     }
-    else{
+    if(size == OctreeMin){
         doc.startArray("n")
                 .addValue(normal[0])
                 .addValue(normal[1])
