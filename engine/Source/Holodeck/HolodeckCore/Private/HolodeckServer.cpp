@@ -24,9 +24,6 @@ void UHolodeckServer::Start() {
         UUID = "";
     UE_LOG(LogHolodeck, Log, TEXT("UUID: %s"), *UUID);
 
-    // Get Octree setup
-    Octree::initOctree();
-
 #if PLATFORM_WINDOWS
     auto LoadingSemaphore = OpenSemaphore(EVENT_ALL_ACCESS, false, *(LOADING_SEMAPHORE_PATH + UUID));
     ReleaseSemaphore(LoadingSemaphore, 1, NULL);

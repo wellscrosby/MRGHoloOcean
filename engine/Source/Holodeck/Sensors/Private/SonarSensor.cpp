@@ -133,6 +133,8 @@ void USonarSensor::initOctree(){
 	if(octree == nullptr){
 		// initialize small octree for each agent
 		for(auto& agent : Controller->GetServer()->AgentMap){
+			// skip ourselves
+			if(agent.Value == this->GetAttachmentRootActor()) continue;
 			AHolodeckBuoyantAgent* bouyantActor = static_cast<AHolodeckBuoyantAgent*>(agent.Value);
 			agents += bouyantActor->makeOctree();
 		}
@@ -143,7 +145,7 @@ void USonarSensor::initOctree(){
 			Octree::ignoreActor(actor);
 		}
 		// make/load octree
-		octree = Octree::makeEnvOctreeRoot(GetWorld());
+		octree = Octree::makeEnvOctreeRoot();
 
 		// Premake octrees within range
 		FVector loc = this->GetComponentLocation();

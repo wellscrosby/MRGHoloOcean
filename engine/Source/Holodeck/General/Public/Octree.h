@@ -57,10 +57,10 @@ class Octree
         }
 
         // Used to setup octree globals
-        static void initOctree();
+        static void initOctree(UWorld* w);
 
         // Figures out where octree roots are
-        static Octree* makeEnvOctreeRoot(UWorld* w);
+        static Octree* makeEnvOctreeRoot();
 
         // iterative constructs octree
         static Octree* makeOctree(FVector center, float octreeSize, float octreeMin, FString actorName="");

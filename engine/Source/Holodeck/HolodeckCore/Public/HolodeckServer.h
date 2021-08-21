@@ -9,8 +9,6 @@
 #include <string>
 #include <cstring>
 
-#include "Octree.h"
-
 #include "HolodeckSharedMemory.h"
 #if PLATFORM_WINDOWS
 #define LOADING_SEMAPHORE_PATH "Global\\HOLODECK_LOADING_SEM"

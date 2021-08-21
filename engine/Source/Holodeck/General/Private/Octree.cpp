@@ -38,7 +38,9 @@ float sign(float val){
     else return 1.0;
 }
 
-void Octree::initOctree(){
+void Octree::initOctree(UWorld* w){
+    World = w;
+
     // Load environment size
     if (!FParse::Value(FCommandLine::Get(), TEXT("EnvMinX="), EnvMin.X)) EnvMin.X = -10;
     if (!FParse::Value(FCommandLine::Get(), TEXT("EnvMinY="), EnvMin.Y)) EnvMin.Y = -10;
@@ -51,6 +53,8 @@ void Octree::initOctree(){
     EnvMax = ConvertLinearVector(EnvMax, ClientToUE);
     FVector min = FVector((int)FGenericPlatformMath::Min(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Min(EnvMin.Y, EnvMax.Y), (int)FGenericPlatformMath::Min(EnvMin.Z, EnvMax.Z));
     FVector max = FVector((int)FGenericPlatformMath::Max(EnvMin.X, EnvMax.X), (int)FGenericPlatformMath::Max(EnvMin.Y, EnvMax.Y), (int)FGenericPlatformMath::Max(EnvMin.Z, EnvMax.Z));
+    EnvMin = min;
+    EnvMax = max;
     UE_LOG(LogHolodeck, Log, TEXT("Octree:: EnvMin: %s"), *EnvMin.ToString());
     UE_LOG(LogHolodeck, Log, TEXT("Octree:: EnvMax: %s"), *EnvMax.ToString());
 
@@ -78,9 +82,7 @@ void Octree::initOctree(){
     UE_LOG(LogHolodeck, Log, TEXT("Octree:: OctreeMin: %f, OctreeMax: %f, OctreeRoot: %f"), OctreeMin, OctreeMax, OctreeRoot);
 }
 
-Octree* Octree::makeEnvOctreeRoot(UWorld* w){
-    World = w;
-
+Octree* Octree::makeEnvOctreeRoot(){
     // Get caching/loading location
     FString filePath = FPaths::ProjectDir() + "Octrees/" + World->GetMapName();
     filePath += "/min" + FString::FromInt(OctreeMin) + "_max" + FString::FromInt(OctreeMax);

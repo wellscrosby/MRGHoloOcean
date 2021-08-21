@@ -112,7 +112,7 @@ TArray<Octree*> AHolodeckBuoyantAgent::makeOctree(){
 				for(int k = 0; k < nCells.Z; k++) {
 					FVector center = FVector(i*OctreeMax, j*OctreeMax, k*OctreeMax) + BoundingBox.Min + OctreeMax/4 + GetActorLocation();
 					Octree* l = Octree::makeOctree(center, OctreeMax, OctreeMin, GetName());
-					if(l != nullptr){
+					if(l){
 						l->isAgent = true;
 						l->file = "AGENT";
 						octreeGlobal.Add(l);
