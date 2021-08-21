@@ -56,7 +56,7 @@ protected:
 	float MaxRange = 3000;
 
 	UPROPERTY(EditAnywhere)
-	float InitOctreeRange = 3000;
+	float InitOctreeRange = 0;
 
 	UPROPERTY(EditAnywhere)
 	float MinRange = 300;
@@ -94,6 +94,7 @@ private:
 
 	// holds our implementation of Octrees
 	Octree* octree = nullptr;
+	TArray<Octree*> agents;
 	void viewLeafs(Octree* tree);
 	void initOctree();
 
@@ -114,7 +115,7 @@ private:
 	TArray<Octree*> leafs;
 	// Used to hold leafs when parallelized filtering happens
 	TArray<TArray<Octree*>> tempLeafs;
-	// Used to hold leafs when parallelized sorting happens
+	// Used to hold leafs when parallelized sorting/binning happens
 	TArray<TArray<Octree*>> sortedLeafs;
 	int32* count;
 	

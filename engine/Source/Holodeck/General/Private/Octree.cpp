@@ -4,6 +4,7 @@
 #include "Octree.h"
 
 // Initialize static variables
+// Used when making octree
 TArray<FVector> Octree::corners = {FVector( 1,  1, 1),
                                     FVector( 1,  1, -1),
                                     FVector( 1, -1,  1),
@@ -21,6 +22,8 @@ TArray<FVector> Octree::sides = {FVector( 0, 0, 1),
 FVector Octree::offset = 10*FVector(KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER) / sqrt(2.9);
 float Octree::cornerSize = 0.01;
 FCollisionQueryParams Octree::params = Octree::init_params();
+
+// Misc constants
 float Octree::OctreeRoot;
 float Octree::OctreeMax;
 float Octree::OctreeMin;
@@ -85,14 +88,15 @@ Octree* Octree::makeEnvOctreeRoot(UWorld* w){
 
     // load
     UE_LOG(LogHolodeck, Log, TEXT("Octree::Making Octree root"));
-    Octree* root = new Octree(EnvCenter, OctreeRoot, OctreeMax, rootFile);
+    Octree* root = new Octree(EnvCenter, OctreeRoot, rootFile);
+    root->makeTill = Octree::OctreeMax;
     root->load();
     
-    // set filename for all OctreeMax nodes
+    // set filename/makeTill for all OctreeMax nodes
     std::function<void(Octree*)> fix;
     fix = [&filePath, &fix](Octree* tree){
         if(tree->size == Octree::OctreeMax){
-            tree->sizeLeaf = Octree::OctreeMin;
+            tree->makeTill = Octree::OctreeMin;
             tree->file = filePath + "/" + FString::FromInt((int)tree->loc.X) + "_" 
                                         + FString::FromInt((int)tree->loc.Y) + "_" 
                                         + FString::FromInt((int)tree->loc.Z) + ".json";
@@ -103,7 +107,6 @@ Octree* Octree::makeEnvOctreeRoot(UWorld* w){
             }
         }
     };
-
     fix(root);
     
     return root;
@@ -141,12 +144,12 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, float octreeMin, FS
 
         if(!full){
             // make a tree to insert
-            Octree* child = new Octree(center, octreeSize, octreeMin);
+            Octree* child = new Octree(center, octreeSize);
             
             // if it still needs to be broken down, iterate through corners
             if(octreeSize > octreeMin){
                 for(FVector off : corners){
-                    Octree* l = makeOctree(center+(off*octreeSize/4), octreeSize/2, octreeMin, recurse, actorName);
+                    Octree* l = makeOctree(center+(off*octreeSize/4), octreeSize/2, octreeMin, actorName);
                     if(l) child->leafs.Add(l);
                 }
             }
@@ -271,7 +274,7 @@ void Octree::load(){
         else{
             // UE_LOG(LogHolodeck, Log, TEXT("Making Octree %s"), *file);
             for(FVector off : corners){
-                Octree* l = makeOctree(loc+(off*size/4), size/2, sizeLeaf, true);
+                Octree* l = makeOctree(loc+(off*size/4), size/2, makeTill);
                 if(l) leafs.Add(l);
             }
             toJson();

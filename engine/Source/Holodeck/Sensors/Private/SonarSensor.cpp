@@ -111,6 +111,10 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 	else {
 		UE_LOG(LogHolodeck, Fatal, TEXT("USonarSensor::ParseSensorParms:: Unable to parse json."));
 	}
+
+	if(InitOctreeRange == 0){
+		InitOctreeRange = MaxRange;
+	}
 }
 
 void USonarSensor::initOctree(){
@@ -124,12 +128,14 @@ void USonarSensor::initOctree(){
 		toMake.Empty();
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Finished."));
 	}
+
+	// If we haven't made it yet
 	if(octree == nullptr){
 		// initialize small octree for each agent
-		// for(auto& agent : Controller->GetServer()->AgentMap){
-		// 	AHolodeckBuoyantAgent* bouyantActor = static_cast<AHolodeckBuoyantAgent*>(agent.Value);
-		// 	octree += bouyantActor->makeOctree();
-		// }
+		for(auto& agent : Controller->GetServer()->AgentMap){
+			AHolodeckBuoyantAgent* bouyantActor = static_cast<AHolodeckBuoyantAgent*>(agent.Value);
+			agents += bouyantActor->makeOctree();
+		}
 		
 		// Ignore necessary agents to make world one
 		for(auto& agent : Controller->GetServer()->AgentMap){
@@ -142,7 +148,7 @@ void USonarSensor::initOctree(){
 		// Premake octrees within range
 		FVector loc = this->GetComponentLocation();
 		// Offset by size of OctreeMax radius to get everything in range
-		float offset = InitOctreeRange + Octree::OctreeMax/sqrt2;
+		float offset = InitOctreeRange + Octree::OctreeMax*FMath::Sqrt(3)/2;
 		// recursively search for close leaves
 		std::function<void(Octree*, TArray<Octree*>&)> findCloseLeafs;
 		findCloseLeafs = [&offset, &loc, &findCloseLeafs](Octree* tree, TArray<Octree*>& list){
@@ -176,6 +182,7 @@ void USonarSensor::initOctree(){
 		}
 	}
 }
+
 void USonarSensor::InitializeSensor() {
 	Super::InitializeSensor();
 
@@ -194,8 +201,7 @@ void USonarSensor::InitializeSensor() {
 	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(Azimuth, Elevation)/2);
 	sqrt2 = UKismetMathLibrary::Sqrt(2);
 	
-
-	// setup leaves for later
+	// setup count of each bin
 	count = new int32[BinsRange*BinsAzimuth]();
 }
 
@@ -286,21 +292,15 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 
 
 		// FILTER TO GET THE LEAFS WE WANT
-		Benchmarker b;
-		b.Start();
 		leafsInRange(octree, leafs, Octree::OctreeMax);
-		b.End();
-		UE_LOG(LogHolodeck, Warning, TEXT("ROOT FILTER: %f"), b.CalcMs());
+		leafs += agents;
 
-		b.Start();
 		ParallelFor(leafs.Num(), [&](int32 i){
 			Octree* leaf = leafs.GetData()[i];
 			leaf->load();
 			for(Octree* l : leaf->leafs)
 				leafsInRange(l, tempLeafs.GetData()[i%1000], Octree::OctreeMin);
 		});
-		b.End();
-		UE_LOG(LogHolodeck, Warning, TEXT("LEAFS FILTER: %f, Leafs Searched: %d"), b.CalcMs(), leafs.Num());
 		
 		leafs.Reset();
 		for(auto& tl : tempLeafs){
@@ -309,7 +309,6 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 
 
 		// GET THE DOT PRODUCT, REMOVE BACKSIDE OF ANYTHING
-		b.Start();
 		FVector compLoc = this->GetComponentLocation();
 		ParallelFor(leafs.Num(), [&](int32 i){
 			Octree* l = leafs.GetData()[i]; 
@@ -329,26 +328,22 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 				// Sometimes we get float->int rounding errors
 				if(l->idx.Y == BinsAzimuth) --l->idx.Y;
 			} 
-			else leafs.GetData()[i] = nullptr;
+			else{
+				leafs.GetData()[i] = nullptr;
+			}
 		});
-		b.End();
-		UE_LOG(LogHolodeck, Warning, TEXT("REMOVE BACKSIDE: %f"), b.CalcMs());
 
 
 		// SORT THEM INTO AZIMUTH/ELEVATION BINS
-		b.Start();
 		for(Octree* l : leafs){
 			if(l == nullptr) continue;
 
 			int32 idx = l->idx.Z*BinsAzimuth + l->idx.Y;
 			sortedLeafs[idx].Emplace(l);
 		}
-		b.End();
-		UE_LOG(LogHolodeck, Warning, TEXT("SORT A/E BINS: %f"), b.CalcMs());
 
 
 		// HANDLE SHADOWING
-		b.Start();
 		float eps = 16;
 		ParallelFor(BinsAzimuth*BinsElev, [&](int32 i){
 			TArray<Octree*>& binLeafs = sortedLeafs.GetData()[i]; 
@@ -358,6 +353,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 				return a.locSpherical.X < b.locSpherical.X;
 			});
 
+			// Get the closest cluster in the bin
 			int32 idx;
 			float diff;
 			Octree* jth;
@@ -375,8 +371,6 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			}
 
 		});
-		b.End();
-		UE_LOG(LogHolodeck, Warning, TEXT("SHADOWING: %f"), b.CalcMs());
 
 		
 		// MOVE THEM INTO BUFFER
@@ -400,6 +394,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 				}
 			}
 		}
+
 		// draw outlines of our region
 		if(ViewRegion){
 			FTransform tran = this->GetComponentTransform();

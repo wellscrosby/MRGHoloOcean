@@ -7,6 +7,7 @@
 #include "Misc/FileHelper.h"
 #include "HAL/FileManagerGeneric.h"
 #include "DrawDebugHelpers.h"
+#include "Conversion.h"
 
 #include "gason.h"
 #include "jsonbuilder.h"
@@ -41,15 +42,13 @@ class Octree
             return p;
         }
 
-        float sizeLeaf;
-
     public:
         static float OctreeRoot;
         static float OctreeMax;
         static float OctreeMin;
 
         Octree(){};
-		Octree(FVector loc, float size, float sizeLeaf, FString file="") : sizeLeaf(sizeLeaf), size(size), loc(loc), file(file) {};
+		Octree(FVector loc, float size, FString file="") : size(size), loc(loc), file(file) {};
 		~Octree(){ 
             for(Octree* leaf : leafs){
                 delete leaf;
@@ -64,7 +63,7 @@ class Octree
         static Octree* makeEnvOctreeRoot(UWorld* w);
 
         // iterative constructs octree
-        static Octree* makeOctree(FVector center, float octreeSize, float octreeMin, bool recurse, FString actorName="");
+        static Octree* makeOctree(FVector center, float octreeSize, float octreeMin, FString actorName="");
 
         void unload();
         void load();
@@ -89,6 +88,7 @@ class Octree
 
         // Given to octree roots that have been saved/loaded from file
         FString file;
+        float makeTill;
 
         // Given to each non-leaf
         TArray<Octree*> leafs;
