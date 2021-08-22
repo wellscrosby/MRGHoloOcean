@@ -136,7 +136,8 @@ void USonarSensor::initOctree(){
 			// skip ourselves
 			if(agent.Value == this->GetAttachmentRootActor()) continue;
 			AHolodeckBuoyantAgent* bouyantActor = static_cast<AHolodeckBuoyantAgent*>(agent.Value);
-			agents += bouyantActor->makeOctree();
+			Octree* l = bouyantActor->makeOctree();
+			if(l) agents.Add(l);
 		}
 		
 		// Ignore necessary agents to make world one

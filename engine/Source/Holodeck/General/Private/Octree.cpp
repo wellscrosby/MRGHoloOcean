@@ -123,8 +123,8 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, float octreeMin, FS
     */
     FHitResult hit = FHitResult();
     bool occup;
-    if(octreeSize == Octree::OctreeMin){
-        bool occup = World->SweepSingleByChannel(hit, center, center+offset, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, FCollisionShape::MakeBox(FVector(octreeSize/2)), params);
+    if(octreeSize == Octree::OctreeMin || actorName != ""){
+        occup = World->SweepSingleByChannel(hit, center, center+offset, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, FCollisionShape::MakeBox(FVector(octreeSize/2)), params);
         occup = hit.bStartPenetrating;
     }
     else{
@@ -135,7 +135,6 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, float octreeMin, FS
     if(occup && actorName != "" && actorName != hit.GetActor()->GetName()){
         occup = false;
     }
-    // UE_LOG(LogHolodeck, Warning, TEXT("Center: %s, Hit: %d"), *center.ToString(), (int)occup);
 
     // if it's occupied
 	if(occup){
