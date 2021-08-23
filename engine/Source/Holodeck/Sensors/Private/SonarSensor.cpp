@@ -171,13 +171,13 @@ void USonarSensor::initOctree(){
 			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Premaking %d Octrees, will take some time..."), toMake.Num()));
 
 		// get all our leafs ready
-		leafs.Reserve(100000);
+		leafs.Reserve(1000);
 		// We need enough templeafs to cover all possible threads
 		// 1000 should be plenty
 		tempLeafs.Reserve(1000);
 		for(int i=0;i<1000;i++){
 			tempLeafs.Add(TArray<Octree*>());
-			tempLeafs[i].Reserve(1000000);
+			tempLeafs[i].Reserve(10000);
 		}
 		for(int i=0;i<BinsAzimuth*BinsElev;i++){
 			sortedLeafs.Add(TArray<Octree*>());
@@ -243,7 +243,29 @@ void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& rLeafs, float sto
 	bool in = inRange(tree);
 	if(in){
 		if(tree->size == stopAt){
-			rLeafs.Add(tree);
+			if(stopAt == Octree::OctreeMin){
+				// Compute contribution while we're parallelized
+				// If no contribution, we don't have to add it in
+				FVector normalImpact = GetComponentLocation() - tree->loc; 
+				normalImpact.Normalize();
+
+				// compute contribution
+				float val = FVector::DotProduct(tree->normal, normalImpact);
+				if(val > 0){
+					tree->val = val;
+
+					// Compute bins while we're parallelized
+					tree->idx.Y = (int32)((tree->locSpherical.Y - minAzimuth)/ AzimuthRes);
+					tree->idx.Z = (int32)((tree->locSpherical.Z - minElev)/ ElevRes);
+					// Sometimes we get float->int rounding errors
+					if(tree->idx.Y == BinsAzimuth) --tree->idx.Y;
+
+					rLeafs.Add(tree);
+				} 
+			}
+			else{
+				rLeafs.Add(tree);
+			}
 			return;
 		}
 
@@ -305,44 +327,14 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 				leafsInRange(l, tempLeafs.GetData()[i%1000], Octree::OctreeMin);
 		});
 		
-		leafs.Reset();
-		for(auto& tl : tempLeafs){
-			leafs += tl;
-		}
-
-
-		// GET THE DOT PRODUCT, REMOVE BACKSIDE OF ANYTHING
-		FVector compLoc = this->GetComponentLocation();
-		ParallelFor(leafs.Num(), [&](int32 i){
-			Octree* l = leafs.GetData()[i]; 
-
-			// Compute impact normal
-			FVector normalImpact = compLoc - l->loc; 
-			normalImpact.Normalize();
-
-			// compute contribution
-			float val = FVector::DotProduct(l->normal, normalImpact);
-			if(val > 0){
-				l->val = val;
-
-				// Compute bins while we're parallelized
-				l->idx.Y = (int32)((l->locSpherical.Y - minAzimuth)/ AzimuthRes);
-				l->idx.Z = (int32)((l->locSpherical.Z - minElev)/ ElevRes);
-				// Sometimes we get float->int rounding errors
-				if(l->idx.Y == BinsAzimuth) --l->idx.Y;
-			} 
-			else{
-				leafs.GetData()[i] = nullptr;
-			}
-		});
-
 
 		// SORT THEM INTO AZIMUTH/ELEVATION BINS
-		for(Octree* l : leafs){
-			if(l == nullptr) continue;
-
-			int32 idx = l->idx.Z*BinsAzimuth + l->idx.Y;
-			sortedLeafs[idx].Emplace(l);
+		int32 idx;
+		for(TArray<Octree*>& bin : tempLeafs){
+			for(Octree* l : bin){
+				idx = l->idx.Z*BinsAzimuth + l->idx.Y;
+				sortedLeafs[idx].Emplace(l);
+			}
 		}
 
 

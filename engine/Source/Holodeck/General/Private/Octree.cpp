@@ -89,7 +89,6 @@ Octree* Octree::makeEnvOctreeRoot(){
     FString rootFile = filePath + "/" + "roots.json";
 
     // load
-    UE_LOG(LogHolodeck, Log, TEXT("Octree::Making Octree root"));
     Octree* root = new Octree(EnvCenter, OctreeRoot, rootFile);
     root->makeTill = Octree::OctreeMax;
     root->load();
@@ -111,6 +110,8 @@ Octree* Octree::makeEnvOctreeRoot(){
     };
     fix(root);
     
+    UE_LOG(LogHolodeck, Log, TEXT("Octree::Made Octree root"));
+
     return root;
 }
 
