@@ -32,18 +32,14 @@ void AHolodeckBuoyantAgent::InitializeAgent(){
 
 void AHolodeckBuoyantAgent::Tick(float DeltaSeconds) {
 	Super::Tick(DeltaSeconds);
-	updateOctree();
+	if(octreeGlobal != nullptr) updateOctree(octreeLocal, octreeGlobal);
 }
 
 void AHolodeckBuoyantAgent::BeginDestroy() {
 	Super::BeginDestroy();
 
-	if(octreeLocal.Num() != 0){
-		for(Octree* t : octreeLocal){
-			delete t;
-		}
-		octreeLocal.Empty();
-	}
+	if(octreeLocal != nullptr) delete octreeLocal;
+	if(octreeGlobal != nullptr) delete octreeGlobal;
 }
 
 void AHolodeckBuoyantAgent::ApplyBuoyantForce(){
@@ -86,52 +82,48 @@ void AHolodeckBuoyantAgent::ShowSurfacePoints(){
 	}
 }
 
-void AHolodeckBuoyantAgent::makeOctree(){
-	if(octreeGlobal.Num() == 0){
-		UE_LOG(LogHolodeck, Warning, TEXT("HolodeckBuoyantAgent::Making Octree.."));
-		int OctreeMin = Server->OctreeMin;
-		int OctreeMax = Server->OctreeMax;
+Octree* AHolodeckBuoyantAgent::makeOctree(){
+	if(octreeGlobal == nullptr){
+		UE_LOG(LogHolodeck, Log, TEXT("HolodeckBuoyantAgent::Making Octree"));
+		float OctreeMin = Octree::OctreeMin;
+		float OctreeMax = Octree::OctreeMin;
+
 		// Shrink to the smallest cube the actor fits in
+		FVector center = BoundingBox.GetCenter() + GetActorLocation();
 		float extent = BoundingBox.GetExtent().GetAbsMax()*2;
-		while(OctreeMax/2 > extent){
-			OctreeMax /= 2;
+		while(OctreeMax < extent){
+			OctreeMax *= 2;
 		}
 
 		// Otherwise, make the octrees
-		FVector nCells = (BoundingBox.Max - BoundingBox.Min) / OctreeMax;
-		for(int i = 0; i < nCells.X; i++) {
-			for(int j = 0; j < nCells.Y; j++) {
-				for(int k = 0; k < nCells.Z; k++) {
-					FVector center = FVector(i*OctreeMax, j*OctreeMax, k*OctreeMax) + BoundingBox.Min + OctreeMax/4 + GetActorLocation();
-					Octree::makeOctree(center, OctreeMax, GetWorld(), octreeGlobal, OctreeMin, GetName());
-				}
-			}
-		}
-		Server->octree += octreeGlobal;
+		octreeGlobal = Octree::makeOctree(center, OctreeMax, OctreeMin, GetName());
+		if(octreeGlobal){
+			octreeGlobal->isAgent = true;
+			octreeGlobal->file = "AGENT";
 
-		// Convert our global octree to a local one
-		for( Octree* tree : octreeGlobal){
-			cleanOctree(tree, octreeLocal);
+			// Convert our global octree to a local one
+			octreeLocal = cleanOctree(octreeGlobal);
 		}
+		else{
+			UE_LOG(LogHolodeck, Warning, TEXT("HolodeckBuoyantAgent:: Failed to make Octree"));
+		}
+
 	}
+
+	return octreeGlobal;
 }
 
-void AHolodeckBuoyantAgent::cleanOctree(Octree* globalFrame, TArray<Octree*>& results){
-	Octree* octree = new Octree;
-	octree->loc = GetActorRotation().UnrotateVector(globalFrame->loc - GetActorLocation());
-	octree->normal = GetActorRotation().UnrotateVector(globalFrame->normal);
+Octree* AHolodeckBuoyantAgent::cleanOctree(Octree* globalFrame){
+	Octree* local = new Octree;
+	local->loc = GetActorRotation().UnrotateVector(globalFrame->loc - GetActorLocation());
+	local->normal = GetActorRotation().UnrotateVector(globalFrame->normal);
 
 	for( Octree* tree : globalFrame->leafs){
-		cleanOctree(tree, octree->leafs);
+		Octree* l = cleanOctree(tree);
+		local->leafs.Add(l);
 	}
 
-	results.Add(octree);
-}
-
-void AHolodeckBuoyantAgent::updateOctree(){
-	for(int i=0;i<octreeGlobal.Num();i++){
-		updateOctree(octreeLocal[i], octreeGlobal[i]);
-	}
+	return local;
 }
 
 void AHolodeckBuoyantAgent::updateOctree(Octree* localFrame, Octree* globalFrame){

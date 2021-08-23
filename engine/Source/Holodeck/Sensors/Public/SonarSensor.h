@@ -56,6 +56,9 @@ protected:
 	float MaxRange = 3000;
 
 	UPROPERTY(EditAnywhere)
+	float InitOctreeRange = 0;
+
+	UPROPERTY(EditAnywhere)
 	float MinRange = 300;
 
 	UPROPERTY(EditAnywhere)
@@ -65,19 +68,19 @@ protected:
 	float Elevation = 20;
 
 	UPROPERTY(EditAnywhere)
-	int BinsRange = 300;
+	int32 BinsRange = 300;
 
 	UPROPERTY(EditAnywhere)
-	int BinsAzimuth = 128;
+	int32 BinsAzimuth = 128;
 
 	UPROPERTY(EditAnywhere)
-	int BinsElev;
+	int32 BinsElev;
 
 	UPROPERTY(EditAnywhere)
 	bool ViewRegion = false;
 
 	UPROPERTY(EditAnywhere)
-	bool ViewOctree = false;
+	int ViewOctree = -10;
 
 	UPROPERTY(EditAnywhere)
 	int TicksPerCapture = 1;
@@ -90,7 +93,8 @@ private:
 	AActor* Parent;
 
 	// holds our implementation of Octrees
-	TArray<Octree*>& getOctree(){ return Controller->GetServer()->octree; }
+	Octree* octree = nullptr;
+	TArray<Octree*> agents;
 	void viewLeafs(Octree* tree);
 	void initOctree();
 
@@ -104,14 +108,14 @@ private:
 	float maxElev;
 	float sinOffset;
 	float sqrt2;
-	float OctreeMax;
-	float OctreeMin;
 
+	// What octrees we initally make
+	TArray<Octree*> toMake;
 	// initialize + reserve vectors once
 	TArray<Octree*> leafs;
 	// Used to hold leafs when parallelized filtering happens
 	TArray<TArray<Octree*>> tempLeafs;
-	// Used to hold leafs when parallelized sorting happens
+	// Used to hold leafs when parallelized sorting/binning happens
 	TArray<TArray<Octree*>> sortedLeafs;
 	int32* count;
 	
@@ -122,6 +126,6 @@ private:
 	// use for skipping frames
 	int TickCounter = 0;
 
-	bool inRange(Octree* tree, float size);
-	void leafsInRange(Octree* tree, TArray<Octree*>& leafs, float size);
+	bool inRange(Octree* tree);
+	void leafsInRange(Octree* tree, TArray<Octree*>& leafs, float stopAt);
 };

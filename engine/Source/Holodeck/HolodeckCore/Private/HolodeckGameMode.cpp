@@ -37,6 +37,9 @@ void AHolodeckGameMode::StartPlay() {
 	//if (GetWorld()->WorldType == EWorldType::Game)
 	//	bHolodeckIsOn = FParse::Param(FCommandLine::Get(), TEXT("HolodeckOn"));
 
+	// Make sure Octree is properly initialized
+	Octree::initOctree(GetWorld());
+
 	if (bHolodeckIsOn) {
 		this->Instance = (UHolodeckGameInstance*)(GetGameInstance());
 		if (this->Instance) {

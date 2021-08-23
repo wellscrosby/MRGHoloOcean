@@ -40,6 +40,8 @@ USonarSensor::USonarSensor() {
 void USonarSensor::BeginDestroy() {
 	Super::BeginDestroy();
 
+	delete octree;
+
 	delete[] count;
 }
 
@@ -69,6 +71,10 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 			MaxRange = JsonParsed->GetNumberField("MaxRange")*100;
 		}
 
+		if (JsonParsed->HasTypedField<EJson::Number>("InitOctreeRange")) {
+			InitOctreeRange = JsonParsed->GetNumberField("InitOctreeRange")*100;
+		}
+
 		if (JsonParsed->HasTypedField<EJson::Number>("MinRange")) {
 			MinRange = JsonParsed->GetNumberField("MinRange")*100;
 		}
@@ -93,8 +99,8 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 			ViewRegion = JsonParsed->GetBoolField("ViewRegion");
 		}
 
-		if (JsonParsed->HasTypedField<EJson::Boolean>("ViewOctree")) {
-			ViewOctree = JsonParsed->GetBoolField("ViewOctree");
+		if (JsonParsed->HasTypedField<EJson::Number>("ViewOctree")) {
+			ViewOctree = JsonParsed->GetIntegerField("ViewOctree");
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("TicksPerCapture")) {
@@ -105,48 +111,85 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 	else {
 		UE_LOG(LogHolodeck, Fatal, TEXT("USonarSensor::ParseSensorParms:: Unable to parse json."));
 	}
+
+	if(InitOctreeRange == 0){
+		InitOctreeRange = MaxRange;
+	}
 }
 
 void USonarSensor::initOctree(){
-	if(getOctree().Num() == 0){
-		// This is done here b/c Server doesn't have inheritance info of AHolodeckAgent
+	// We delay making trees till the message has been printed to the screen
+	if(toMake.Num() != 0 && TickCounter > 2){
+		UE_LOG(LogHolodeck, Log, TEXT("SonarSensor::Initial building num: %d"), toMake.Num());
+		ParallelFor(toMake.Num(), [&](int32 i){
+			toMake.GetData()[i]->load();
+			toMake.GetData()[i]->unload();
+		});
+		toMake.Empty();
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Finished."));
+	}
+
+	// If we haven't made it yet
+	if(octree == nullptr){
+		// initialize small octree for each agent
+		for(auto& agent : Controller->GetServer()->AgentMap){
+			// skip ourselves
+			if(agent.Value == this->GetAttachmentRootActor()) continue;
+			AHolodeckBuoyantAgent* bouyantActor = static_cast<AHolodeckBuoyantAgent*>(agent.Value);
+			Octree* l = bouyantActor->makeOctree();
+			if(l) agents.Add(l);
+		}
+		
+		// Ignore necessary agents to make world one
 		for(auto& agent : Controller->GetServer()->AgentMap){
 			AActor* actor = static_cast<AActor*>(agent.Value);
 			Octree::ignoreActor(actor);
 		}
 		// make/load octree
-		Controller->GetServer()->makeOctree(GetWorld());
-		Octree::resetParams();
+		octree = Octree::makeEnvOctreeRoot();
 
-		// initialize small octree for each agent
-		for(auto& agent : Controller->GetServer()->AgentMap){
-			AHolodeckBuoyantAgent* bouyantActor = static_cast<AHolodeckBuoyantAgent*>(agent.Value);
-			bouyantActor->makeOctree();
-		}
+		// Premake octrees within range
+		FVector loc = this->GetComponentLocation();
+		// Offset by size of OctreeMax radius to get everything in range
+		float offset = InitOctreeRange + Octree::OctreeMax*FMath::Sqrt(3)/2;
+		// recursively search for close leaves
+		std::function<void(Octree*, TArray<Octree*>&)> findCloseLeafs;
+		findCloseLeafs = [&offset, &loc, &findCloseLeafs](Octree* tree, TArray<Octree*>& list){
+			if(tree->size == Octree::OctreeMax){
+				if((loc - tree->loc).Size() < offset && !FPaths::FileExists(tree->file)){
+					list.Add(tree);
+				}
+			}
+			else{
+				for(Octree* l : tree->leafs){
+					findCloseLeafs(l, list);
+				}
+			}
+		};
+		findCloseLeafs(octree, toMake);
+		if(toMake.Num() != 0)
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Premaking %d Octrees, will take some time..."), toMake.Num()));
 
 		// get all our leafs ready
-		// TODO: calculate what these values should be
-		// TODO: This needs to be moved somewhere to make sure it happens to every sonar
-		TArray<Octree*>& octree = getOctree();
-		leafs.Reserve(10000);
-		tempLeafs.Reserve(octree.Num());
-		for(int i=0;i<octree.Num();i++){
+		leafs.Reserve(1000);
+		// We need enough templeafs to cover all possible threads
+		// 1000 should be plenty
+		tempLeafs.Reserve(1000);
+		for(int i=0;i<1000;i++){
 			tempLeafs.Add(TArray<Octree*>());
-			tempLeafs[i].Reserve(1000);
+			tempLeafs[i].Reserve(10000);
 		}
 		for(int i=0;i<BinsAzimuth*BinsElev;i++){
 			sortedLeafs.Add(TArray<Octree*>());
-			sortedLeafs[i].Reserve(200);
+			sortedLeafs[i].Reserve(10000);
 		}
 	}
 }
+
 void USonarSensor::InitializeSensor() {
 	Super::InitializeSensor();
 
-	OctreeMax = Controller->GetServer()->OctreeMax;
-	OctreeMin = Controller->GetServer()->OctreeMin;
-
-	BinsElev = (int) Elevation;
+	BinsElev = (int) Elevation * 10;
 	
 	// Get size of each bin
 	RangeRes = (MaxRange - MinRange) / BinsRange;
@@ -161,20 +204,19 @@ void USonarSensor::InitializeSensor() {
 	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(Azimuth, Elevation)/2);
 	sqrt2 = UKismetMathLibrary::Sqrt(2);
 	
-
-	// setup leaves for later
+	// setup count of each bin
 	count = new int32[BinsRange*BinsAzimuth]();
 }
 
-bool USonarSensor::inRange(Octree* tree, float size){
+bool USonarSensor::inRange(Octree* tree){
 	FTransform SensortoWorld = this->GetComponentTransform();
 	// if it's not a leaf, we use a bigger search area
 	float offset = 0;
-	if(tree->leafs.Num() != 0){
-		float radius = size/sqrt2;
+	float radius = 0;
+	if(tree->size != Octree::OctreeMin){
+		radius = tree->size/sqrt2;
 		offset = radius/sinOffset;
 		SensortoWorld.AddToTranslation( -this->GetForwardVector()*offset );
-		offset += radius;
 	}
 
 	// transform location to sensor frame
@@ -183,31 +225,56 @@ bool USonarSensor::inRange(Octree* tree, float size){
 
 	// check if it's in range
 	tree->locSpherical.X = locLocal.Size();
-	if(MinRange >= tree->locSpherical.X || tree->locSpherical.X >= MaxRange+offset) return false; 
+	if(MinRange+offset-radius >= tree->locSpherical.X || tree->locSpherical.X >= MaxRange+offset+radius) return false; 
 
 	// check if azimuth is in
 	tree->locSpherical.Y = ATan2Approx(-locLocal.Y, locLocal.X);
 	if(minAzimuth >= tree->locSpherical.Y || tree->locSpherical.Y >= maxAzimuth) return false;
 
 	// check if elevation is in
-	tree->locSpherical.Z = ATan2Approx(FVector2D(locLocal.X, locLocal.Y).Size(), locLocal.Z);
+	tree->locSpherical.Z = ATan2Approx(locLocal.Size2D(), locLocal.Z);
 	if(minElev >= tree->locSpherical.Z || tree->locSpherical.Z >= maxElev) return false;
 	
 	// otherwise it's in!
 	return true;
 }	
 
-void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& rLeafs, float size){
-	bool in = inRange(tree, size);
+void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& rLeafs, float stopAt){
+	bool in = inRange(tree);
 	if(in){
-		if(tree->leafs.Num() == 0){
-			rLeafs.Add(tree);
-		}
-		else{
-			for(Octree* l : tree->leafs){
-				leafsInRange(l, rLeafs, size/2);
+		if(tree->size == stopAt){
+			if(stopAt == Octree::OctreeMin){
+				// Compute contribution while we're parallelized
+				// If no contribution, we don't have to add it in
+				FVector normalImpact = GetComponentLocation() - tree->loc; 
+				normalImpact.Normalize();
+
+				// compute contribution
+				float val = FVector::DotProduct(tree->normal, normalImpact);
+				if(val > 0){
+					tree->val = val;
+
+					// Compute bins while we're parallelized
+					tree->idx.Y = (int32)((tree->locSpherical.Y - minAzimuth)/ AzimuthRes);
+					tree->idx.Z = (int32)((tree->locSpherical.Z - minElev)/ ElevRes);
+					// Sometimes we get float->int rounding errors
+					if(tree->idx.Y == BinsAzimuth) --tree->idx.Y;
+
+					rLeafs.Add(tree);
+				} 
 			}
+			else{
+				rLeafs.Add(tree);
+			}
+			return;
 		}
+
+		for(Octree* l : tree->leafs){
+			leafsInRange(l, rLeafs, stopAt);
+		}
+	}
+	else if(tree->size >= Octree::OctreeMax){
+		tree->unload();
 	}
 }
 
@@ -232,7 +299,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 	// We initialize this here to make sure all agents are loaded
 	// This does nothing if it's already been loaded
 	initOctree();
-	
+
 	TickCounter++;
 	if(TickCounter == TicksPerCapture){
 		// reset things and get ready
@@ -240,7 +307,6 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 		float* result = static_cast<float*>(Buffer);
 		std::fill(result, result+BinsRange*BinsAzimuth, 0);
 		std::fill(count, count+BinsRange*BinsAzimuth, 0);
-		TArray<Octree*>& octree = getOctree();
 		leafs.Reset();
 		for(auto& tl: tempLeafs){
 			tl.Reset();
@@ -249,49 +315,31 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 			sl.Reset();
 		}
 
+
 		// FILTER TO GET THE LEAFS WE WANT
-		ParallelFor(octree.Num(), [&](int32 i){
-			leafsInRange(octree.GetData()[i], tempLeafs.GetData()[i], OctreeMax);
-		});
-		for(auto& tl : tempLeafs){
-			leafs += tl;
-		}
+		leafsInRange(octree, leafs, Octree::OctreeMax);
+		leafs += agents;
 
-
-		// GET THE DOT PRODUCT, REMOVE BACKSIDE OF ANYTHING
-		FVector compLoc = this->GetComponentLocation();
 		ParallelFor(leafs.Num(), [&](int32 i){
-			Octree* l = leafs.GetData()[i]; 
-
-			// Compute impact normal
-			FVector normalImpact = compLoc - l->loc; 
-			normalImpact /= normalImpact.Size();
-
-			// compute contribution
-			float val = FVector::DotProduct(l->normal, normalImpact);
-			if(val > 0) l->val = val;
-			else leafs.GetData()[i] = nullptr;
+			Octree* leaf = leafs.GetData()[i];
+			leaf->load();
+			for(Octree* l : leaf->leafs)
+				leafsInRange(l, tempLeafs.GetData()[i%1000], Octree::OctreeMin);
 		});
-
+		
 
 		// SORT THEM INTO AZIMUTH/ELEVATION BINS
-		for(Octree* l : leafs){
-			if(l == nullptr) continue;
-
-			int32 aBin = (int)((l->locSpherical.Y - minAzimuth)/ AzimuthRes);
-			int32 eBin = (int)((l->locSpherical.Z - minElev)/ ElevRes);
-			// Sometimes we get float->int rounding errors
-			if(aBin == BinsAzimuth) --aBin;
-
-			int32 idx = eBin*BinsAzimuth + aBin;
-			sortedLeafs[idx].Add(l);
+		int32 idx;
+		for(TArray<Octree*>& bin : tempLeafs){
+			for(Octree* l : bin){
+				idx = l->idx.Z*BinsAzimuth + l->idx.Y;
+				sortedLeafs[idx].Emplace(l);
+			}
 		}
 
 
 		// HANDLE SHADOWING
-		// TODO: Do these degree params need to be check for larger octree sizes?
-		float shadowAngle = 1;
-		float shadowCos = -FMath::Cos(shadowAngle*Pi/180);
+		float eps = 16;
 		ParallelFor(BinsAzimuth*BinsElev, [&](int32 i){
 			TArray<Octree*>& binLeafs = sortedLeafs.GetData()[i]; 
 
@@ -300,39 +348,23 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 				return a.locSpherical.X < b.locSpherical.X;
 			});
 
-			int32 j=0,k,rBin,aBin,idx;
-			float a,aa,b,bb,c,cos;
-			Octree *close, *other;
-			// Iterate through, adding in contributions
-			while(j < binLeafs.Num()){
-				k = binLeafs.Num()-1;
-				close = binLeafs.GetData()[j];
-
-				// Compute what bin it goes in
-				aBin = (int)((close->locSpherical.Y - minAzimuth)/ AzimuthRes);
-				rBin = (int)((close->locSpherical.X - MinRange) / RangeRes);
-				idx = rBin*BinsAzimuth + aBin;
-
-				// TODO: use sigmoid here?
-				result[idx] += close->val;
+			// Get the closest cluster in the bin
+			int32 idx;
+			float diff;
+			Octree* jth;
+			for(int j=0;j<binLeafs.Num()-1;j++){
+				jth = binLeafs.GetData()[j];
+				
+				jth->idx.X = (int32)((jth->locSpherical.X - MinRange) / RangeRes);
+				idx = jth->idx.X*BinsAzimuth + jth->idx.Y;
+				result[idx] += jth->val;
 				++count[idx];
-
-				// remove ones that are in the shadow of bin j
-				a = close->locSpherical.X;
-				aa = a*a;
-				while(k > j){
-					other = binLeafs.GetData()[k];
-					bb = FVector::DistSquared(close->loc, other->loc);
-					b = FMath::Sqrt(bb);
-					c = other->locSpherical.X;
-					cos = (aa + bb - c*c) / (2*a*b);
-
-					if(cos < shadowCos) binLeafs.RemoveAt(k);
-
-					--k;
-				}
-				++j;
+				
+				// diff = FVector::Dist(jth->loc, binLeafs.GetData()[j+1]->loc);
+				diff = FMath::Abs(jth->locSpherical.X - binLeafs.GetData()[j+1]->locSpherical.X);
+				if(diff > eps) break;
 			}
+
 		});
 
 		
@@ -349,11 +381,15 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 
 
 		// draw points inside our region
-		if(ViewOctree){
-			for( Octree* l : leafs){
-				if(l != nullptr) DrawDebugPoint(GetWorld(), l->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
+		if(ViewOctree >= -1){
+			for( TArray<Octree*> bins : sortedLeafs){
+				for( Octree* l : bins){
+					if(ViewOctree == -1 || ViewOctree == l->idx.Y)
+						DrawDebugPoint(GetWorld(), l->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
+				}
 			}
 		}
+
 		// draw outlines of our region
 		if(ViewRegion){
 			FTransform tran = this->GetComponentTransform();
