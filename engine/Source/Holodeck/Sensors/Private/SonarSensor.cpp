@@ -212,11 +212,11 @@ bool USonarSensor::inRange(Octree* tree){
 	FTransform SensortoWorld = this->GetComponentTransform();
 	// if it's not a leaf, we use a bigger search area
 	float offset = 0;
+	float radius = 0;
 	if(tree->size != Octree::OctreeMin){
-		float radius = tree->size/sqrt2;
+		radius = tree->size/sqrt2;
 		offset = radius/sinOffset;
 		SensortoWorld.AddToTranslation( -this->GetForwardVector()*offset );
-		offset += radius;
 	}
 
 	// transform location to sensor frame
@@ -225,7 +225,7 @@ bool USonarSensor::inRange(Octree* tree){
 
 	// check if it's in range
 	tree->locSpherical.X = locLocal.Size();
-	if(MinRange >= tree->locSpherical.X || tree->locSpherical.X >= MaxRange+offset) return false; 
+	if(MinRange+offset-radius >= tree->locSpherical.X || tree->locSpherical.X >= MaxRange+offset+radius) return false; 
 
 	// check if azimuth is in
 	tree->locSpherical.Y = ATan2Approx(-locLocal.Y, locLocal.X);
@@ -273,7 +273,7 @@ void USonarSensor::leafsInRange(Octree* tree, TArray<Octree*>& rLeafs, float sto
 			leafsInRange(l, rLeafs, stopAt);
 		}
 	}
-	else if(tree->size == Octree::OctreeMax){
+	else if(tree->size >= Octree::OctreeMax){
 		tree->unload();
 	}
 }

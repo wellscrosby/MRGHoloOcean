@@ -316,10 +316,16 @@ void Octree::loadJson(gason::JsonValue& json, TArray<Octree*>& parent, float siz
 
 void Octree::unload(){
     if(!isAgent && leafs.Num() != 0){
-        // UE_LOG(LogHolodeck, Log, TEXT("Unloading Octree %s"), *file);
-        for(Octree* leaf : leafs){
-            delete leaf;
+        // if we need to unload children
+        if(size > Octree::OctreeMax){
+            for(Octree* leaf : leafs) leaf->unload();
         }
-        leafs.Reset();
+
+        // if we need to unload this one
+        else if(size == Octree::OctreeMax){
+            // UE_LOG(LogHolodeck, Log, TEXT("Unloading Octree %s"), *file);
+            for(Octree* leaf : leafs) delete leaf;
+            leafs.Reset();
+        }
     }
 }

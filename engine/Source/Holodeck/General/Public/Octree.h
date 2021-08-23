@@ -80,7 +80,7 @@ class Octree
         int numLeafs();
 
         // Used to check if it's a dynamic octree for an agent
-        bool isAgent;
+        bool isAgent = false;
         
         // Given to all
         float size;
