@@ -59,7 +59,13 @@ class HolodeckEnvironment:
             If the viewport should be shown (Linux only) Defaults to True.
 
         ticks_per_sec (:obj:`int`, optional):
-            Number of frame ticks per unreal second. Defaults to 30.
+            The number of frame ticks per unreal seconds. This will override whatever is 
+            in the configuration json. Defaults to 30.
+
+        frames_per_sec (:obj:`int` or :obj:`bool`, optional):
+            The max number of frames ticks per real seconds. This will override whatever is
+            in the configuration json. If True, will match ticks_per_sec. If False, will not be
+            turned on. If an integer, will set to that value. Defaults to true.
 
         copy_state (:obj:`bool`, optional):
             If the state should be copied or returned as a reference. Defaults to True.
@@ -71,8 +77,8 @@ class HolodeckEnvironment:
 
     def __init__(self, agent_definitions=None, binary_path=None, window_size=None,
                  start_world=True, uuid="", gl_version=4, verbose=False, pre_start_steps=2,
-                 show_viewport=True, ticks_per_sec=30, copy_state=True, scenario=None,
-                 env_min=None, env_max=None):
+                 show_viewport=True, ticks_per_sec=30, frames_per_sec=True, copy_state=True, 
+                 scenario=None):
 
         if agent_definitions is None:
             agent_definitions = []
@@ -89,16 +95,12 @@ class HolodeckEnvironment:
         else:
             self._window_size = window_size
 
-        # Check if env size has been overriden in scenario
+        # Use env size from scenario/world config
         if scenario is not None and "env_min" in scenario:
             self._env_min = scenario["env_min"]
             self._env_max = scenario["env_max"]
-        # otherwise use the one from the env config
-        elif env_min is not None:
-            self._env_min = env_min
-            self._env_max = env_max
+        # Default resolution
         else:
-            # Default resolution
             self._env_min = [-10,-10,-10]
             self._env_max = [10,10,10]
 
@@ -107,7 +109,7 @@ class HolodeckEnvironment:
             self._octree_max = scenario["octree_max"]
         else:
             # Default resolution
-            self._octree_min = .1
+            self._octree_min = .02
             self._octree_max = 5
 
         if scenario is not None and "lcm_provider" not in scenario:
@@ -120,6 +122,13 @@ class HolodeckEnvironment:
         self._scenario = scenario
         self._initial_agent_defs = agent_definitions
         self._spawned_agent_defs = []
+
+        if frames_per_sec == True:
+            self._frames_per_sec = self._ticks_per_sec
+        elif frames_per_sec == False:
+            self._frames_per_sec = 0
+        else:
+            self._frames_per_sec = frames_per_sec
 
         self._lcm = None
         self._num_ticks = 0
@@ -708,6 +717,7 @@ class HolodeckEnvironment:
                               '-LOG=HolodeckLog.txt', '-ForceRes', '-ResX=' + str(self._window_size[1]),
                               '-ResY=' + str(self._window_size[0]), '--HolodeckUUID=' + self._uuid,
                               '-TicksPerSec=' + str(self._ticks_per_sec),
+                              '-FramesPerSec=' + str(self._frames_per_sec),
                               '-EnvMinX=' + str(self._env_min[0]), '-EnvMinY=' + str(self._env_min[1]), '-EnvMinZ=' + str(self._env_min[2]),
                               '-EnvMaxX=' + str(self._env_max[0]), '-EnvMaxY=' + str(self._env_max[1]), '-EnvMaxZ=' + str(self._env_max[2]),
                               '-OctreeMin=' + str(self._octree_min), '-OctreeMax=' + str(self._octree_max)],
@@ -733,6 +743,7 @@ class HolodeckEnvironment:
             subprocess.Popen([binary_path, task_key, '-HolodeckOn', '-LOG=HolodeckLog.txt',
                               '-ForceRes', '-ResX=' + str(self._window_size[1]), '-ResY=' +
                               str(self._window_size[0]), '-TicksPerSec=' + str(self._ticks_per_sec),
+                              '-FramesPerSec=' + str(self._frames_per_sec),
                               '--HolodeckUUID=' + self._uuid,
                               '-EnvMinX=' + str(self._env_min[0]), '-EnvMinY=' + str(self._env_min[1]), '-EnvMinZ=' + str(self._env_min[2]),
                               '-EnvMaxX=' + str(self._env_max[0]), '-EnvMaxY=' + str(self._env_max[1]), '-EnvMaxZ=' + str(self._env_max[2]),
