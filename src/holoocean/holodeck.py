@@ -21,7 +21,7 @@ class GL_VERSION:
 
 
 def make(scenario_name="", scenario_cfg=None, gl_version=GL_VERSION.OPENGL4, window_res=None, verbose=False,
-         show_viewport=True, ticks_per_sec=30, copy_state=True):
+         show_viewport=True, ticks_per_sec=None, frames_per_sec=None, copy_state=True):
     """Creates a Holodeck environment
 
     Args:
@@ -46,7 +46,13 @@ def make(scenario_name="", scenario_cfg=None, gl_version=GL_VERSION.OPENGL4, win
             If the viewport window should be shown on-screen (Linux only). Defaults to True
 
         ticks_per_sec (:obj:`int`, optional):
-            The number of frame ticks per unreal seconds. Defaults to 30.
+            The number of frame ticks per unreal seconds. This will override whatever is 
+            in the configuration json. Defaults to 30.
+
+        frames_per_sec (:obj:`int` or :obj:`bool`, optional):
+            The max number of frames ticks per real seconds. This will override whatever is
+            in the configuration json. If True, will match ticks_per_sec. If False, will not be
+            turned on. If an integer, will set to that value. Defaults to True.
 
         copy_state (:obj:`bool`, optional):
             If the state should be copied or passed as a reference when returned. Defaults to True
@@ -74,6 +80,13 @@ def make(scenario_name="", scenario_cfg=None, gl_version=GL_VERSION.OPENGL4, win
     world = [world for world in package_config["worlds"] if world["name"] == scenario["world"]][0]
     param_dict["pre_start_steps"] = world["pre_start_steps"]
 
+    if "env_min" not in scenario and "env_min" in world:
+        scenario["env_min"] = world["env_min"]
+        scenario["env_max"] = world["env_max"]
+
+    param_dict["ticks_per_sec"] = ticks_per_sec
+    param_dict["frames_per_sec"] = frames_per_sec
+
     param_dict["scenario"] = scenario
     param_dict["binary_path"] = binary_path
 
@@ -83,7 +96,6 @@ def make(scenario_name="", scenario_cfg=None, gl_version=GL_VERSION.OPENGL4, win
     param_dict["verbose"] = verbose
     param_dict["show_viewport"] = show_viewport
     param_dict["copy_state"] = copy_state
-    param_dict["ticks_per_sec"] = ticks_per_sec
 
     if window_res is not None:
         param_dict["window_size"] = window_res

@@ -12,6 +12,7 @@ def test_sensor(sensor):
                 "world": "Rooms",
                 "main_agent": "turtle0",
                 "lcm_provider": "memq://",
+                "frames_per_sec": False,
                 "agents": [
                     {
                         "agent_name": "turtle0",
@@ -55,6 +56,7 @@ def test_acoustic_beacon():
                 "world": "Rooms",
                 "main_agent": "turtle0",
                 "lcm_provider": "memq://",
+                "frames_per_sec": False,
                 "agents": [
                     {
                         "agent_name": "turtle0",
@@ -114,6 +116,7 @@ def test_acoustic_types(msg):
                 "world": "Rooms",
                 "main_agent": "turtle0",
                 "lcm_provider": "memq://",
+                "frames_per_sec": False,
                 "agents": [
                     {
                         "agent_name": "turtle0",

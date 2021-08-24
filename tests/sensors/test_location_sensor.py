@@ -8,6 +8,7 @@ sphere_config = {
     "name": "test_location_sensor",
     "world": "ExampleLevel",
     "main_agent": "sphere0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "sphere0",
@@ -51,6 +52,7 @@ uav_config = {
     "name": "test_location_sensor",
     "world": "ExampleLevel",
     "main_agent": "uav0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "uav0",

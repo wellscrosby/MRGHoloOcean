@@ -13,7 +13,7 @@ Description
 -----------
 Our custom in-house hovering AUV.
 
-See the :class:`~holoocean.agents.HoveringAUV` and :class:`~holoocean.agents.PerfectHoveringAUV` classes. They near identical, with the only difference being the PerfectHoveringAUV has a centered center of mass and bouyancy for easier thruster control and upright bouyancy.
+See the :class:`~holodeck.agents.HoveringAUV`.
 
 Control Schemes
 ---------------
