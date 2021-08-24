@@ -1,3 +1,5 @@
+// MIT License (c) 2021 BYU FRoStLab see LICENSE file
+
 #include "Holodeck.h"
 #include "DVLSensor.h"
 
@@ -36,7 +38,7 @@ void UDVLSensor::ParseSensorParms(FString ParmsJson) {
 
 	}
 	else {
-		UE_LOG(LogHolodeck, Fatal, TEXT("ULocationSensor::ParseSensorParms:: Unable to parse json."));
+		UE_LOG(LogHolodeck, Fatal, TEXT("UDVLSensor::ParseSensorParms:: Unable to parse json."));
 	}
 }
 

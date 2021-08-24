@@ -46,9 +46,10 @@ cd ..
 
 echo "👉 Moving $commit.zip into final folder..."
 mkdir final
+mkdir tag
 mv "dist/$commit.zip" final
 cp final/$commit.zip final/latest.zip
-
+cp final/$commit.zip tag/Linux.zip
 
 echo "👉 Done packaging package $commit"
 

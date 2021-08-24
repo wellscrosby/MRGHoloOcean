@@ -1,4 +1,4 @@
-// MIT License (c) 2019 BYU PCCL see LICENSE file
+// MIT License (c) 2021 BYU FRoStLab see LICENSE file
 
 #pragma once
 #include <random>
