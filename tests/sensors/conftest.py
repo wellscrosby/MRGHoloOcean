@@ -33,6 +33,7 @@ def env_1024(request):
         "name": "test_viewport_capture",
         "world": "TestWorld",
         "main_agent": "sphere0",
+        "frames_per_sec": False,
         "agents": [
             {
                 "agent_name": "sphere0",
@@ -101,6 +102,7 @@ def rotation_env(request):
         "name": "test_rotation_sensor",
         "world": "TestWorld",
         "main_agent": "sphere0",
+        "frames_per_sec": False,
         "agents": [
             {
                 "agent_name": "sphere0",
@@ -133,6 +135,7 @@ abuse_config = {
     "name": "test_abuse_sensor",
     "world": "TestWorld",
     "main_agent": "uav0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "uav0",

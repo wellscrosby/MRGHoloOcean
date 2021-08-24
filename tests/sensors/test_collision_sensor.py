@@ -5,6 +5,7 @@ uav_config = {
     "name": "test_collision_sensor",
     "world": "TestWorld",
     "main_agent": "uav0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "uav0",

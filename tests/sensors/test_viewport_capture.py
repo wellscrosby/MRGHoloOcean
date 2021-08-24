@@ -12,6 +12,7 @@ base_cfg = {
     "name": "test_viewport_capture",
     "world": "TestWorld",
     "main_agent": "sphere0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "sphere0",

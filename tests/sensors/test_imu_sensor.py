@@ -10,6 +10,7 @@ def config():
         "name": "test_imu_sensor",
         "world": "Rooms",
         "main_agent": "turtle0",
+        "frames_per_sec": False,
         "agents": [
             {
                 "agent_name": "turtle0",
@@ -89,7 +90,7 @@ def test_imu_sensor_angular_velocity(config):
 
     with holodeck.environments.HolodeckEnvironment(scenario=config,
                                                    binary_path=binary_path,
-                                                   show_viewport=True,
+                                                   show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
         #let it land and then start moving forward
         for _ in range(100):

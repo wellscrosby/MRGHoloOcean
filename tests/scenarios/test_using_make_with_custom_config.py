@@ -10,6 +10,7 @@ def test_using_make_with_custom_config():
 
     conf = {
         "name": "test_randomization",
+        "frames_per_sec": False,
         "agents": [
 
         ]

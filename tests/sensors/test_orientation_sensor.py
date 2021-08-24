@@ -8,6 +8,7 @@ base_cfg = {
     "name": "test_orientation_sensor",
     "world": "TestWorld",
     "main_agent": "sphere0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "sphere0",

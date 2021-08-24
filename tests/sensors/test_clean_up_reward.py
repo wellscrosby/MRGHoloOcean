@@ -6,6 +6,7 @@ cfg = {
         "name": "test_clean_up_reward",
         "world": "CleanUp",
         "main_agent": "sphere0",
+        "frames_per_sec": False,
         "agents": [
             {
                 "agent_name": "sphere0",

@@ -77,7 +77,7 @@ class HolodeckEnvironment:
 
     def __init__(self, agent_definitions=None, binary_path=None, window_size=None,
                  start_world=True, uuid="", gl_version=4, verbose=False, pre_start_steps=2,
-                 show_viewport=True, ticks_per_sec=30, frames_per_sec=True, copy_state=True, 
+                 show_viewport=True, ticks_per_sec=None, frames_per_sec=None, copy_state=True, 
                  scenario=None):
 
         if agent_definitions is None:
@@ -118,11 +118,31 @@ class HolodeckEnvironment:
         self._uuid = uuid
         self._pre_start_steps = pre_start_steps
         self._copy_state = copy_state
-        self._ticks_per_sec = ticks_per_sec
         self._scenario = scenario
         self._initial_agent_defs = agent_definitions
         self._spawned_agent_defs = []
 
+        # Choose one that was passed in function
+        if ticks_per_sec is not None:
+            self._ticks_per_sec = ticks_per_sec
+        # otherwise use one in scenario
+        elif "ticks_per_sec" in scenario:
+            self._ticks_per_sec = scenario["ticks_per_sec"]
+        # default to 30
+        else:
+            self._ticks_per_sec = 30
+
+        # Choose one that was passed in function
+        if frames_per_sec is not None:
+            frames_per_sec = frames_per_sec
+        # otherwise use one in scenario
+        elif "frames_per_sec" in scenario:
+            frames_per_sec = scenario["frames_per_sec"]
+        # default to true
+        else:
+            frames_per_sec = True
+
+        # parse frames_per_sec
         if frames_per_sec == True:
             self._frames_per_sec = self._ticks_per_sec
         elif frames_per_sec == False:

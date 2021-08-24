@@ -10,6 +10,7 @@ base_conf = {
     "world": "TestWorld",
     "package_name": "DefaultWorlds",
     "main_agent": "sphere0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "sphere0",

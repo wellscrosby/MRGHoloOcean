@@ -5,6 +5,7 @@ turtle_config = {
     "name": "test_velocity_sensor",
     "world": "Rooms",
     "main_agent": "turtle0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "turtle0",

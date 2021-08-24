@@ -9,6 +9,7 @@ def config():
         "name": "PerfectAUV",
         "world": "SimpleUnderwater",
         "main_agent": "auv0",
+        "frames_per_sec": False,
         "agents":[
             {
                 "agent_name": "auv0",
