@@ -12,7 +12,7 @@ def config():
         "agents":[
             {
                 "agent_name": "auv0",
-                "agent_type": "PerfectHoveringAUV",
+                "agent_type": "HoveringAUV",
                 "sensors": [
                     {
                         "sensor_type": "AcousticBeaconSensor",
