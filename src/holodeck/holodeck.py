@@ -95,7 +95,7 @@ def make(scenario_name="", scenario_cfg=None, gl_version=GL_VERSION.OPENGL4, win
         ticks_per_sec = 30
 
     # Choose one that was passed in function
-    if ticks_per_sec is not None:
+    if frames_per_sec is not None:
         param_dict["frames_per_sec"] = frames_per_sec
     # otherwise use one in scenario
     elif "frames_per_sec" in scenario:
