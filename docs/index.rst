@@ -1,4 +1,4 @@
-Welcome to Holodeck-Ocean's documentation!
+Welcome to HoloOcean's documentation!
 ==============================================
 .. image:: images/inspect_plane.jpg
 
