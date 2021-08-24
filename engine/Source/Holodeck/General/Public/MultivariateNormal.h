@@ -158,12 +158,13 @@ public:
     }
     float sampleRayleigh(){
         // Samples from a rayleigh distribution
-        verifyf(N == 2, TEXT("Can't use MVN size %d with Rayleigh Noise"), N);
+        verifyf(N == 1, TEXT("Can't use MVN size %d with Rayleigh Noise"), N);
 
         // sample
-        std::array<float,N> sample = sampleArray();
+        float x = sampleFloat();
+        float y = sampleFloat();
 
-        return sqrt(sample[0]*sample[0] + sample[1]*sample[1]);
+        return sqrt(x*x + y*y);
     }
 
     /*

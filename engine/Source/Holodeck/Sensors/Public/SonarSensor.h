@@ -120,7 +120,7 @@ private:
 	int32* count;
 	
 	// for adding noise
-	MultivariateNormal<2> addNoise;
+	MultivariateNormal<1> addNoise;
 	MultivariateNormal<1> multNoise;
 
 	// use for skipping frames
