@@ -40,6 +40,17 @@ void AHolodeckGameMode::StartPlay() {
 	// Make sure Octree is properly initialized
 	Octree::initOctree(GetWorld());
 
+	// Cap our tickrate
+	int FramesPerSec;
+	if (FParse::Value(FCommandLine::Get(), TEXT("FramesPerSec="), FramesPerSec)) {
+		FString command = "t.MaxFPS " + FString::FromInt(FramesPerSec);
+		bool succeeded = GEngine->Exec(GetWorld(), *command);
+
+		if (!succeeded) {
+			UE_LOG(LogHolodeck, Warning, TEXT("Unable to cap frametrate"));
+		}
+	}
+
 	if (bHolodeckIsOn) {
 		this->Instance = (UHolodeckGameInstance*)(GetGameInstance());
 		if (this->Instance) {
