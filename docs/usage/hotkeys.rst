@@ -2,8 +2,8 @@ Viewport Hotkeys
 ================
 
 When the viewport window is open, and the environment is being ticked (with 
-calls to :meth:`~holoocean.environment.HolodeckEnvironment.tick` or
-:meth:`~holoocean.environment.HolodeckEnvironment.step`, there are a few
+calls to :meth:`~holoocean.environment.HoloOceanEnvironment.tick` or
+:meth:`~holoocean.environment.HoloOceanEnvironment.step`, there are a few
 hotkeys you can use.
 
 .. _`hotkeys`:

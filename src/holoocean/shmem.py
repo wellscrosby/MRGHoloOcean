@@ -6,7 +6,7 @@ from functools import reduce
 
 import numpy as np
 
-from holoocean.exceptions import HolodeckException
+from holoocean.exceptions import HoloOceanException
 
 
 class Shmem:
@@ -49,7 +49,7 @@ class Shmem:
             #        below and I can't find a way to release it in __linux_unlink__()
             self._mem_pointer = mmap.mmap(f, size_bytes)
         else:
-            raise HolodeckException("Currently unsupported os: " + os.name)
+            raise HoloOceanException("Currently unsupported os: " + os.name)
 
         self.np_array = np.ndarray(shape, dtype=dtype)
         self.np_array.data = (Shmem._numpy_to_ctype[dtype] * size).from_buffer(self._mem_pointer)
@@ -61,7 +61,7 @@ class Shmem:
         elif os.name == "nt":
             self.__windows_unlink__()
         else:
-            raise HolodeckException("Currently unsupported os: " + os.name)
+            raise HoloOceanException("Currently unsupported os: " + os.name)
 
     def __linux_unlink__(self):
         os.close(self._mem_file)

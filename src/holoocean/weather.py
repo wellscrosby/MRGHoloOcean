@@ -1,5 +1,5 @@
 """Weather/time controller for environments"""
-from holoocean.exceptions import HolodeckException
+from holoocean.exceptions import HoloOceanException
 
 
 class WeatherController:
@@ -25,7 +25,7 @@ class WeatherController:
                 sent if the given density is invalid.
         """
         if density < 0 or density > 1:
-            raise HolodeckException("Fog density should be between 0 and 1")
+            raise HoloOceanException("Fog density should be between 0 and 1")
 
         self._send_command("SetFogDensity", num_params=[density])
 
@@ -59,7 +59,7 @@ class WeatherController:
             day_length (:obj:`int`): The number of minutes each day will be.
         """
         if day_length <= 0:
-            raise HolodeckException("The given day length should be between above 0!")
+            raise HoloOceanException("The given day length should be between above 0!")
 
         self._send_command("SetDayCycle", num_params=[1, day_length])
 
@@ -104,7 +104,7 @@ class WeatherController:
         """
         weather_type = weather_type.lower()
         if not weather_type in ["rain", "cloudy", "sunny"]:
-            raise HolodeckException("Invalid weather type " + weather_type)
+            raise HoloOceanException("Invalid weather type " + weather_type)
 
         self.cur_weather = weather_type
         self._send_command("SetWeather", string_params=[weather_type])

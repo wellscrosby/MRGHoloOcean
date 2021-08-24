@@ -13,7 +13,7 @@ from queue import Queue
 from threading import Thread
 
 from holoocean import util
-from holoocean.exceptions import HolodeckException, NotFoundException
+from holoocean.exceptions import HoloOceanException, NotFoundException
 
 BACKEND_URL = "https://robots.et.byu.edu/holo/"
 
@@ -108,7 +108,7 @@ def world_info(world_name, world_config=None, base_indent=0):
                     world_config = world
 
     if world_config is None:
-        raise HolodeckException("Couldn't find world " + world_name)
+        raise HoloOceanException("Couldn't find world " + world_name)
 
     print(base_indent*' ', world_config["name"])
     base_indent += 4
@@ -173,7 +173,7 @@ def install(package_name, url=None, branch=None, commit=None):
     """
 
     if package_name is None and url is None:
-        raise HolodeckException("You must specify the URL or a valid package name")
+        raise HoloOceanException("You must specify the URL or a valid package name")
 
     _check_for_old_versions()
     holodeck_path = util.get_holodeck_path()
@@ -386,7 +386,7 @@ def get_package_config_for_scenario(scenario):
             if world["name"] == world_name:
                 return config
 
-    raise HolodeckException("Could not find a package that contains world {}".format(world_name))
+    raise HoloOceanException("Could not find a package that contains world {}".format(world_name))
 
 
 def _iter_packages():

@@ -29,7 +29,7 @@ def test_collision_sensor_uav_falling():
 
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holoocean.environments.HolodeckEnvironment(scenario=uav_config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=uav_config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

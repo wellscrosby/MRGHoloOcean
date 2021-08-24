@@ -35,7 +35,7 @@ def test_main_agent_after_resetting(env_scenario):
     """Validate that sensor data for the main agent is the same after calling .reset()
 
     Args:
-        env_scenario ((HolodeckEnvironment, str)): environment and scenario we are testing
+        env_scenario ((HoloOceanEnvironment, str)): environment and scenario we are testing
 
     """
 

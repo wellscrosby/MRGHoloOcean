@@ -176,7 +176,7 @@ def editor_example():
         ]
     }
 
-    env = HolodeckEnvironment(scenario=config, start_world=False)
+    env = HoloOceanEnvironment(scenario=config, start_world=False)
     command = [0, 0, 10, 50]
 
     for i in range(10):
@@ -216,7 +216,7 @@ def editor_multi_agent_example():
         ]
     }
 
-    env = HolodeckEnvironment(scenario=config, start_world=False)
+    env = HoloOceanEnvironment(scenario=config, start_world=False)
 
     cmd0 = np.array([0, 0, -2, 10])
     cmd1 = np.array([0, 0, 5, 10])

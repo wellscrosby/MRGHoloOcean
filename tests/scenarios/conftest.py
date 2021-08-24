@@ -3,7 +3,7 @@ from typing import Callable, List
 import holoocean
 import pytest
 from holoocean import packagemanager as pm
-from holoocean.environments import HolodeckEnvironment
+from holoocean.environments import HoloOceanEnvironment
 
 
 def pytest_generate_tests(metafunc):
@@ -21,7 +21,7 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("env_scenario", scenarios, indirect=True)
 
 
-# Envs contains a mapping of scenario key -> HolodeckEnvironment so that
+# Envs contains a mapping of scenario key -> HoloOceanEnvironment so that
 # between different tests the same environment doesn't have to be created
 # over and over
 envs = {}

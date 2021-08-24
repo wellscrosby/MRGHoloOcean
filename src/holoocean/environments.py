@@ -17,8 +17,8 @@ from holoocean.command import CommandCenter, SpawnAgentCommand, RGBCameraRateCom
     TeleportCameraCommand, RenderViewportCommand, RenderQualityCommand, \
     CustomCommand, DebugDrawCommand, SendAcousticMessageCommand
 
-from holoocean.exceptions import HolodeckException
-from holoocean.holodeckclient import HolodeckClient
+from holoocean.exceptions import HoloOceanException
+from holoocean.holooceanclient import HoloOceanClient
 from holoocean.agents import AgentDefinition, SensorDefinition, AgentFactory
 from holoocean.weather import WeatherController
 from holoocean.lcm import SensorData
@@ -26,7 +26,7 @@ from holoocean.lcm import SensorData
 from holoocean.sensors import AcousticBeaconSensor
 from holoocean.sensors import OpticalModemSensor
 
-class HolodeckEnvironment:
+class HoloOceanEnvironment:
     """Proxy for communicating with a Holodeck world
 
     Instantiate this object using :meth:`holoocean.holoocean.make`.
@@ -163,10 +163,10 @@ class HolodeckEnvironment:
             elif os.name == "nt":
                 self.__windows_start_process__(binary_path, world_key, verbose=verbose)
             else:
-                raise HolodeckException("Unknown platform: " + os.name)
+                raise HoloOceanException("Unknown platform: " + os.name)
 
         # Initialize Client
-        self._client = HolodeckClient(self._uuid, start_world)
+        self._client = HoloOceanClient(self._uuid, start_world)
         self._command_center = CommandCenter(self._client)
         self._client.command_center = self._command_center
         self._reset_ptr = self._client.malloc("RESET", [1], np.bool_)
@@ -246,7 +246,7 @@ class HolodeckEnvironment:
             sensors = []
             for sensor in agent['sensors']:
                 if 'sensor_type' not in sensor:
-                    raise HolodeckException(
+                    raise HoloOceanException(
                         "Sensor for agent {} is missing required key "
                         "'sensor_type'".format(agent['agent_name']))
 
@@ -414,13 +414,13 @@ class HolodeckEnvironment:
         Returns:
             (:obj:`dict`, :obj:`float`, :obj:`bool`, info): A 4tuple:
                 - State: Dictionary from sensor enum
-                    (see :class:`~holoocean.sensors.HolodeckSensor`) to :obj:`np.ndarray`.
+                    (see :class:`~holoocean.sensors.HoloOceanSensor`) to :obj:`np.ndarray`.
                 - Reward (:obj:`float`): Reward returned by the environment.
                 - Terminal: The bool terminal signal returned by the environment.
                 - Info: Any additional info, depending on the world. Defaults to None.
         """
         if not self._initial_reset:
-            raise HolodeckException("You must call .reset() before .step()")
+            raise HoloOceanException("You must call .reset() before .step()")
 
         for _ in range(ticks):
             if self._agent is not None:
@@ -478,7 +478,7 @@ class HolodeckEnvironment:
                 Will return the state from the last tick executed.
         """
         if not self._initial_reset:
-            raise HolodeckException("You must call .reset() before .tick()")
+            raise HoloOceanException("You must call .reset() before .tick()")
 
         for _ in range(num_ticks):
             self._command_center.handle_buffer()
@@ -526,7 +526,7 @@ class HolodeckEnvironment:
             spawn.
         """
         if agent_def.name in self.agents:
-            raise HolodeckException("Error. Duplicate agent name. ")
+            raise HoloOceanException("Error. Duplicate agent name. ")
 
         self.agents[agent_def.name] = AgentFactory.build_agent(self._client, agent_def)
         self._state_dict[agent_def.name] = self.agents[agent_def.name].agent_state_dict
@@ -592,10 +592,10 @@ class HolodeckEnvironment:
                                "wood", "grass", "steel", "black"]
 
         if prop_type not in available_props:
-            raise HolodeckException("{} not an available prop. Available prop types: {}".format(
+            raise HoloOceanException("{} not an available prop. Available prop types: {}".format(
                 prop_type, available_props))
         if material not in available_materials and material != "":
-            raise HolodeckException("{} not an available material. Available material types: {}".format(
+            raise HoloOceanException("{} not an available material. Available material types: {}".format(
                 material, available_materials))
 
         self.send_world_command("SpawnProp", num_params=[location, rotation, scale, sim_physics],
@@ -751,7 +751,7 @@ class HolodeckEnvironment:
         try:
             loading_semaphore.acquire(10)
         except posix_ipc.BusyError:
-            raise HolodeckException("Timed out waiting for binary to load. Ensure that holodeck is "
+            raise HoloOceanException("Timed out waiting for binary to load. Ensure that holodeck is "
                                     "not being run with root priveleges.")
         loading_semaphore.unlink()
 
@@ -774,7 +774,7 @@ class HolodeckEnvironment:
         atexit.register(self.__on_exit__)
         response = win32event.WaitForSingleObject(loading_semaphore, 100000)  # 100 second timeout
         if response == win32event.WAIT_TIMEOUT:
-            raise HolodeckException("Timed out waiting for binary to load")
+            raise HoloOceanException("Timed out waiting for binary to load")
 
     def __on_exit__(self):
         if hasattr(self, '_exited'):

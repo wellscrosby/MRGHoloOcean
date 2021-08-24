@@ -21,7 +21,7 @@ def test_all_agents_and_sensors_present(env_scenario):
     """Test that every agent has every sensor that is present in the config file
 
     Args:
-        env_scenario ((HolodeckEnvironment, str)): environment and scenario we are testing
+        env_scenario ((HoloOceanEnvironment, str)): environment and scenario we are testing
 
     """
     env, scenario = env_scenario

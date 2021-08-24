@@ -36,7 +36,7 @@ def test_sensor(sensor):
     def my_handler(channel, data):
         d['i'] += 1
 
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -92,7 +92,7 @@ def test_acoustic_beacon():
     def my_handler(channel, data):
         d['i'] += 1
 
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -193,7 +193,7 @@ def test_acoustic_types(msg):
             assert ~np.isnan(temp.range)    
             assert ~np.isnan(temp.z)        
 
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

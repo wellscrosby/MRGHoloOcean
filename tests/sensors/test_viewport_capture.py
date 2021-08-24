@@ -50,7 +50,7 @@ def test_viewport_capture(resolution, request):
     }
 
     binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
-    with holoocean.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -72,7 +72,7 @@ def test_viewport_capture_after_teleport(env_1024, request):
     """Validates that the ViewportCapture is updated after teleporting the camera
     to a different location. 
 
-    Incidentally tests HolodeckEnvironment.teleport_camera as well
+    Incidentally tests HoloOceanEnvironment.teleport_camera as well
     """
 
     # Other tests muck with this. Set it to true just in case

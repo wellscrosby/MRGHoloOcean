@@ -18,19 +18,19 @@ Welcome to HoloOcean's documentation!
    :maxdepth: 3
    :caption: API Documentation
 
-   holodeck/index
-   holodeck/agents
-   holodeck/environments
-   holodeck/spaces
-   holodeck/commands
-   holodeck/holodeckclient
-   holodeck/packagemanager
-   holodeck/sensors
-   holodeck/lcm
-   holodeck/shmem
-   holodeck/util
-   holodeck/exceptions
-   holodeck/weather
+   holoocean/index
+   holoocean/agents
+   holoocean/environments
+   holoocean/spaces
+   holoocean/commands
+   holoocean/holooceanclient
+   holoocean/packagemanager
+   holoocean/sensors
+   holoocean/lcm
+   holoocean/shmem
+   holoocean/util
+   holoocean/exceptions
+   holoocean/weather
 
 
 Indices and tables

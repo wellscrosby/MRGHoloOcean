@@ -3,7 +3,7 @@ import copy
 import numpy as np
 import math
 from holoocean import packagemanager as pm
-from holoocean.environments import HolodeckEnvironment
+from holoocean.environments import HoloOceanEnvironment
 
 base_conf = {
     "name": "test_randomization",
@@ -57,7 +57,7 @@ def test_location_with_randomization():
     bin_path = pm.get_binary_path_for_package("Ocean")
     conf = copy.deepcopy(base_conf)
 
-    with HolodeckEnvironment(scenario=conf, binary_path=bin_path, show_viewport=False, uuid=str(uuid.uuid4())) as env:
+    with HoloOceanEnvironment(scenario=conf, binary_path=bin_path, show_viewport=False, uuid=str(uuid.uuid4())) as env:
         prev_location = conf["agents"][0]["location"]
         default_start_location = conf["agents"][0]["location"]
         variance = conf["agents"][0]["location_randomization"]
@@ -84,7 +84,7 @@ def test_rotation_with_randomization():
     bin_path = pm.get_binary_path_for_package("Ocean")
     conf = copy.deepcopy(base_conf)
 
-    with HolodeckEnvironment(scenario=conf, binary_path=bin_path, show_viewport=False, uuid=str(uuid.uuid4())) as env:
+    with HoloOceanEnvironment(scenario=conf, binary_path=bin_path, show_viewport=False, uuid=str(uuid.uuid4())) as env:
         prev_start_rotation = conf["agents"][0]["rotation"]
 
         num_resets = 5

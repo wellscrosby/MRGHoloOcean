@@ -5,7 +5,7 @@ def test_rgb_camera_not_null(env_scenario):
     """Test that the RGBCamera is sending sensor data by ensuring that it is not all zeros
 
     Args:
-        env_scenario ((HolodeckEnvironment, str)): environment and scenario we are testing
+        env_scenario ((HoloOceanEnvironment, str)): environment and scenario we are testing
 
     """
     env, scenario = env_scenario

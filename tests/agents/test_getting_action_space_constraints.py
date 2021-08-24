@@ -1,6 +1,6 @@
 import uuid
 from holoocean import packagemanager as pm
-from holoocean.environments import HolodeckEnvironment
+from holoocean.environments import HoloOceanEnvironment
 import math
 
 test_data = [
@@ -50,7 +50,7 @@ def check_constraints(x, y):
 def test_min_max_action_space_constraints():
     binary_path = pm.get_binary_path_for_package("Ocean")
 
-    with HolodeckEnvironment(scenario=config,
+    with HoloOceanEnvironment(scenario=config,
                              binary_path=binary_path,
                              show_viewport=False,
                              uuid=str(uuid.uuid4())) as env:

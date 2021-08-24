@@ -48,7 +48,7 @@ def test_sigma_scalar(config, num):
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     config['agents'][0]['sensors'][0]['configuration']['Sigma'] = sigma
 
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -70,7 +70,7 @@ def test_sigma_vector(config, num):
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     config['agents'][0]['sensors'][0]['configuration']['Sigma'] = list(sigma)
 
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -92,7 +92,7 @@ def test_cov_num(config, num):
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     config['agents'][0]['sensors'][0]['configuration']['Cov'] = cov_num
 
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -114,7 +114,7 @@ def test_cov_vector(config, num):
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     config['agents'][0]['sensors'][0]['configuration']['Cov'] = list(cov_array)
 
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -136,7 +136,7 @@ def test_cov_matrix(config, num):
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     config['agents'][0]['sensors'][0]['configuration']['Cov'] = cov.tolist()
 
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

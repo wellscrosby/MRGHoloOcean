@@ -10,8 +10,8 @@ Headless Mode vs Disabling Viewport Rendering
 These are two different features.
 
 **Disabling Viewport Rendering** is calling the 
-(:meth:`~holoocean.environments.HolodeckEnvironment.should_render_viewport`) 
-method on a :class:`~holoocean.environments.HolodeckEnvironment`. This can be
+(:meth:`~holoocean.environments.HoloOceanEnvironment.should_render_viewport`) 
+method on a :class:`~holoocean.environments.HoloOceanEnvironment`. This can be
 done at runtime. It will appear as if the image being rendered in the viewport
 has frozen, but :class:`~holoocean.sensors.RGBCamera` s and other sensors will 
 still update correctly.
@@ -28,12 +28,12 @@ In :func:`holoocean.make`, set ``show_viewport`` to ``False``.
 .. note::
    This will also
    disable viewport rendering 
-   (:meth:`~holoocean.environments.HolodeckEnvironment.should_render_viewport`)
+   (:meth:`~holoocean.environments.HoloOceanEnvironment.should_render_viewport`)
 
    If you still want to render the viewport (ie for the 
    :class:`~holoocean.sensors.ViewportCapture`) when running headless,
    simply set 
-   (:meth:`~holoocean.environments.HolodeckEnvironment.should_render_viewport`)
+   (:meth:`~holoocean.environments.HoloOceanEnvironment.should_render_viewport`)
    to ``True``
 
 Automatic Headless Mode

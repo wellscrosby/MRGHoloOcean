@@ -42,7 +42,7 @@ def test_transmittable():
     global uav_config_v1
     cfg = copy.deepcopy(uav_config_v1)
 
-    with holoocean.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -101,7 +101,7 @@ def test_within_max_distance():
     global uav_config_v2
     cfg = copy.deepcopy(uav_config_v2)
 
-    with holoocean.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -152,7 +152,7 @@ def test_not_oriented():
     global uav_config_v3
     cfg = copy.deepcopy(uav_config_v3)
 
-    with holoocean.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -202,7 +202,7 @@ def test_obstructed_view():
     global uav_config_v4
     cfg = copy.deepcopy(uav_config_v4)
 
-    with holoocean.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -259,7 +259,7 @@ def test_distance_noise():
     global uav_config_v5
     cfg = copy.deepcopy(uav_config_v5)
 
-    with holoocean.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -324,7 +324,7 @@ def test_angle_noise():
     global uav_config_v5
     cfg = copy.deepcopy(uav_config_v5)
 
-    with holoocean.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

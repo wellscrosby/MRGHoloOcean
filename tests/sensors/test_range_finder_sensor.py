@@ -34,7 +34,7 @@ def test_range_finder_sensor_max():
     """
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holoocean.environments.HolodeckEnvironment(scenario=sphere_config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=sphere_config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -82,7 +82,7 @@ def test_range_finder_sensor_falling():
 
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holoocean.environments.HolodeckEnvironment(scenario=uav_config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=uav_config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

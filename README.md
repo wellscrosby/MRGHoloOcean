@@ -72,10 +72,10 @@ print(state["LocationSensor"])
 ## Multi Agent-Environments
 HoloOcean supports multi-agent environments.
 
-Calls to [`step`](https://holoocean.readthedocs.io/en/latest/holodeck/environments.html#holoocean.environments.HolodeckEnvironment.step) only provide an action for the main agent, and then tick the simulation. 
+Calls to [`step`](https://holoocean.readthedocs.io/en/latest/holodeck/environments.html#holoocean.environments.HoloOceanEnvironment.step) only provide an action for the main agent, and then tick the simulation. 
 
-[`act`](https://holoocean.readthedocs.io/en/latest/holodeck/environments.html#holoocean.environments.HolodeckEnvironment.act) provides a persistent action for a specific agent, and does not tick the simulation. After an 
-action has been provided, [`tick`](https://holoocean.readthedocs.io/en/latest/holodeck/environments.html#holoocean.environments.HolodeckEnvironment.tick) will advance the simulation forward. The action is persisted until another call to `act` provides a different action.
+[`act`](https://holoocean.readthedocs.io/en/latest/holodeck/environments.html#holoocean.environments.HoloOceanEnvironment.act) provides a persistent action for a specific agent, and does not tick the simulation. After an 
+action has been provided, [`tick`](https://holoocean.readthedocs.io/en/latest/holodeck/environments.html#holoocean.environments.HoloOceanEnvironment.tick) will advance the simulation forward. The action is persisted until another call to `act` provides a different action.
 
 ```python
 import holoocean

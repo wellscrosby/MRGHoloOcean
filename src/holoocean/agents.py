@@ -53,24 +53,24 @@ class ControlSchemes:
     AUV_DIRECT_TORQUES = 0
 
 
-class HolodeckAgent:
+class HoloOceanAgent:
     """A learning agent in Holodeck
 
     Agents can act, receive rewards, and receive observations from their sensors.
     Examples include the Android, UAV, and SphereRobot.
 
     Args:
-        client (:class:`~holoocean.holodeckclient.HolodeckClient`): The HolodeckClient that this
+        client (:class:`~holoocean.holooceanclient.HoloOceanClient`): The HoloOceanClient that this
             agent belongs with.
         name (:obj:`str`, optional): The name of the agent. Must be unique from other agents in
             the same environment.
-        sensors (:obj:`dict` of (:obj:`str`, :class:`~holoocean.sensors.HolodeckSensor`)): A list
-            of HolodeckSensors to read from this agent.
+        sensors (:obj:`dict` of (:obj:`str`, :class:`~holoocean.sensors.HoloOceanSensor`)): A list
+            of HoloOceanSensors to read from this agent.
 
     Attributes:
         name (:obj:`str`): The name of the agent.
-        sensors (dict of (string, :class:`~holoocean.sensors.HolodeckSensor`)): List of
-            HolodeckSensors on this agent.
+        sensors (dict of (string, :class:`~holoocean.sensors.HoloOceanSensor`)): List of
+            HoloOceanSensors on this agent.
         agent_state_dict (dict): A dictionary that maps sensor names to sensor observation data.
     """
 
@@ -165,8 +165,8 @@ class HolodeckAgent:
         agent in the world.
 
         Args:
-            sensor_defs (:class:`~holoocean.sensors.HolodeckSensor` or
-                         list of :class:`~holoocean.sensors.HolodeckSensor`):
+            sensor_defs (:class:`~holoocean.sensors.HoloOceanSensor` or
+                         list of :class:`~holoocean.sensors.HoloOceanSensor`):
                 Sensors to add to the agent.
         """
         if not isinstance(sensor_defs, list):
@@ -187,8 +187,8 @@ class HolodeckAgent:
         world.
 
         Args:
-            sensor_defs (:class:`~holoocean.sensors.HolodeckSensor` or
-                         list of :class:`~holoocean.sensors.HolodeckSensor`):
+            sensor_defs (:class:`~holoocean.sensors.HoloOceanSensor` or
+                         list of :class:`~holoocean.sensors.HoloOceanSensor`):
                 Sensors to remove from the agent.
         """
         if not isinstance(sensor_defs, list):
@@ -256,7 +256,7 @@ class HolodeckAgent:
         return self.name
 
 
-class UavAgent(HolodeckAgent):
+class UavAgent(HoloOceanAgent):
     # constants in Uav.h in holodeck-engine
     __MAX_ROLL = 6.5080
     __MIN_ROLL = -__MAX_ROLL
@@ -281,7 +281,7 @@ class UavAgent(HolodeckAgent):
 
     See :ref:`uav-agent` for more details.
 
-    Inherits from :class:`HolodeckAgent`.
+    Inherits from :class:`HoloOceanAgent`.
     """
 
     agent_type = "UAV"
@@ -303,7 +303,7 @@ class UavAgent(HolodeckAgent):
         return None
 
 
-class SphereAgent(HolodeckAgent):
+class SphereAgent(HoloOceanAgent):
     # constants in SphereRobot.h in holodeck-engine
     __DISCRETE_MIN = 0
     __DISCRETE_MAX = 4
@@ -336,7 +336,7 @@ class SphereAgent(HolodeckAgent):
     | Continuous (``1``)| ``[forward_speed, rot_speed]`` |
     +-------------------+--------------------------------+
 
-    Inherits from :class:`HolodeckAgent`.
+    Inherits from :class:`HoloOceanAgent`.
     """
 
     agent_type = "SphereRobot"
@@ -366,7 +366,7 @@ class SphereAgent(HolodeckAgent):
         return "SphereAgent " + self.name
 
 
-class AndroidAgent(HolodeckAgent):
+class AndroidAgent(HoloOceanAgent):
     """An humanoid android agent.
 
     Can be controlled via torques supplied to its joints.
@@ -378,7 +378,7 @@ class AndroidAgent(HolodeckAgent):
 
     There are 18 joints with 3 DOF, 10 with 2 DOF, and 20 with 1 DOF.
 
-    Inherits from :class:`HolodeckAgent`."""
+    Inherits from :class:`HoloOceanAgent`."""
     # constants in Android.h in holodeck-engine
     __MAX_TORQUE = 20
     __MIN_TORQUE = -__MAX_TORQUE
@@ -480,7 +480,7 @@ class AndroidAgent(HolodeckAgent):
     }
 
 
-class HandAgent(HolodeckAgent):
+class HandAgent(HoloOceanAgent):
     """A floating hand agent.
 
     Can be controlled via torques supplied to its joints and moved around in
@@ -491,7 +491,7 @@ class HandAgent(HolodeckAgent):
     23 or 26 dimensional vector of continuous values representing torques to be
     applied at each joint.
 
-    Inherits from :class:`HolodeckAgent`.
+    Inherits from :class:`HoloOceanAgent`.
     
     """
     # constants in HandAgent.h in holodeck-engine
@@ -572,7 +572,7 @@ class HandAgent(HolodeckAgent):
     }
 
 
-class NavAgent(HolodeckAgent):
+class NavAgent(HoloOceanAgent):
     """A humanoid character capable of intelligent navigation.
 
        **Action Space:**
@@ -580,7 +580,7 @@ class NavAgent(HolodeckAgent):
        Continuous control scheme of the form ``[x_target, y_target, z_target]``. 
        (see :ref:`coordinate-system`)
 
-       Inherits from :class:`HolodeckAgent`.
+       Inherits from :class:`HoloOceanAgent`.
        
     """
 
@@ -606,7 +606,7 @@ class NavAgent(HolodeckAgent):
         np.copyto(self._action_buffer, np.array(action))
 
 
-class TurtleAgent(HolodeckAgent):
+class TurtleAgent(HoloOceanAgent):
     """A simple turtle bot.
 
     **Action Space**:
@@ -616,7 +616,7 @@ class TurtleAgent(HolodeckAgent):
     - ``forward_force`` is capped at 160 in either direction
     - ``rot_force`` is capped at 35 either direction
 
-    Inherits from :class:`HolodeckAgent`."""
+    Inherits from :class:`HoloOceanAgent`."""
     # constants in TurtleAgent.h in holodeck-engine
     __MAX_THRUST = 160.0
     __MIN_THRUST = -__MAX_THRUST
@@ -643,7 +643,7 @@ class TurtleAgent(HolodeckAgent):
         np.copyto(self._action_buffer, action)
 
 
-class HoveringAUV(HolodeckAgent):
+class HoveringAUV(HoloOceanAgent):
     """A simple autonomous underwater vehicle.
 
     **Action Space**:::
@@ -654,7 +654,7 @@ class HoveringAUV(HolodeckAgent):
 
     -  All are capped by max acceleration
 
-    Inherits from :class:`HolodeckAgent`."""
+    Inherits from :class:`HoloOceanAgent`."""
     # constants in HoveringAUV.h in holodeck-engine
     __MAX_ACCEL = 100
     __MIN_ACCEL = -__MAX_ACCEL
@@ -684,10 +684,10 @@ class AgentDefinition:
 
     Args:
         agent_name (:obj:`str`): The name of the agent to control.
-        agent_type (:obj:`str` or type): The type of HolodeckAgent to control, string or class
+        agent_type (:obj:`str` or type): The type of HoloOceanAgent to control, string or class
             reference.
         sensors (:class:`~holoocean.sensors.SensorDefinition` or class type (if no duplicate sensors)): A list of
-            HolodeckSensors to read from this agent.
+            HoloOceanSensors to read from this agent.
         starting_loc (:obj:`list` of :obj:`float`): Starting ``[x, y, z]`` location for agent 
             (see :ref:`coordinate-system`)
         starting_rot (:obj:`list` of :obj:`float`): Starting ``[roll, pitch, yaw]`` rotation for agent 
@@ -734,7 +734,7 @@ class AgentFactory:
         """Constructs an agent
 
         Args:
-            client (:class:`holoocean.holodeckclient.HolodeckClient`): HolodeckClient agent is
+            client (:class:`holoocean.holooceanclient.HoloOceanClient`): HoloOceanClient agent is
                 associated with
             agent_def (:class:`AgentDefinition`): Definition of the agent to instantiate
 

@@ -44,7 +44,7 @@ def test_imu_sensor_acceleration(config):
 
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -88,7 +88,7 @@ def test_imu_sensor_angular_velocity(config):
 
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -131,7 +131,7 @@ def test_imu_noise_accel(config):
     """Make sure turning on noise actually turns it on"""
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -144,7 +144,7 @@ def test_imu_noise_angvel(config):
     """Make sure turning on noise actually turns it on"""
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -157,7 +157,7 @@ def test_imu_noise_returnbias(config):
     """Make sure returning the bias actually works"""
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -174,7 +174,7 @@ def test_imu_noise_bias_accel(config):
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     config['agents'][0]['sensors'][1]['configuration']['AccelBiasSigma'] = 10
 
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -188,7 +188,7 @@ def test_imu_noise_bias_angvel(config):
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     config['agents'][0]['sensors'][1]['configuration']['AngVelBiasSigma'] = 10
 
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

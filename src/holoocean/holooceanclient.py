@@ -1,11 +1,11 @@
 """The client used for subscribing shared memory between python and c++."""
 import os
 
-from holoocean.exceptions import HolodeckException
+from holoocean.exceptions import HoloOceanException
 from holoocean.shmem import Shmem
 
-class HolodeckClient:
-    """HolodeckClient for controlling a shared memory session.
+class HoloOceanClient:
+    """HoloOceanClient for controlling a shared memory session.
 
     Args:
         uuid (:obj:`str`, optional): A UUID to indicate which server this client is associated with.
@@ -34,7 +34,7 @@ class HolodeckClient:
         elif os.name == "posix":
             self.__posix_init__()
         else:
-            raise HolodeckException("Currently unsupported os: " + os.name)
+            raise HoloOceanException("Currently unsupported os: " + os.name)
 
     def __windows_init__(self):
         import win32event

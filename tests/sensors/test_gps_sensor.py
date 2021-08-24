@@ -40,7 +40,7 @@ def test_setting_depth(config, num):
 
     # Test above
     config["agents"][0]["location"] = [0, 0, -1*depth+1]
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -50,7 +50,7 @@ def test_setting_depth(config, num):
 
     # Test below
     config["agents"][0]["location"] = [0, 0, -1*depth-1]
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -71,7 +71,7 @@ def test_random_depth(config, num):
 
     # Test above
     config["agents"][0]["location"] = [0, 0, -1*depth]
-    with holoocean.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

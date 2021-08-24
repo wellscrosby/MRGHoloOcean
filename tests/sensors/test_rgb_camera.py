@@ -53,7 +53,7 @@ def test_rgb_camera(resolution, request):
 
     binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
 
-    with holoocean.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -87,7 +87,7 @@ def make_ticks_per_capture_env():
 
     binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
 
-    shared_ticks_per_capture_env = holoocean.environments.HolodeckEnvironment(
+    shared_ticks_per_capture_env = holoocean.environments.HoloOceanEnvironment(
         scenario=cfg,
         binary_path=binary_path,
         show_viewport=False,

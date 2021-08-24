@@ -6,7 +6,7 @@ worry about these.
 
 
 import numpy as np
-from holoocean.exceptions import HolodeckException
+from holoocean.exceptions import HoloOceanException
 
 class CommandsGroup:
     """Represents a list of commands
@@ -119,7 +119,7 @@ class CommandCenter:
     """Manages pending commands to send to the client (the engine).
 
     Args:
-        client (:class:`~holoocean.holodeckclient.HolodeckClient`): Client to send commands to
+        client (:class:`~holoocean.holooceanclient.HoloOceanClient`): Client to send commands to
 
     """
     def __init__(self, client):
@@ -174,7 +174,7 @@ class CommandCenter:
         to_write += '0'  # The gason JSON parser in holodeck expects a 0 at the end of the file.
         input_bytes = str.encode(to_write)
         if len(input_bytes) > self.max_buffer:
-            raise HolodeckException("Error: Command length exceeds buffer size")
+            raise HoloOceanException("Error: Command length exceeds buffer size")
         for index, val in enumerate(input_bytes):
             self._command_buffer_ptr[index] = val
 
@@ -213,7 +213,7 @@ class SpawnAgentCommand(Command):
 
         """
         if len(location) != 3:
-            raise HolodeckException("Invalid location given to spawn agent command")
+            raise HoloOceanException("Invalid location given to spawn agent command")
         self.add_number_parameters(location)
 
     def set_rotation(self, rotation):
@@ -225,7 +225,7 @@ class SpawnAgentCommand(Command):
 
         """
         if len(rotation) != 3:
-            raise HolodeckException("Invalid rotation given to spawn agent command")
+            raise HoloOceanException("Invalid rotation given to spawn agent command")
         self.add_number_parameters(rotation)
 
     def set_name(self, name):

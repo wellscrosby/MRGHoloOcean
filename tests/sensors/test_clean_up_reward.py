@@ -42,7 +42,7 @@ def test_ball_location_and_reward():
 
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Dexterity")
 
-    with holoocean.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

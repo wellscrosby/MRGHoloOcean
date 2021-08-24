@@ -31,7 +31,7 @@ def test_orientation_sensor_after_teleport():
     """
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holoocean.environments.HolodeckEnvironment(scenario=base_cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=base_cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

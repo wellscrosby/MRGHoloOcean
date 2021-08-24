@@ -31,7 +31,7 @@ def test_location_sensor_after_teleport():
     """
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holoocean.environments.HolodeckEnvironment(scenario=sphere_config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=sphere_config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -79,7 +79,7 @@ def test_location_sensor_falling():
 
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holoocean.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
