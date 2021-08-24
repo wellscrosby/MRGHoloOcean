@@ -12,6 +12,7 @@ base_cfg = {
     "name": "test_rgb_camera",
     "world": "TestWorld",
     "main_agent": "sphere0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "sphere0",

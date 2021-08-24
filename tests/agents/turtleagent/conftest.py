@@ -55,6 +55,7 @@ cfg = {
     "name": "test_turtleagent_movement",
     "world": "TestWorld",
     "main_agent": "turtle0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "turtle0",

@@ -39,7 +39,7 @@ def env_scenario(request):
         env.reset()
         return env, scenario
 
-    env = holodeck.make(scenario, show_viewport=False)
+    env = holodeck.make(scenario, show_viewport=False, frames_per_sec=False)
     env.reset()
     envs[scenario] = env
     return env, scenario

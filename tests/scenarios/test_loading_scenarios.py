@@ -11,7 +11,7 @@ def test_load_scenario(scenario):
         scenario (str): Scenario to test
 
     """
-    env = holodeck.make(scenario, show_viewport=False)
+    env = holodeck.make(scenario, show_viewport=False, frames_per_sec=False)
     for _ in range(30):
         env.tick()
     env.__on_exit__()

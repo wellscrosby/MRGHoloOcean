@@ -647,17 +647,24 @@ class AbuseSensor(HolodeckSensor):
 #Make sure to also add your new sensor to SensorDefintion below
 
 class SonarSensor(HolodeckSensor):
-    """Simulates an imaging sonar.
+    """Simulates an imaging sonar. See :ref:`configure-octree` for more on
+    how to configure the octree that is used.
 
     **Configuration**
 
     The ``configuration`` block (see :ref:`configuration-block`) accepts the following
     options:
 
-    - ``BinsRange``: Number of range bins of resulting image
-    - ``BinsAzimuth``: Number of azimuth bins of resulting image
-    - ``OctreeMax``: Starting size of octree elements
-    - ``OctreeMin``: Leaf size of octree elements
+    - ``BinsRange``: Number of range bins of resulting image, defaults to 300.
+    - ``BinsAzimuth``: Number of azimuth bins of resulting image, defaults to 128.
+    - ``MinRange``: Minimum range visible in meters, defaults to 3.
+    - ``MaxRange``: Maximum range visible in meters, defaults to 30.
+    - ``Azimuth``: Azimuth (side to side) angle visible in degrees, defaults to 130.
+    - ``Elevation``: Elevation angle (up and down) visible in degrees, defaults to 20.
+    - ``ViewRegion``: Turns on green lines to see visible region. Defaults to false.
+    - ``ViewOctree``: Highlights all voxels in range. Defaults to false.
+    - ``AddSigma``/``AddCov``: Additive noise covariance/std from a Rayleigh distribution. Needs to be a float. Defaults to 0/off.
+    - ``MultSigma``/``MultCov``: Multiplication noise covariance/std from a normal distribution. Needs to be a float. Defaults to 0/off.
 
     """
 

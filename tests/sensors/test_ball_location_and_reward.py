@@ -6,6 +6,7 @@ cfg = {
         "name": "test_ball_location_and_reward",
         "world": "CupGame",
         "main_agent": "sphere0",
+        "frames_per_sec": False,
         "agents": [
             {
                 "agent_name": "sphere0",

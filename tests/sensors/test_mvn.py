@@ -5,7 +5,7 @@ import uuid
 from scipy.stats import multivariate_normal as mvn
 import numpy as np
 
-eps = 1e-7
+eps = 1e-8
 
 @pytest.fixture
 def config():
@@ -13,6 +13,7 @@ def config():
         "name": "test_mvn",
         "world": "Rooms",
         "main_agent": "turtle0",
+        "frames_per_sec": False,
         "agents": [
             {
                 "agent_name": "turtle0",
