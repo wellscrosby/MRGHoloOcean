@@ -127,7 +127,6 @@ private:
 	std::map<std::string, std::unique_ptr<HolodeckSharedMemory>> Memory;
 	bool bIsRunning;
 
-
 	#if PLATFORM_WINDOWS
 	HANDLE LockingSemaphore1;
 	HANDLE LockingSemaphore2;
