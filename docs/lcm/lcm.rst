@@ -1,7 +1,7 @@
 Publishing Sensor Data
 =========================
 
-Currently, Holodeck-Ocean supports publishing data to LCM (with a potential ROS wrapper being considered). All this config happens in the :ref:`scenario <scenarios>` file. We'll outline what this takes here.
+Currently, HoloOcean supports publishing data to LCM (with a potential ROS wrapper being considered). All this config happens in the :ref:`scenario <scenarios>` file. We'll outline what this takes here.
 
 LCM publishes data to a certain medium, called the provider. This can be locally, over the network, a log file, etc. This can be specified in the header of the
 scenario file. See _here for options on this. If no provider is specified, Holodeck uses the default LCM udqm.
