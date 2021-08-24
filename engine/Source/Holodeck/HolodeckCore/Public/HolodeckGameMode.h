@@ -4,6 +4,8 @@
 
 #include "Holodeck.h"
 
+#include "Octree.h"
+
 #include "GameFramework/GameMode.h"
 #include "HolodeckGameInstance.h"
 #include "CommandCenter.h"

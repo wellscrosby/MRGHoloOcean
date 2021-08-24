@@ -68,3 +68,7 @@ DerivedDataCache/*
 .vs/
 .vscode/
 Content/HolodeckContent/Bots/HuntingSpider/*
+
+# sonar data files
+*.json
+*.csv

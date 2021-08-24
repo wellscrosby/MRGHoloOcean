@@ -156,6 +156,16 @@ public:
 
         return sample[0];
     }
+    float sampleRayleigh(){
+        // Samples from a rayleigh distribution
+        verifyf(N == 1, TEXT("Can't use MVN size %d with Rayleigh Noise"), N);
+
+        // sample
+        float x = sampleFloat();
+        float y = sampleFloat();
+
+        return sqrt(x*x + y*y);
+    }
 
     /*
     * Computes cholesky decomp in place

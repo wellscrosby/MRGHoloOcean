@@ -6,6 +6,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Pawn.h"
 #include "HolodeckAgent.h"
+#include "Octree.h"
 #include "HolodeckBuoyantAgent.generated.h"
 
 /**
@@ -17,7 +18,10 @@ class HOLODECK_API AHolodeckBuoyantAgent : public AHolodeckAgent{
 	
 public:
 
-	void InitializeAgent() override;
+	virtual void BeginDestroy() override; 
+	virtual void InitializeAgent() override;
+
+	virtual void Tick(float DeltaSeconds) override;
 
 	const float WaterDensity = 997;
 	float Gravity;
@@ -47,4 +51,16 @@ public:
 	void ApplyBuoyantForce();
 	void ShowBoundingBox();
 	void ShowSurfacePoints();
+
+	Octree* makeOctree();
+	// octree in global coordinates in octree
+	Octree* octreeGlobal = nullptr;
+	// we store the octree in the actor coordinates in octreeClean, 
+	Octree* octreeLocal = nullptr;	
+
+private:
+	// Used to fix octreeGlobal 
+	void updateOctree(Octree* localFrame, Octree* globalFrame);
+	// Used to extract local frame from global frame
+	Octree* cleanOctree(Octree* globalFrame);
 };
