@@ -3,10 +3,11 @@ import uuid
 import cv2
 import os
 import time
+import pytest
 
 from tests.utils.equality import mean_square_err
 
-import holodeck
+import holoocean
 
 base_cfg = {
     "name": "test_viewport_capture",
@@ -28,7 +29,8 @@ base_cfg = {
     ]
 }
 
-
+@pytest.mark.skipif("DefaultWorlds" not in holoocean.installed_packages(),
+                    reason='DefaultWorlds package not installed')
 def test_viewport_capture(resolution, request):
     """Validates that the ViewportCapture camera is working at the expected resolutions
 
@@ -47,8 +49,8 @@ def test_viewport_capture(resolution, request):
         "CaptureHeight": resolution
     }
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
-    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -64,12 +66,13 @@ def test_viewport_capture(resolution, request):
 
         assert err < 1000, "The expected screenshot did not match the actual screenshot!"
 
-
+@pytest.mark.skipif("DefaultWorlds" not in holoocean.installed_packages(),
+                    reason='DefaultWorlds package not installed')
 def test_viewport_capture_after_teleport(env_1024, request):
     """Validates that the ViewportCapture is updated after teleporting the camera
     to a different location. 
 
-    Incidentally tests HolodeckEnvironment.teleport_camera as well
+    Incidentally tests HoloOceanEnvironment.teleport_camera as well
     """
 
     # Other tests muck with this. Set it to true just in case

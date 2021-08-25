@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 import uuid
 import numpy as np
 import pytest
@@ -51,9 +51,9 @@ def config():
 def test_sending(config):
     """Make sure our sensor rates are working properly
     """
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4()),
@@ -75,9 +75,9 @@ def test_timing(config, num):
     config["agents"][0]["sensors"][2]["location"] = [0, dist, 0]
     num_ticks = int(np.round(dist*30 / (1500)))
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4()),
@@ -102,9 +102,9 @@ def test_distance(config, num):
     config["agents"][0]["sensors"][2]["location"] = [0, dist, 0]
     num_ticks = int(np.round(dist*30 / (1500)))
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4()),
@@ -129,8 +129,8 @@ def test_distance(config, num):
 
 
 def test_all_to_one(config):
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
-    with holodeck.environments.HolodeckEnvironment(scenario=config,
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4()),
@@ -150,9 +150,9 @@ def test_all_to_one(config):
 
 
 def test_one_to_all(config):
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4()),
@@ -185,8 +185,8 @@ def test_azimuth(config, data):
     xy, angle = data
     config["agents"][0]["sensors"][2]["location"] = [xy[0], xy[1], 0]
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
-    with holodeck.environments.HolodeckEnvironment(scenario=config,
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4()),
@@ -206,8 +206,8 @@ def test_elevation(config, data):
     yz, angle = data
     config["agents"][0]["sensors"][2]["location"] = [0, yz[0], yz[1]]
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
-    with holodeck.environments.HolodeckEnvironment(scenario=config,
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4()),

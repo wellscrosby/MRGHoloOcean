@@ -1,12 +1,12 @@
 """Module containing high level interface for loading environments."""
 import uuid
 
-from holodeck.environments import HolodeckEnvironment
-from holodeck.packagemanager import get_scenario,\
+from holoocean.environments import HoloOceanEnvironment
+from holoocean.packagemanager import get_scenario,\
     get_binary_path_for_scenario,\
     get_package_config_for_scenario,\
     get_binary_path_for_package
-from holodeck.exceptions import HolodeckException
+from holoocean.exceptions import HoloOceanException
 
 
 class GL_VERSION:
@@ -58,7 +58,7 @@ def make(scenario_name="", scenario_cfg=None, gl_version=GL_VERSION.OPENGL4, win
             If the state should be copied or passed as a reference when returned. Defaults to True
 
     Returns:
-        :class:`~holodeck.environments.HolodeckEnvironment`: A holodeck environment instantiated
+        :class:`~holoocean.environments.HoloOceanEnvironment`: A holodeck environment instantiated
             with all the settings necessary for the specified world, and other supplied arguments.
 
     """
@@ -73,7 +73,7 @@ def make(scenario_name="", scenario_cfg=None, gl_version=GL_VERSION.OPENGL4, win
         scenario = scenario_cfg
         binary_path = get_binary_path_for_package(scenario["package_name"])
     else:
-        raise HolodeckException("You must specify scenario_name or scenario_config")
+        raise HoloOceanException("You must specify scenario_name or scenario_config")
 
     # Get pre-start steps
     package_config = get_package_config_for_scenario(scenario)
@@ -100,4 +100,4 @@ def make(scenario_name="", scenario_cfg=None, gl_version=GL_VERSION.OPENGL4, win
     if window_res is not None:
         param_dict["window_size"] = window_res
 
-    return HolodeckEnvironment(**param_dict)
+    return HoloOceanEnvironment(**param_dict)

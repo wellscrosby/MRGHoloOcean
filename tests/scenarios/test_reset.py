@@ -1,6 +1,6 @@
 import numpy as np
 
-import holodeck
+import holoocean
 
 
 def compare_agent_states(state1, state2, thresh=0.01, is_close=True, to_ignore=None):
@@ -35,13 +35,13 @@ def test_main_agent_after_resetting(env_scenario):
     """Validate that sensor data for the main agent is the same after calling .reset()
 
     Args:
-        env_scenario ((HolodeckEnvironment, str)): environment and scenario we are testing
+        env_scenario ((HoloOceanEnvironment, str)): environment and scenario we are testing
 
     """
 
 
     env, scenario = env_scenario
-    scenario_config = holodeck.packagemanager.get_scenario(scenario)
+    scenario_config = holoocean.packagemanager.get_scenario(scenario)
 
     main_agent = scenario_config["main_agent"]
 

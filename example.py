@@ -1,15 +1,16 @@
 """This file contains multiple examples of how you might use Holodeck."""
 import numpy as np
 
-import holodeck
-from holodeck import agents
-from holodeck.environments import *
-from holodeck import sensors
+import holoocean
+from holoocean import agents
+from holoocean.environments import *
+from holoocean import sensors
 
+# TODO: Update all these examples to use our Ocean Package
 
 def uav_example():
     """A basic example of how to use the UAV agent."""
-    env = holodeck.make("UrbanCity-MaxDistance")
+    env = holoocean.make("UrbanCity-MaxDistance")
 
     # This line can be used to change the control scheme for an agent
     # env.agents["uav0"].set_control_scheme(ControlSchemes.UAV_ROLL_PITCH_YAW_RATE_ALT)
@@ -34,7 +35,7 @@ def uav_example():
 
 def sphere_example():
     """A basic example of how to use the sphere agent."""
-    env = holodeck.make("MazeWorld-FinishMazeSphere")
+    env = holoocean.make("MazeWorld-FinishMazeSphere")
 
     # This command is to constantly rotate to the right
     command = 2
@@ -52,7 +53,7 @@ def sphere_example():
 
 def android_example():
     """A basic example of how to use the android agent."""
-    env = holodeck.make("AndroidPlayground-MaxDistance")
+    env = holoocean.make("AndroidPlayground-MaxDistance")
 
     # The Android's command is a 94 length vector representing torques to be applied at each of his joints
     command = np.ones(94) * 10
@@ -72,7 +73,7 @@ def android_example():
 
 def multi_agent_example():
     """A basic example of using multiple agents"""
-    env = holodeck.make("CyberPunkCity-Follow")
+    env = holoocean.make("CyberPunkCity-Follow")
 
     cmd0 = np.array([0, 0, -2, 10])
     cmd1 = np.array([0, 0, 0])
@@ -94,7 +95,7 @@ def multi_agent_example():
 
 def world_command_examples():
     """A few examples to showcase commands for manipulating the worlds."""
-    env = holodeck.make("MazeWorld-FinishMazeSphere")
+    env = holoocean.make("MazeWorld-FinishMazeSphere")
 
     # This is the unaltered MazeWorld
     for _ in range(300):
@@ -144,7 +145,7 @@ def editor_example():
     in the Unreal Engine Editor. Most people that use holodeck will not need this.
 
     This example uses a custom scenario, see 
-    https://holodeck.readthedocs.io/en/latest/usage/examples/custom-scenarios.html
+    https://holoocean.readthedocs.io/en/latest/usage/examples/custom-scenarios.html
 
     Note: When launching Holodeck from the editor, press the down arrow next to "Play" and select
     "Standalone Game", otherwise the editor will lock up when the client stops ticking it.
@@ -175,7 +176,7 @@ def editor_example():
         ]
     }
 
-    env = HolodeckEnvironment(scenario=config, start_world=False)
+    env = HoloOceanEnvironment(scenario=config, start_world=False)
     command = [0, 0, 10, 50]
 
     for i in range(10):
@@ -215,7 +216,7 @@ def editor_multi_agent_example():
         ]
     }
 
-    env = HolodeckEnvironment(scenario=config, start_world=False)
+    env = HoloOceanEnvironment(scenario=config, start_world=False)
 
     cmd0 = np.array([0, 0, -2, 10])
     cmd1 = np.array([0, 0, 5, 10])

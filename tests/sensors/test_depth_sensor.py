@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 import uuid
 from copy import deepcopy
 import numpy as np
@@ -40,9 +40,9 @@ def test_depth_sensor_falling():
     # Spawn the UAV 10 meters up
     cfg["agents"][0]["location"] = [0, 0, 10]
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -70,9 +70,9 @@ def test_depth_sensor_noise():
 
     config = deepcopy(uav_config)
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

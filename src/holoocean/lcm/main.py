@@ -1,4 +1,4 @@
-from holodeck.lcm import DVLSensor, IMUSensor, LocationSensor, RangeFinderSensor, RotationSensor, VelocitySensor, OrientationSensor, PoseSensor, AcousticBeaconSensor
+from holoocean.lcm import DVLSensor, IMUSensor, LocationSensor, RangeFinderSensor, RotationSensor, VelocitySensor, OrientationSensor, PoseSensor, AcousticBeaconSensor
 import numpy as np
 import os
 

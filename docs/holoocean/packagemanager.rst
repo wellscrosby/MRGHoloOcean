@@ -4,5 +4,5 @@ Package Manager
 ===============
 
 
-.. automodule:: holodeck.packagemanager
+.. automodule:: holoocean.packagemanager
    :members:

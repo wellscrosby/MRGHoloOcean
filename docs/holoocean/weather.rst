@@ -1,5 +1,5 @@
 Weather Controller
 ==================
 
-.. automodule:: holodeck.weather
+.. automodule:: holoocean.weather
    :members:

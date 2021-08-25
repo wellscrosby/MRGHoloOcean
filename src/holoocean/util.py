@@ -1,7 +1,7 @@
 """Helpful Utilities"""
 import math
 import os
-import holodeck
+import holoocean
 from multiprocessing import Process, Event
 
 try:
@@ -16,7 +16,7 @@ def get_holodeck_version():
     Returns:
         (:obj:`str`): the current version
     """
-    return holodeck.__version__
+    return holoocean.__version__
 
 def _get_holodeck_folder():
     if "HOLODECKPATH" in os.environ and os.environ["HOLODECKPATH"] != "":

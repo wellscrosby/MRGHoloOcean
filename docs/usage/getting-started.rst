@@ -7,10 +7,10 @@ A minimal Holodeck usage example is below:
 
 ::
 
-   import holodeck
+   import holoocean
    import numpy as np
 
-   env = holodeck.make("UrbanCity-MaxDistance")
+   env = holoocean.make("UrbanCity-MaxDistance")
 
    # The UAV takes 3 torques and a thrust as a command.
    command = np.array([0, 0, 0, 100])
@@ -21,7 +21,7 @@ A minimal Holodeck usage example is below:
 
 Notice that:
 
-1. You pass the name of a :ref:`scenario<scenarios>` into ``holodeck.make``
+1. You pass the name of a :ref:`scenario<scenarios>` into ``holoocean.make``
    
    See :ref:`all-packages` for all of the different worlds and scenarios that
    are available.

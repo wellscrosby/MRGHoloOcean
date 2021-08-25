@@ -18,7 +18,7 @@ Note that the packages are saved in different subfolders based on the version
 of Holodeck. This allows multiple versions of Holodeck to coexist, without
 causing version incompatibility conflicts.
 
-This is the path returned by :func:`holodeck.util.get_holodeck_path`
+This is the path returned by :func:`holoocean.util.get_holodeck_path`
 
 Each folder inside the worlds folder is considered a seperate package, so it 
 must match the format of the archive described in :ref:`package-contents`.

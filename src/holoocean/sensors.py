@@ -2,17 +2,17 @@
 import json
 
 import numpy as np
-import holodeck
+import holoocean
 
-from holodeck.command import RGBCameraRateCommand, RotateSensorCommand, CustomCommand, SendAcousticMessageCommand, SendOpticalMessageCommand
-from holodeck.exceptions import HolodeckConfigurationException
-from holodeck.lcm import SensorData
+from holoocean.command import RGBCameraRateCommand, RotateSensorCommand, CustomCommand, SendAcousticMessageCommand, SendOpticalMessageCommand
+from holoocean.exceptions import HoloOceanConfigurationException
+from holoocean.lcm import SensorData
 
-class HolodeckSensor:
+class HoloOceanSensor:
     """Base class for a sensor
 
     Args:
-        client (:class:`~holodeck.holodeckclient.HolodeckClient`): Client
+        client (:class:`~holoocean.holooceanclient.HoloOceanClient`): Client
             attached to a sensor
         agent_name (:obj:`str`): Name of the parent agent
         agent_type (:obj:`str`): Type of the parent agent
@@ -68,8 +68,8 @@ class HolodeckSensor:
 
     def rotate(self, rotation):
         """Rotate the sensor. It will be applied in approximately three ticks.
-        :meth:`~holodeck.environments.HolodeckEnvironment.step` or
-        :meth:`~holodeck.environments.HolodeckEnvironment.tick`.)
+        :meth:`~holoocean.environments.HoloOceanEnvironment.step` or
+        :meth:`~holoocean.environments.HoloOceanEnvironment.tick`.)
 
         This will not persist after a call to reset(). If you want a persistent rotation for a sensor,
         specify it in your scenario configuration.
@@ -84,7 +84,7 @@ class HolodeckSensor:
         pass
 
 
-class DistanceTask(HolodeckSensor):
+class DistanceTask(HoloOceanSensor):
 
     sensor_type = "DistanceTask"
 
@@ -97,7 +97,7 @@ class DistanceTask(HolodeckSensor):
         return [2]
 
 
-class LocationTask(HolodeckSensor):
+class LocationTask(HoloOceanSensor):
 
     sensor_type = "LocationTask"
 
@@ -110,7 +110,7 @@ class LocationTask(HolodeckSensor):
         return [2]
 
 
-class FollowTask(HolodeckSensor):
+class FollowTask(HoloOceanSensor):
 
     sensor_type = "FollowTask"
 
@@ -123,7 +123,7 @@ class FollowTask(HolodeckSensor):
         return [2]
 
 
-class AvoidTask(HolodeckSensor):
+class AvoidTask(HoloOceanSensor):
 
     sensor_type = "AvoidTask"
 
@@ -136,7 +136,7 @@ class AvoidTask(HolodeckSensor):
         return [2]
 
 
-class CupGameTask(HolodeckSensor):
+class CupGameTask(HoloOceanSensor):
     sensor_type = "CupGameTask"
 
     @property
@@ -165,7 +165,7 @@ class CupGameTask(HolodeckSensor):
         self._client.command_center.enqueue_command(start_command)
 
 
-class CleanUpTask(HolodeckSensor):
+class CleanUpTask(HoloOceanSensor):
     sensor_type = "CleanUpTask"
 
     @property
@@ -188,14 +188,14 @@ class CleanUpTask(HolodeckSensor):
         """
 
         if self.config is not None or self.config is not {}:
-            raise HolodeckConfigurationException("Called CleanUpTask start_task when configuration block already \
+            raise HoloOceanConfigurationException("Called CleanUpTask start_task when configuration block already \
                 specified. Must remove configuration block before calling.")
 
         config_command = CustomCommand("CleanUpConfig", num_params=[num_trash, int(use_table)])
         self._client.command_center.enqueue_command(config_command)
 
 
-class ViewportCapture(HolodeckSensor):
+class ViewportCapture(HoloOceanSensor):
     """Captures what the viewport is seeing.
 
     The ViewportCapture is faster than the RGB camera, but there can only be one camera
@@ -204,7 +204,7 @@ class ViewportCapture(HolodeckSensor):
     
     It may be useful
     to position the camera with
-    :meth:`~holodeck.environments.HolodeckEnvironment.teleport_camera`.
+    :meth:`~holoocean.environments.HoloOceanEnvironment.teleport_camera`.
 
     **Configuration**
 
@@ -251,7 +251,7 @@ class ViewportCapture(HolodeckSensor):
         return self.shape
 
 
-class RGBCamera(HolodeckSensor):
+class RGBCamera(HoloOceanSensor):
     """Captures agent's view.
 
     The default capture resolution is 256x256x256x4, corresponding to the RGBA channels.
@@ -305,14 +305,14 @@ class RGBCamera(HolodeckSensor):
             ticks_per_capture (:obj:`int`): The amount of ticks to wait between camera captures.
         """
         if not isinstance(ticks_per_capture, int) or ticks_per_capture < 1:
-            raise HolodeckConfigurationException("Invalid ticks_per_capture value " + str(ticks_per_capture))
+            raise HoloOceanConfigurationException("Invalid ticks_per_capture value " + str(ticks_per_capture))
 
         command_to_send = RGBCameraRateCommand(self.agent_name, self.name, ticks_per_capture)
         self._client.command_center.enqueue_command(command_to_send)
         self.tick_every = ticks_per_capture
 
 
-class OrientationSensor(HolodeckSensor):
+class OrientationSensor(HoloOceanSensor):
     """Gets the forward, right, and up vector for the agent.
     Returns a 2D numpy array of
 
@@ -335,7 +335,7 @@ class OrientationSensor(HolodeckSensor):
         return [3, 3]
 
 
-class IMUSensor(HolodeckSensor):
+class IMUSensor(HoloOceanSensor):
     """Inertial Measurement Unit sensor.
 
     Returns a 2D numpy array of::
@@ -382,23 +382,23 @@ class IMUSensor(HolodeckSensor):
         return self.shape
 
 
-class JointRotationSensor(HolodeckSensor):
-    """Returns the state of the :class:`~holodeck.agents.AndroidAgent`'s or the 
-    :class:`~holodeck.agents.HandAgent`'s joints.
+class JointRotationSensor(HoloOceanSensor):
+    """Returns the state of the :class:`~holoocean.agents.AndroidAgent`'s or the 
+    :class:`~holoocean.agents.HandAgent`'s joints.
 
     """
 
     sensor_type = "JointRotationSensor"
 
     def __init__(self, client, agent_name, agent_type, name="RGBCamera", config=None):
-        if holodeck.agents.AndroidAgent.agent_type in agent_type:
+        if holoocean.agents.AndroidAgent.agent_type in agent_type:
             # Should match AAndroid::TOTAL_DOF
             self.elements = 94
-        elif agent_type == holodeck.agents.HandAgent.agent_type:
+        elif agent_type == holoocean.agents.HandAgent.agent_type:
             # AHandAgent::TOTAL_JOINT_DOF
             self.elements = 23
         else:
-            raise HolodeckConfigurationException("Attempting to use JointRotationSensor with unsupported" \
+            raise HoloOceanConfigurationException("Attempting to use JointRotationSensor with unsupported" \
                                                  "agent type '{}'!".format(agent_type))
 
         super(JointRotationSensor, self).__init__(client, agent_name, agent_type, name, config)
@@ -412,9 +412,9 @@ class JointRotationSensor(HolodeckSensor):
         return [self.elements]
 
 
-class PressureSensor(HolodeckSensor):
-    """For each joint on the :class:`~holodeck.agents.AndroidAgent` or the 
-    :class:`~holodeck.agents.HandAgent`, returns the pressure on the
+class PressureSensor(HoloOceanSensor):
+    """For each joint on the :class:`~holoocean.agents.AndroidAgent` or the 
+    :class:`~holoocean.agents.HandAgent`, returns the pressure on the
     joint.
 
     For each joint, returns ``[x_loc, y_loc, z_loc, force]``.
@@ -424,14 +424,14 @@ class PressureSensor(HolodeckSensor):
     sensor_type = "PressureSensor"
 
     def __init__(self, client, agent_name, agent_type, name="RGBCamera", config=None):
-        if holodeck.agents.AndroidAgent.agent_type in agent_type:
+        if holoocean.agents.AndroidAgent.agent_type in agent_type:
             # Should match AAndroid::NUM_JOINTS
             self.elements = 48
-        elif agent_type == holodeck.agents.HandAgent.agent_type:
+        elif agent_type == holoocean.agents.HandAgent.agent_type:
             # AHandAgent::NUM_JOINTS
             self.elements = 16
         else:
-            raise HolodeckConfigurationException("Attempting to use PressureSensor with unsupported" \
+            raise HoloOceanConfigurationException("Attempting to use PressureSensor with unsupported" \
                                                  "agent type '{}'!".format(agent_type))
 
         super(PressureSensor, self).__init__(client, agent_name, agent_type, name, config)
@@ -445,21 +445,21 @@ class PressureSensor(HolodeckSensor):
         return [self.elements*(3+1)]
 
 
-class RelativeSkeletalPositionSensor(HolodeckSensor):
+class RelativeSkeletalPositionSensor(HoloOceanSensor):
     """Gets the position of each bone in a skeletal mesh as a quaternion.
 
     Returns a numpy array with four entries for each bone.
     """
 
     def __init__(self, client, agent_name, agent_type, name="RGBCamera", config=None):
-        if holodeck.agents.AndroidAgent.agent_type in agent_type:
+        if holoocean.agents.AndroidAgent.agent_type in agent_type:
             # Should match AAndroid::NumBones
             self.elements = 60
-        elif agent_type == holodeck.agents.HandAgent.agent_type:
+        elif agent_type == holoocean.agents.HandAgent.agent_type:
             # AHandAgent::NumBones
             self.elements = 17
         else:
-            raise HolodeckConfigurationException("Attempting to use RelativeSkeletalPositionSensor with unsupported" \
+            raise HoloOceanConfigurationException("Attempting to use RelativeSkeletalPositionSensor with unsupported" \
                                                  "agent type {}!".format(agent_type))
         super(RelativeSkeletalPositionSensor, self).__init__(client, agent_name, agent_type, name, config)
 
@@ -474,7 +474,7 @@ class RelativeSkeletalPositionSensor(HolodeckSensor):
         return [self.elements, 4]
 
 
-class LocationSensor(HolodeckSensor):
+class LocationSensor(HoloOceanSensor):
     """Gets the location of the agent in the world.
 
     Returns coordinates in ``[x, y, z]`` format (see :ref:`coordinate-system`)
@@ -499,7 +499,7 @@ class LocationSensor(HolodeckSensor):
         return [3]
 
 
-class RotationSensor(HolodeckSensor):
+class RotationSensor(HoloOceanSensor):
     """Gets the rotation of the agent in the world.
 
     Returns ``[roll, pitch, yaw]`` (see :ref:`rotations`)
@@ -515,7 +515,7 @@ class RotationSensor(HolodeckSensor):
         return [3]
 
 
-class VelocitySensor(HolodeckSensor):
+class VelocitySensor(HoloOceanSensor):
     """Returns the x, y, and z velocity of the agent.
     
     """
@@ -530,7 +530,7 @@ class VelocitySensor(HolodeckSensor):
         return [3]
 
 
-class CollisionSensor(HolodeckSensor):
+class CollisionSensor(HoloOceanSensor):
     """Returns true if the agent is colliding with anything (including the ground).
     
     """
@@ -546,7 +546,7 @@ class CollisionSensor(HolodeckSensor):
         return [1]
 
 
-class RangeFinderSensor(HolodeckSensor):
+class RangeFinderSensor(HoloOceanSensor):
     """Returns distances to nearest collisions in the directions specified by
     the parameters. For example, if an agent had two range sensors at different
     angles with 24 lasers each, the LaserDebug traces would look something like
@@ -584,7 +584,7 @@ class RangeFinderSensor(HolodeckSensor):
         return [self.laser_count]
 
 
-class WorldNumSensor(HolodeckSensor):
+class WorldNumSensor(HoloOceanSensor):
     """Returns any numeric value from the world corresponding to a given key. This is
     world specific.
 
@@ -619,7 +619,7 @@ class BallLocationSensor(WorldNumSensor):
         return np.int8
 
 
-class AbuseSensor(HolodeckSensor):
+class AbuseSensor(HoloOceanSensor):
     """Returns True if the agent has been abused. Abuse is calculated differently for
     different agents. The Sphere and Hand agent cannot be abused. The Uav, Android,
     and Turtle agents can be abused by experiencing high levels of acceleration.
@@ -646,7 +646,7 @@ class AbuseSensor(HolodeckSensor):
 ######################## HOLODECK-OCEAN CUSTOM SENSORS ###########################
 #Make sure to also add your new sensor to SensorDefintion below
 
-class SonarSensor(HolodeckSensor):
+class SonarSensor(HoloOceanSensor):
     """Simulates an imaging sonar. See :ref:`configure-octree` for more on
     how to configure the octree that is used.
 
@@ -695,7 +695,7 @@ class SonarSensor(HolodeckSensor):
     def data_shape(self):
         return self.shape
 
-class DVLSensor(HolodeckSensor):
+class DVLSensor(HoloOceanSensor):
     """Doppler Velocity Log Sensor.
 
     Returns a 1D numpy array of::
@@ -723,7 +723,7 @@ class DVLSensor(HolodeckSensor):
     def data_shape(self):
         return [3]
 
-class DepthSensor(HolodeckSensor):
+class DepthSensor(HoloOceanSensor):
     """Pressure/Depth Sensor.
 
     Returns a 1D numpy array of::
@@ -749,7 +749,7 @@ class DepthSensor(HolodeckSensor):
     def data_shape(self):
         return [1]
 
-class GPSSensor(HolodeckSensor):
+class GPSSensor(HoloOceanSensor):
     """Gets the location of the agent in the world if the agent is close enough to the surface.
 
     Returns coordinates in ``[x, y, z]`` format (see :ref:`coordinate-system`)
@@ -782,7 +782,7 @@ class GPSSensor(HolodeckSensor):
         else:
             return None
             
-class PoseSensor(HolodeckSensor):
+class PoseSensor(HoloOceanSensor):
     """Gets the forward, right, and up vector for the agent.
     Returns a 2D numpy array of
 
@@ -804,8 +804,8 @@ class PoseSensor(HolodeckSensor):
     def data_shape(self):
         return [4, 4]
 
-class AcousticBeaconSensor(HolodeckSensor):
-    """Acoustic Beacon Sensor. Can send message to an other beacon from the `~holodeck.HolodeckEnvironment.send_acoustic_message` command.
+class AcousticBeaconSensor(HoloOceanSensor):
+    """Acoustic Beacon Sensor. Can send message to an other beacon from the `~holoocean.HoloOceanEnvironment.send_acoustic_message` command.
 
     Returning array depends on sent message type. 
 
@@ -927,7 +927,7 @@ class AcousticBeaconSensor(HolodeckSensor):
     def reset(self):
         self.__class__.instances = dict()
 
-class OpticalModemSensor(HolodeckSensor):
+class OpticalModemSensor(HoloOceanSensor):
     """Handles communication between agents using an optical modem.
 
     **Configuration**
@@ -1016,7 +1016,7 @@ class SensorDefinition:
         agent_name (:obj:`str`): The name of the parent agent.
         agent_type (:obj:`str`): The type of the parent agent
         sensor_name (:obj:`str`): The name of the sensor.
-        sensor_type (:obj:`str` or :class:`HolodeckSensor`): The type of the sensor.
+        sensor_type (:obj:`str` or :class:`HoloOceanSensor`): The type of the sensor.
         socket (:obj:`str`, optional): The name of the socket to attach sensor to.
         location (Tuple of :obj:`float`, optional): ``[x, y, z]`` coordinates to place sensor
             relative to agent (or socket) (see :ref:`coordinate-system`).
@@ -1097,7 +1097,7 @@ class SensorDefinition:
 
 
 class SensorFactory:
-    """Given a sensor definition, constructs the appropriate HolodeckSensor object.
+    """Given a sensor definition, constructs the appropriate HoloOceanSensor object.
 
     """
     @staticmethod

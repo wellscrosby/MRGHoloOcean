@@ -1,6 +1,6 @@
 kind: pipeline
 type: docker
-name: default
+name: test
 
 steps:
 - name: Build Docker Image
@@ -15,12 +15,12 @@ steps:
   image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
   commands:
   # Find what branch we need to pull from
-  - BRANCH_EXISTS=$(git ls-remote --heads https://bitbucket.org/frostlab/holoocean-engine.git ${DRONE_BRANCH} | wc -l)
+  - BRANCH_EXISTS=$(git ls-remote --heads https://bitbucket.org/frostlab/HoloOcean-Engine.git ${DRONE_BRANCH} | wc -l)
   - if test "$BRANCH_EXISTS" = "1"; then BRANCH=${DRONE_BRANCH}; else BRANCH=develop; fi
   - echo $BRANCH
   # Install, and run tests
   - pip install .
-  - python3 -c "import holodeck; holodeck.install(\"Ocean\", \"https://robots.et.byu.edu/holo/Ocean/$BRANCH/latest.zip\")"
+  - python3 -c "import holoocean; holoocean.install(\"Ocean\", branch=\"$BRANCH\")"
   - py.test
 
 
@@ -28,3 +28,20 @@ volumes:
 - name: docker_sock
   host:
     path: /var/run/docker.sock
+
+---
+kind: pipeline
+type: docker
+name: pypi
+
+steps:
+- name: pypi_publish
+  image: plugins/pypi
+  settings:
+    username:
+      from_secret: pypi_username
+    password:
+      from_secret: pypi_password
+  when:
+    event:
+      - tag 

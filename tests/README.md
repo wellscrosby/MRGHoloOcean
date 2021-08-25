@@ -13,7 +13,7 @@ test holodeck like it were a package installed on a fresh machine.
 
 ### Install your development copy of holodeck
 You can have pip install the `holodeck` module in "editable" mode - meaning
-you can `import holodeck` anywhere, and it will use the code in
+you can `import holoocean` anywhere, and it will use the code in
 `src/holodeck`.
 
 First, remove whatever version of holodeck you have installed
@@ -22,8 +22,8 @@ First, remove whatever version of holodeck you have installed
 Then, from the root of this repo run
 `pip install --editable .`
 
-Open a `python` terminal and make sure when you `import holodeck` and run
-`holodeck.util.get_holodeck_version()` it prints `"X.Y.Zdev"`
+Open a `python` terminal and make sure when you `import holoocean` and run
+`holoocean.util.get_holodeck_version()` it prints `"X.Y.Zdev"`
 
 ### Run pytest
 

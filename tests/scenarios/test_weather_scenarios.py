@@ -1,4 +1,4 @@
-from holodeck.environments import HolodeckEnvironment
+from holoocean.environments import HoloOceanEnvironment
 
 def test_weather_type_scenario(env_scenario) -> None:
     """Test that each weather type can be set in each scenario without errors.
@@ -10,7 +10,7 @@ def test_weather_type_scenario(env_scenario) -> None:
     environments.
 
     Args:
-        env_scenario (HolodeckEnvironment, str): Tuple to test
+        env_scenario (HoloOceanEnvironment, str): Tuple to test
 
     """
     env, _ = env_scenario

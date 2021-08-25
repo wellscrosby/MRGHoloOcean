@@ -2,13 +2,13 @@ import uuid
 import copy
 import numpy as np
 import math
-from holodeck import packagemanager as pm
-from holodeck.environments import HolodeckEnvironment
+from holoocean import packagemanager as pm
+from holoocean.environments import HoloOceanEnvironment
 
 base_conf = {
     "name": "test_randomization",
-    "world": "TestWorld",
-    "package_name": "DefaultWorlds",
+    "world": "ExampleLevel",
+    "package_name": "Ocean",
     "main_agent": "sphere0",
     "frames_per_sec": False,
     "agents": [
@@ -26,8 +26,8 @@ base_conf = {
             "control_scheme": 0,
             "location": [0.95, -1.75, 0.5],
             "rotation": [1.0, 2.0, 3.0],
-            "location_randomization": [2, 2, 2],
-            "rotation_randomization": [2, 2, 2]
+            "location_randomization": [10, 10, 10],
+            "rotation_randomization": [10, 10, 10]
         }
     ]
 }
@@ -54,10 +54,10 @@ def test_location_with_randomization():
     Returns:
 
     """
-    bin_path = pm.get_binary_path_for_package("DefaultWorlds")
+    bin_path = pm.get_binary_path_for_package("Ocean")
     conf = copy.deepcopy(base_conf)
 
-    with HolodeckEnvironment(scenario=conf, binary_path=bin_path, show_viewport=False, uuid=str(uuid.uuid4())) as env:
+    with HoloOceanEnvironment(scenario=conf, binary_path=bin_path, show_viewport=False, uuid=str(uuid.uuid4())) as env:
         prev_location = conf["agents"][0]["location"]
         default_start_location = conf["agents"][0]["location"]
         variance = conf["agents"][0]["location_randomization"]
@@ -81,10 +81,10 @@ def test_rotation_with_randomization():
     Returns:
 
     """
-    bin_path = pm.get_binary_path_for_package("DefaultWorlds")
+    bin_path = pm.get_binary_path_for_package("Ocean")
     conf = copy.deepcopy(base_conf)
 
-    with HolodeckEnvironment(scenario=conf, binary_path=bin_path, show_viewport=False, uuid=str(uuid.uuid4())) as env:
+    with HoloOceanEnvironment(scenario=conf, binary_path=bin_path, show_viewport=False, uuid=str(uuid.uuid4())) as env:
         prev_start_rotation = conf["agents"][0]["rotation"]
 
         num_resets = 5

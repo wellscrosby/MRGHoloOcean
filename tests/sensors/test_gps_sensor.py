@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 import uuid
 from copy import deepcopy
 import pytest
@@ -36,11 +36,11 @@ def test_setting_depth(config, num):
     depth = np.random.rand()*10
     config["agents"][0]["sensors"][0]["configuration"]["Depth"] = depth
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
     # Test above
     config["agents"][0]["location"] = [0, 0, -1*depth+1]
-    with holodeck.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -50,7 +50,7 @@ def test_setting_depth(config, num):
 
     # Test below
     config["agents"][0]["location"] = [0, 0, -1*depth-1]
-    with holodeck.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -67,11 +67,11 @@ def test_random_depth(config, num):
     config["agents"][0]["sensors"][0]["configuration"]["Depth"] = depth
     config["agents"][0]["sensors"][0]["configuration"]["DepthSigma"] = 1
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
     # Test above
     config["agents"][0]["location"] = [0, 0, -1*depth]
-    with holodeck.environments.HolodeckEnvironment(scenario=config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

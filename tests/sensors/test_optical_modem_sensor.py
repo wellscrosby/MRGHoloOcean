@@ -1,6 +1,4 @@
-import holodeck
-#from holodeck import sensors
-#import holodeck.command
+import holoocean
 import uuid
 import copy
 
@@ -39,12 +37,12 @@ uav_config_v1 = {
 }
 
 def test_transmittable():
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
     global uav_config_v1
     cfg = copy.deepcopy(uav_config_v1)
 
-    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -99,11 +97,11 @@ uav_config_v2 = {
 def test_within_max_distance():
     "Tests to make sure that two sensors that are not within max distance do not transmit."
     
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     global uav_config_v2
     cfg = copy.deepcopy(uav_config_v2)
 
-    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -150,11 +148,11 @@ uav_config_v3 = {
 def test_not_oriented():
     "Tests to make sure that two sensors that are not within max distance do not transmit."
     
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     global uav_config_v3
     cfg = copy.deepcopy(uav_config_v3)
 
-    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -200,11 +198,11 @@ uav_config_v4 = {
 
 def test_obstructed_view():
     """Tests to ensure that modem is unable to transmit when there is an obstruction between modems."""
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     global uav_config_v4
     cfg = copy.deepcopy(uav_config_v4)
 
-    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -257,11 +255,11 @@ def test_distance_noise():
     """Tests to ensure that noise generation for max distance is functional"""
     num_tests = 100
     tests_passed = 0
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     global uav_config_v5
     cfg = copy.deepcopy(uav_config_v5)
 
-    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -322,11 +320,11 @@ def test_angle_noise():
     """Tests to ensure that noise generation for max distance is functional"""
     num_tests = 100
     tests_passed = 0
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     global uav_config_v5
     cfg = copy.deepcopy(uav_config_v5)
 
-    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 import uuid
 import pytest
 
@@ -30,7 +30,7 @@ cfg = {
     }
 
 
-@pytest.mark.skipif("Dexterity" not in holodeck.installed_packages(),
+@pytest.mark.skipif("Dexterity" not in holoocean.installed_packages(),
                     reason='Dexterity package not installed')
 def test_ball_location_and_reward():
     """This is currently a stub test. There is no way to reliably test the trash world so this is just meant to a manual
@@ -40,9 +40,9 @@ def test_ball_location_and_reward():
 
     # TODO: Spawn trash above trashcan so it falls in and the reward can be verified
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Dexterity")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Dexterity")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

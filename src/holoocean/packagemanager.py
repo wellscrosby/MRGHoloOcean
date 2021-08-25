@@ -12,10 +12,10 @@ import pprint
 from queue import Queue
 from threading import Thread
 
-from holodeck import util
-from holodeck.exceptions import HolodeckException, NotFoundException
+from holoocean import util
+from holoocean.exceptions import HoloOceanException, NotFoundException
 
-BACKEND_URL = "https://s3.amazonaws.com/holodeckworlds/"
+BACKEND_URL = "https://robots.et.byu.edu/holo/"
 
 
 def _get_from_backend(rel_url):
@@ -40,7 +40,7 @@ def available_packages():
         List of package names
     """
     # Get the index json file from the backend
-    url = "packages/{ver}/available".format(ver=util.get_holodeck_version())
+    url = "{ver}/available".format(ver=util.get_holodeck_version())
     try:
         index = _get_from_backend(url)
         index = json.loads(index)
@@ -108,7 +108,7 @@ def world_info(world_name, world_config=None, base_indent=0):
                     world_config = world
 
     if world_config is None:
-        raise HolodeckException("Couldn't find world " + world_name)
+        raise HoloOceanException("Couldn't find world " + world_name)
 
     print(base_indent*' ', world_config["name"])
     base_indent += 4
@@ -165,7 +165,7 @@ def scenario_info(scenario_name="", scenario=None, base_indent=0):
         _print_agent_info(scenario["agents"], base_indent)
 
 
-def install(package_name, url=None):
+def install(package_name, url=None, branch=None, commit=None):
     """Installs a holodeck package.
 
     Args:
@@ -173,7 +173,7 @@ def install(package_name, url=None):
     """
 
     if package_name is None and url is None:
-        raise HolodeckException("You must specify the URL or a valid package name")
+        raise HoloOceanException("You must specify the URL or a valid package name")
 
     _check_for_old_versions()
     holodeck_path = util.get_holodeck_path()
@@ -186,12 +186,23 @@ def install(package_name, url=None):
             pprint.pprint(packages, width=10, indent=4, stream=sys.stderr)
             return
 
-        # example: %backend%/packages/0.1.0/DefaultWorlds/Linux.zip
-        url = "{backend_url}packages/{holodeck_version}/{package_name}/{platform}.zip".format(
+        if branch is not None:
+            if util.get_os_key() != "Linux":
+                print(f"Can't install from branch when using {util.get_os_key()}")
+                return
+            if commit is None:
+                commit = "latest"
+
+        else:
+            branch = "v{holodeck_version}".format(holodeck_version=util.get_holodeck_version())
+            commit = util.get_os_key()
+
+        # example: %backend%/Ocean/v0.1.0/Linux.zip
+        url = "{backend_url}{package_name}/{branch}/{platform}.zip".format(
                     backend_url=BACKEND_URL,
-                    holodeck_version=util.get_holodeck_version(),
+                    branch=branch,
                     package_name=package_name,
-                    platform=util.get_os_key())
+                    platform=commit)
 
     install_path = os.path.join(holodeck_path, "worlds", package_name)
 
@@ -375,7 +386,7 @@ def get_package_config_for_scenario(scenario):
             if world["name"] == world_name:
                 return config
 
-    raise HolodeckException("Could not find a package that contains world {}".format(world_name))
+    raise HoloOceanException("Could not find a package that contains world {}".format(world_name))
 
 
 def _iter_packages():

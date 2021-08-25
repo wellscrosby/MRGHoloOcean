@@ -1,6 +1,6 @@
 import uuid
-from holodeck import packagemanager as pm
-from holodeck.environments import HolodeckEnvironment
+from holoocean import packagemanager as pm
+from holoocean.environments import HoloOceanEnvironment
 import math
 
 test_data = [
@@ -25,7 +25,7 @@ agents = [{"agent_name": x["name"], "agent_type": x["type"], "sensors": [],
 
 config = {
     "name": "test_collision_sensor",
-    "world": "TestWorld",
+    "world": "ExampleLevel",
     "main_agent": "UavAgent",
     "frames_per_sec": False,
     "agents": agents
@@ -48,9 +48,9 @@ def check_constraints(x, y):
 
 
 def test_min_max_action_space_constraints():
-    binary_path = pm.get_binary_path_for_package("DefaultWorlds")
+    binary_path = pm.get_binary_path_for_package("Ocean")
 
-    with HolodeckEnvironment(scenario=config,
+    with HoloOceanEnvironment(scenario=config,
                              binary_path=binary_path,
                              show_viewport=False,
                              uuid=str(uuid.uuid4())) as env:
