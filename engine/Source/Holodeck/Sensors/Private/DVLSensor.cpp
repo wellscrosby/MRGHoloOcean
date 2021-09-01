@@ -18,6 +18,12 @@ void UDVLSensor::ParseSensorParms(FString ParmsJson) {
 		if (JsonParsed->HasTypedField<EJson::Number>("Elevation")) {
 			elevation = JsonParsed->GetNumberField("Elevation");
 		}
+		if (JsonParsed->HasTypedField<EJson::Boolean>("ReturnRange")) {
+			ReturnRange = JsonParsed->GetBoolField("ReturnRange");
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("MaxRange")) {
+			MaxRange = JsonParsed->GetNumberField("MaxRange")*100;
+		}
 		if (JsonParsed->HasTypedField<EJson::Boolean>("DebugLines")) {
 			DebugLines = JsonParsed->GetBoolField("DebugLines");
 		}
@@ -52,32 +58,48 @@ void UDVLSensor::InitializeSensor() {
 		sinElev = UKismetMathLibrary::DegSin(elevation);
 		cosElev = UKismetMathLibrary::DegCos(elevation);
 	}
-	if(mvn.isUncertain()){
-		// make transformation matrix
-		// See https://etda.libraries.psu.edu/files/final_submissions/17327
-		transform = {   {1/(2*sinElev),             0, -1/(2*sinElev),             0},
-						{            0, 1/(2*sinElev),              0, -1/(2*sinElev)},
-						{1/(4*cosElev), 1/(4*cosElev),  1/(4*cosElev),  1/(4*cosElev)} };
-	}
-	if(DebugLines){
-		// make direction lines
-		directions = {FVector(sinElev, 0, -cosElev),
-					FVector(0, -sinElev, -cosElev),
-					FVector(-sinElev, 0, -cosElev),
-					FVector(0, sinElev, -cosElev)};
-		// scale up to a large number
-		for(FVector& d : directions) d *= 1000;
-	}
+
+	// make transformation matrix
+	// See https://etda.libraries.psu.edu/files/final_submissions/17327
+	transform = {   {1/(2*sinElev),             0, -1/(2*sinElev),             0},
+					{            0, 1/(2*sinElev),              0, -1/(2*sinElev)},
+					{1/(4*cosElev), 1/(4*cosElev),  1/(4*cosElev),  1/(4*cosElev)} };
+
+	// make direction lines
+	directions = {FVector(sinElev, 0, -cosElev),
+				FVector(0, -sinElev, -cosElev),
+				FVector(-sinElev, 0, -cosElev),
+				FVector(0, sinElev, -cosElev)};
+	// scale up to point MaxRange distance
+	for(FVector& d : directions) d *= MaxRange;
 }
 
 void UDVLSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	//check if your parent pointer is valid, and if the sensor is on. Then get the velocity and buffer, then send the data to it. 
 	if (Parent != nullptr && bOn) {
+		float* FloatBuffer = static_cast<float*>(Buffer);
+		FTransform SensortoWorld = this->GetComponentTransform();
+		FVector Location = this->GetComponentLocation();
+
 		//UE4 gives us world velocity, rotate it to get local velocity
-		FRotator R = this->GetComponentRotation();
 		FVector Velocity = Parent->GetPhysicsLinearVelocityAtPoint(this->GetComponentLocation());
-		Velocity = R.UnrotateVector(Velocity);
+		Velocity = SensortoWorld.GetRotation().UnrotateVector(Velocity);
 		Velocity = ConvertLinearVector(Velocity, UEToClient);
+
+		// Get range if it was requested
+		if(ReturnRange){
+			// Get parameters we'll need
+			FCollisionQueryParams QueryParams = FCollisionQueryParams();
+			QueryParams.AddIgnoredActor(this->GetAttachmentRootActor());
+
+			// iterate through and do all raytracing
+			for(int i=0;i<4;i++){
+				FVector end = SensortoWorld.TransformPositionNoScale(directions[i]);
+				FHitResult Hit = FHitResult();
+				bool TraceResult = GetWorld()->LineTraceSingleByChannel(Hit, Location, end, ECollisionChannel::ECC_Visibility, QueryParams);
+				FloatBuffer[i+3] = (TraceResult ? Hit.Distance : MaxRange) / 100;  // centimeter to meters
+			}
+		}
 
 		// Add noise if it's been enabled
 		if(mvn.isUncertain()){
@@ -86,21 +108,21 @@ void UDVLSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActo
 				Velocity.X += transform[0][i]*sample[i];
 				Velocity.Y += transform[1][i]*sample[i];
 				Velocity.Z += transform[2][i]*sample[i];
+
+				if(ReturnRange) FloatBuffer[i+3] += sample[i];
 			}
 		}
 
 		// Send to buffer
-		float* FloatBuffer = static_cast<float*>(Buffer);
 		FloatBuffer[0] = Velocity.X;
 		FloatBuffer[1] = Velocity.Y;
 		FloatBuffer[2] = Velocity.Z;
 
 		// display debug lines if we want
 		if(DebugLines){
-			FVector start = this->GetComponentLocation();
-			for(FVector v : directions){
-				FVector end = R.RotateVector(v)+start;
-				DrawDebugLine(GetWorld(), start, end, FColor::Green, false, .01, ECC_WorldStatic, 1.f);
+			for(int i=0;i<4;i++){
+				FVector end = SensortoWorld.TransformPositionNoScale(directions[i]);
+				DrawDebugLine(GetWorld(), Location, end, FColor::Green, false, .01, ECC_WorldStatic, 1.f);
 			}
 		}
 	}
