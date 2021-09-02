@@ -20,7 +20,8 @@ turtle_config = {
                     "sensor_type": "DVLSensor",
                     "sensor_name": "noise",
                     "configuration": {
-                        "Sigma": 5
+                        "VelSigma": 5,
+                        "RangeSigma": 5,
                     }
                 }
             ],
