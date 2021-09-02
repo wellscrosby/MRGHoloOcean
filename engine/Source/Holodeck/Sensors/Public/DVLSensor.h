@@ -66,7 +66,8 @@ private:
 	// Used for noise
 	float sinElev;
 	float cosElev;
-	MultivariateNormal<4> mvn;
+	MultivariateNormal<4> mvnVel;
+	MultivariateNormal<4> mvnRange;
 	TArray<TArray<float>> transform;
 
 	// used for debugging

@@ -29,17 +29,30 @@ void UDVLSensor::ParseSensorParms(FString ParmsJson) {
 		}
 
 		// For handling noise
-		if (JsonParsed->HasTypedField<EJson::Number>("Sigma")) {
-			mvn.initSigma(JsonParsed->GetNumberField("Sigma"));
+		if (JsonParsed->HasTypedField<EJson::Number>("VelSigma")) {
+			mvnVel.initSigma(JsonParsed->GetNumberField("VelSigma"));
 		}
-		if (JsonParsed->HasTypedField<EJson::Array>("Sigma")) {
-			mvn.initSigma(JsonParsed->GetArrayField("Sigma"));
+		if (JsonParsed->HasTypedField<EJson::Array>("VelSigma")) {
+			mvnVel.initSigma(JsonParsed->GetArrayField("VelSigma"));
 		}
-		if (JsonParsed->HasTypedField<EJson::Number>("Cov")) {
-			mvn.initCov(JsonParsed->GetNumberField("Cov"));
+		if (JsonParsed->HasTypedField<EJson::Number>("VelCov")) {
+			mvnVel.initCov(JsonParsed->GetNumberField("VelCov"));
 		}
-		if (JsonParsed->HasTypedField<EJson::Array>("Cov")) {
-			mvn.initCov(JsonParsed->GetArrayField("Cov"));
+		if (JsonParsed->HasTypedField<EJson::Array>("VelCov")) {
+			mvnVel.initCov(JsonParsed->GetArrayField("VelCov"));
+		}
+
+		if (JsonParsed->HasTypedField<EJson::Number>("RangeSigma")) {
+			mvnRange.initSigma(JsonParsed->GetNumberField("RangeSigma"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Array>("RangeSigma")) {
+			mvnRange.initSigma(JsonParsed->GetArrayField("RangeSigma"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("RangeCov")) {
+			mvnRange.initCov(JsonParsed->GetNumberField("RangeCov"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Array>("RangeCov")) {
+			mvnRange.initCov(JsonParsed->GetArrayField("RangeCov"));
 		}
 
 	}
@@ -54,10 +67,8 @@ void UDVLSensor::InitializeSensor() {
 	//You need to get the pointer to the object the sensor is attached to. 
 	Parent = Cast<UPrimitiveComponent>(this->GetAttachParent());
 
-	if(mvn.isUncertain() || DebugLines){
-		sinElev = UKismetMathLibrary::DegSin(elevation);
-		cosElev = UKismetMathLibrary::DegCos(elevation);
-	}
+	sinElev = UKismetMathLibrary::DegSin(elevation);
+	cosElev = UKismetMathLibrary::DegCos(elevation);
 
 	// make transformation matrix
 	// See https://etda.libraries.psu.edu/files/final_submissions/17327
@@ -86,6 +97,24 @@ void UDVLSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActo
 		Velocity = SensortoWorld.GetRotation().UnrotateVector(Velocity);
 		Velocity = ConvertLinearVector(Velocity, UEToClient);
 
+		// Add noise if it's been enabled
+		if(mvnVel.isUncertain()){
+			TArray<float> sample = mvnVel.sampleTArray();
+			for(int i=0;i<4;i++){
+				Velocity.X += transform[0][i]*sample[i];
+				Velocity.Y += transform[1][i]*sample[i];
+				Velocity.Z += transform[2][i]*sample[i];
+
+			}
+		}
+
+		// Send to buffer
+		FloatBuffer[0] = Velocity.X;
+		FloatBuffer[1] = Velocity.Y;
+		FloatBuffer[2] = Velocity.Z;
+
+
+
 		// Get range if it was requested
 		if(ReturnRange){
 			// Get parameters we'll need
@@ -99,24 +128,17 @@ void UDVLSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActo
 				bool TraceResult = GetWorld()->LineTraceSingleByChannel(Hit, Location, end, ECollisionChannel::ECC_Visibility, QueryParams);
 				FloatBuffer[i+3] = (TraceResult ? Hit.Distance : MaxRange) / 100;  // centimeter to meters
 			}
+
+			// Add noise if it's been enabled
+			if(mvnRange.isUncertain()){
+				TArray<float> sample = mvnRange.sampleTArray();
+				for(int i=0;i<4;i++){
+					FloatBuffer[i+3] += sample[i];
+				}
+			} 
 		}
 
-		// Add noise if it's been enabled
-		if(mvn.isUncertain()){
-			TArray<float> sample = mvn.sampleTArray();
-			for(int i=0;i<4;i++){
-				Velocity.X += transform[0][i]*sample[i];
-				Velocity.Y += transform[1][i]*sample[i];
-				Velocity.Z += transform[2][i]*sample[i];
 
-				if(ReturnRange) FloatBuffer[i+3] += sample[i];
-			}
-		}
-
-		// Send to buffer
-		FloatBuffer[0] = Velocity.X;
-		FloatBuffer[1] = Velocity.Y;
-		FloatBuffer[2] = Velocity.Z;
 
 		// display debug lines if we want
 		if(DebugLines){
