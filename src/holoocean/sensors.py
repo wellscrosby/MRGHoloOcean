@@ -345,6 +345,7 @@ class IMUSensor(HoloOceanSensor):
          [accel_bias_x, accel_bias_y, accel_bias_z],
          [ang_vel_bias_roll,  ang_vel_bias_pitch, ang_vel_bias_yaw]    ]
 
+
     **Configuration**
 
     The ``configuration`` block (see :ref:`configuration-block`) accepts the
@@ -700,9 +701,12 @@ class DVLSensor(HoloOceanSensor):
 
     Returns a 1D numpy array of::
 
-       [velocity_x, velocity_y, velocity_z]
+       [velocity_x, velocity_y, velocity_z, range_x_forw, range_y_forw, range_x_back, range_y_back]
 
-     **Configuration**
+
+    With the range potentially not returning if ``ReturnRange`` is set to false.
+
+    **Configuration**
 
     The ``configuration`` block (see :ref:`configuration-block`) accepts the
     following options:
@@ -746,7 +750,8 @@ class DepthSensor(HoloOceanSensor):
 
        [position_z]
 
-     **Configuration**
+
+    **Configuration**
 
     The ``configuration`` block (see :ref:`configuration-block`) accepts the
     following options:
