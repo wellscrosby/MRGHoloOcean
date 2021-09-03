@@ -29,6 +29,11 @@ void Benchmarker::End()
 	t_end = std::chrono::high_resolution_clock::now();
 }
 
+float Benchmarker::CalcMs()
+{
+	return std::chrono::duration<float, std::milli>(t_end - t_start).count();
+}
+
 void Benchmarker::CalculateAvg()
 {
 	time_span = std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start);
@@ -44,5 +49,5 @@ void Benchmarker::CalculateAvg()
 
 FString Benchmarker::Stat()
 {
-	return FString::SanitizeFloat(avg);
+	return FString::SanitizeFloat(avg, 15);
 }

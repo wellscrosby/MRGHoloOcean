@@ -1,4 +1,4 @@
-// MIT License (c) 2019 BYU PCCL see LICENSE file
+// MIT License (c) 2021 BYU FRoStLab see LICENSE file
 
 #pragma once
 #include <random>
@@ -155,6 +155,16 @@ public:
         std::array<float,N> sample = sampleArray();
 
         return sample[0];
+    }
+    float sampleRayleigh(){
+        // Samples from a rayleigh distribution
+        verifyf(N == 1, TEXT("Can't use MVN size %d with Rayleigh Noise"), N);
+
+        // sample
+        float x = sampleFloat();
+        float y = sampleFloat();
+
+        return sqrt(x*x + y*y);
     }
 
     /*

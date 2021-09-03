@@ -4,14 +4,14 @@
 #include "Holodeck.h"
 
 #include "Command.h"
-#include "SendAcousticMessageCommand.generated.h"
+#include "SendOpticalMessageCommand.generated.h"
 
 /**
-* SendAcousticMessageCommand
+* SendOpticalMessageCommand
 * 
 */
 UCLASS(ClassGroup = (Custom))
-class HOLODECK_API USendAcousticMessageCommand : public UCommand {
+class HOLODECK_API USendOpticalMessageCommand : public UCommand {
 	GENERATED_BODY()
 public:
 	//See UCommand for the documentation of this overridden function. 

@@ -93,13 +93,13 @@ private:
 	  * At a lower level, it calls GetCommand on every json object that in an array expected to be a command.
 	  * @param Input the Json to extract commands from.
 	  */
-	void ExtractCommandsFromJson(const JsonValue &Input);
+	void ExtractCommandsFromJson(const gason::JsonValue &Input);
 
 	/**
 	  * GetCommand
 	  * Traverses a specific json object that is a command.
 	  * Separates the parameters into string parameters and number parameters, then pushes the command to the Commands array. 
 	  */
-	void GetCommand(const JsonValue &Input);
+	void GetCommand(const gason::JsonValue &Input);
 };
 
