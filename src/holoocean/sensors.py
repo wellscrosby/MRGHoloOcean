@@ -345,6 +345,7 @@ class IMUSensor(HoloOceanSensor):
          [accel_bias_x, accel_bias_y, accel_bias_z],
          [ang_vel_bias_roll,  ang_vel_bias_pitch, ang_vel_bias_yaw]    ]
 
+
     **Configuration**
 
     The ``configuration`` block (see :ref:`configuration-block`) accepts the
@@ -700,20 +701,39 @@ class DVLSensor(HoloOceanSensor):
 
     Returns a 1D numpy array of::
 
-       [velocity_x, velocity_y, velocity_z]
+       [velocity_x, velocity_y, velocity_z, range_x_forw, range_y_forw, range_x_back, range_y_back]
 
-     **Configuration**
+
+    With the range potentially not returning if ``ReturnRange`` is set to false.
+
+    **Configuration**
 
     The ``configuration`` block (see :ref:`configuration-block`) accepts the
     following options:
 
     - ``Elevation``: Angle of each acoustic beam off z-axis pointing down. Only used for noise/visualization. Defaults to 90 => horizontal.
     - ``DebugLines``: Whether to show lines of each beam. Defaults to false.
-    - ``Sigma``/``Cov``: Covariance/Std to be applied to each beam. Can be scalar, 4-vector or 4x4-matrix. Defaults to 0 => no noise.
+    - ``VelSigma``/``VelCov``: Covariance/Std to be applied to each beam velocity. Can be scalar, 4-vector or 4x4-matrix. Defaults to 0 => no noise.
+    - ``ReturnRange``: Boolean of whether range of beams should also be returned. Defaults to true.
+    - ``MaxRange``: Maximum range that can be returned by the beams.
+    - ``RangeSigma``/``RangeCov``: Covariance/Std to be applied to each beam range. Can be scalar, 4-vector or 4x4-matrix. Defaults to 0 => no noise.
 
     """
 
     sensor_type = "DVLSensor"
+
+    def __init__(self, client, agent_name, agent_type, name="DVLSensor",  config=None):
+
+        self.config = {} if config is None else config
+
+        return_range = True
+
+        if "ReturnRange" in self.config:
+            return_range = self.config["ReturnRange"]
+
+        self.shape = [7] if return_range else [3]
+
+        super(DVLSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
     @property
     def dtype(self):
@@ -721,7 +741,7 @@ class DVLSensor(HoloOceanSensor):
 
     @property
     def data_shape(self):
-        return [3]
+        return self.shape
 
 class DepthSensor(HoloOceanSensor):
     """Pressure/Depth Sensor.
@@ -730,7 +750,8 @@ class DepthSensor(HoloOceanSensor):
 
        [position_z]
 
-     **Configuration**
+
+    **Configuration**
 
     The ``configuration`` block (see :ref:`configuration-block`) accepts the
     following options:
