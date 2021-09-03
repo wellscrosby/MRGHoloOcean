@@ -39,7 +39,7 @@ public:
 
 protected:
 	//See HolodeckSensor for the documentation of these overridden functions.
-	int GetNumItems() override { return 3; };
+	int GetNumItems() override { return ReturnRange ? 7 : 3; };
 	int GetItemSize() override { return sizeof(float); };
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -48,6 +48,12 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float elevation = 90;
+
+	UPROPERTY(EditAnywhere)
+	bool ReturnRange = true;
+
+	UPROPERTY(EditAnywhere)
+	float MaxRange = 20*100;
 
 private:
 	/**
@@ -60,7 +66,8 @@ private:
 	// Used for noise
 	float sinElev;
 	float cosElev;
-	MultivariateNormal<4> mvn;
+	MultivariateNormal<4> mvnVel;
+	MultivariateNormal<4> mvnRange;
 	TArray<TArray<float>> transform;
 
 	// used for debugging
