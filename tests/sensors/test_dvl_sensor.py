@@ -91,7 +91,7 @@ def test_dvl_sensor_rotated():
                                                    uuid=str(uuid.uuid4())) as env:
         #let it land and then start moving forward
         for _ in range(100):
-            last_x_velocity, _, _ = env.tick()["DVLSensor"]
+            last_x_velocity, _, _ = env.tick()["DVLSensor"][:3]
         env.step([150,0])
 
         #Move forward, making sure y is relatively small, and x is increasing
@@ -119,7 +119,7 @@ def test_dvl_sensor_rotated():
             env.step([0, 0])
 
         #make sure everythign is close to 0
-        x_velocity, y_velocity, z_velocity = env.tick()["DVLSensor"]
+        x_velocity, y_velocity, z_velocity = env.tick()["DVLSensor"][:3]
         assert x_velocity <= 1e-2, "The x velocity wasn't close enough to zero!"
         assert y_velocity <= 1e-2, "The y velocity wasn't close enough to zero!"
         assert z_velocity <= 1e-2, "The z velocity wasn't close enough to zero!"
