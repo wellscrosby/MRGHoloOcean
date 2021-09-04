@@ -4,8 +4,10 @@ import uuid
 import pytest
 import numpy as np
 
-@pytest.mark.parametrize("sensor", ["DVLSensor", "IMUSensor", "LocationSensor", 
-                        "RangeFinderSensor", "RotationSensor", "VelocitySensor", "OrientationSensor", "PoseSensor"])
+@pytest.mark.parametrize("sensor", ["DVLSensor", "IMUSensor", "GPSSensor",
+                                "SonarSensor", "DepthSensor", "RGBCamera", 
+                                "PoseSensor", "LocationSensor", "RangeFinderSensor", 
+                                "RotationSensor", "OrientationSensor", "VelocitySensor"])
 def test_sensor(sensor):
     config = {
                 "name": "test",
@@ -13,6 +15,10 @@ def test_sensor(sensor):
                 "main_agent": "turtle0",
                 "lcm_provider": "memq://",
                 "frames_per_sec": False,
+                "octree_min": 0.1,
+                "octree_max": 10,
+                "env_min": [-1,-1,-1],
+                "env_max": [1,1,1],
                 "agents": [
                     {
                         "agent_name": "turtle0",
@@ -21,7 +27,11 @@ def test_sensor(sensor):
                             {
                                 "sensor_type": sensor,
                                 "publish": "lcm",
-                                "lcm_channel": "sensor"
+                                "lcm_channel": "sensor",
+                                "configuration": {
+                                    "ReturnBias": True, # for IMU
+                                    "ReturnRange": True # for DVL
+                                }
                             }
                         ],
                         "control_scheme": 0,
@@ -29,6 +39,7 @@ def test_sensor(sensor):
                     }
                 ]
             }
+
 
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     d = {"i" : 0}
@@ -42,11 +53,11 @@ def test_sensor(sensor):
                                                    uuid=str(uuid.uuid4())) as env:
         sub = env._lcm.subscribe("sensor", my_handler)
 
-        for _ in range(100):
+        for _ in range(50):
             env.tick()
             env._lcm.handle()
 
-        assert d['i'] == 100, f"LCM only received {i} of 100 messages"
+        assert d['i'] == 50, f"LCM only received {d['i']} of 100 messages"
 
         env._lcm.unsubscribe(sub)
 
@@ -105,7 +116,7 @@ def test_acoustic_beacon():
             env.tick()
             env._lcm.handle()
 
-        assert d['i'] == 100, f"LCM only received {i} of 100 messages"
+        assert d['i'] == 100, f"LCM only received {d['i']} of 100 messages"
 
         env._lcm.unsubscribe(sub)
 

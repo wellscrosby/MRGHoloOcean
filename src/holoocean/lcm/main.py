@@ -1,4 +1,8 @@
-from holoocean.lcm import DVLSensor, IMUSensor, LocationSensor, RangeFinderSensor, RotationSensor, VelocitySensor, OrientationSensor, PoseSensor, AcousticBeaconSensor
+from holoocean.lcm import DVLSensor, IMUSensor, GPSSensor, \
+                        AcousticBeaconSensor, SonarSensor, DepthSensor, \
+                        RGBCamera, PoseSensor, LocationSensor, \
+                        RangeFinderSensor, RotationSensor, OrientationSensor, \
+                        VelocitySensor
 import numpy as np
 import os
 
@@ -10,20 +14,24 @@ class SensorData:
         channel (:obj:`str`): Name of channel to publish to.
     """
     _sensor_keys_ = {
-        "IMUSensor": IMUSensor,
         "DVLSensor": DVLSensor,
+        "IMUSensor": IMUSensor,
+        "GPSSensor": GPSSensor,
+        "AcousticBeaconSensor": AcousticBeaconSensor,
+        "SonarSensor": SonarSensor,
+        "DepthSensor": DepthSensor,
+        "RGBCamera": RGBCamera,
+        "PoseSensor": PoseSensor,
         "LocationSensor": LocationSensor,
         "RangeFinderSensor": RangeFinderSensor,
         "RotationSensor": RotationSensor,
-        "VelocitySensor": VelocitySensor,
-        "PoseSensor": PoseSensor,
         "OrientationSensor": OrientationSensor,
-        "AcousticBeaconSensor": AcousticBeaconSensor,
+        "VelocitySensor": VelocitySensor,
     }
 
     def __init__(self, sensor_type, channel):
         self.type = sensor_type
-        self.sensor = self._sensor_keys_[sensor_type]()
+        self.msg = self._sensor_keys_[sensor_type]()
         self.channel = channel
 
     def set_value(self, timestamp, value):
@@ -33,36 +41,59 @@ class SensorData:
             timestamp (:obj:`int`): Number of milliseconds since last data was published
             value (:obj:`list`): List of sensor data to put into LCM sensor class
             """
-        self.sensor.timestamp = timestamp
+        self.msg.timestamp = timestamp
 
-        if self.type == "IMUSensor":
-            self.sensor.acceleration = value[0].tolist()
-            self.sensor.angular_velocity = value[1].tolist()
-        elif self.type == "DVLSensor":
-            self.sensor.velocity = value.tolist()
+        if self.type == "DVLSensor":
+            self.msg.velocity = value[:3].tolist()
+            if value.shape[0] == 7:
+                self.msg.range = value[3:].tolist()
+            else:
+                self.msg.range = np.full(4, np.NaN)
+        elif self.type == "IMUSensor":
+            self.msg.acceleration = value[0].tolist()
+            self.msg.angular_velocity = value[1].tolist()
+            if value.shape[0] == 4:
+                self.msg.acceleration_bias = value[2].tolist()
+                self.msg.angular_velocity_bias = value[3].tolist()
+            else:
+                self.msg.acceleration_bias = np.full(3, np.NaN)
+                self.msg.angular_velocity_bias = np.full(3, np.NaN)
+        elif self.type == "GPSSensor":
+            self.msg.position = value.tolist()
+        elif self.type == "AcousticBeaconSensor":
+            self.msg.msg_type    = value[0]
+            self.msg.from_beacon = value[1]
+            # TODO Eventually somehow handle data passed through in value[2]
+            self.msg.azimuth   = value[3] if value[0] not in ["OWAY", "MSG_REQ", "MSG_RESP"] else np.NaN
+            self.msg.elevation = value[4] if value[0] not in ["OWAY", "MSG_REQ", "MSG_RESP"] else np.NaN
+            self.msg.range     = value[5] if value[0] in ["MSG_RESPU", "MSG_RESPX"] else np.NaN
+            self.msg.z         = value[-1] if value[0] in ["MSG_REQX", "MSG_RESPX"] else np.NaN
+        elif self.type == "SonarSensor":
+            self.msg.bins_range = value.shape[0]
+            self.msg.bins_azimuth = value.shape[1]
+            self.msg.image = value.tolist()
+        elif self.type == "DepthSensor":
+            self.msg.depth = value[0]
+        elif self.type == "RGBCamera":
+            self.msg.height = value.shape[0]
+            self.msg.width = value.shape[1]
+            self.msg.channels = value.shape[2]
+            self.msg.image = value.tolist()
+        elif self.type == "PoseSensor":
+            self.msg.matrix = value.tolist()
         elif self.type == "LocationSensor":
-            self.sensor.position = value.tolist()
+            self.msg.position = value.tolist()
         elif self.type == "RangeFinderSensor":
             count = len(value)
-            self.sensor.count = count
-            self.sensor.distances = value.tolist()
-            self.sensor.angles = np.linspace(0, 360, count, endpoint=False).tolist()
+            self.msg.count = count
+            self.msg.distances = value.tolist()
+            self.msg.angles = np.linspace(0, 360, count, endpoint=False).tolist()
         elif self.type == "RotationSensor":
-            self.sensor.roll, self.sensor.pitch, self.sensor.yaw = value
-        elif self.type == "VelocitySensor":
-            self.sensor.velocity = value.tolist()
-        elif self.type == "PoseSensor":
-            self.sensor.matrix = value.tolist()
+            self.msg.roll, self.msg.pitch, self.msg.yaw = value
         elif self.type == "OrientationSensor":
-            self.sensor.matrix = value.tolist()
-        elif self.type == "AcousticBeaconSensor":
-            self.sensor.msg_type    = value[0]
-            self.sensor.from_beacon = value[1]
-            # TODO Eventually somehow handle data passed through in value[2]
-            self.sensor.azimuth   = value[3] if value[0] not in ["OWAY", "MSG_REQ", "MSG_RESP"] else np.NaN
-            self.sensor.elevation = value[4] if value[0] not in ["OWAY", "MSG_REQ", "MSG_RESP"] else np.NaN
-            self.sensor.range     = value[5] if value[0] in ["MSG_RESPU", "MSG_RESPX"] else np.NaN
-            self.sensor.z         = value[-1] if value[0] in ["MSG_REQX", "MSG_RESPX"] else np.NaN
+            self.msg.matrix = value.tolist()
+        elif self.type == "VelocitySensor":
+            self.msg.velocity = value.tolist()
         else:
             raise ValueError("That sensor hasn't been implemented in LCM yet")
 
