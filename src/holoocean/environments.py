@@ -13,15 +13,14 @@ import sys
 
 import numpy as np
 
-from holoocean.command import CommandCenter, SpawnAgentCommand, RGBCameraRateCommand, \
+from holoocean.command import CommandCenter, SpawnAgentCommand, \
     TeleportCameraCommand, RenderViewportCommand, RenderQualityCommand, \
-    CustomCommand, DebugDrawCommand, SendAcousticMessageCommand
+    CustomCommand, DebugDrawCommand
 
 from holoocean.exceptions import HoloOceanException
 from holoocean.holooceanclient import HoloOceanClient
 from holoocean.agents import AgentDefinition, SensorDefinition, AgentFactory
 from holoocean.weather import WeatherController
-from holoocean.lcm import SensorData
 
 from holoocean.sensors import AcousticBeaconSensor
 from holoocean.sensors import OpticalModemSensor
@@ -54,13 +53,14 @@ class HoloOceanEnvironment:
             If engine log output should be printed to stdout
 
         pre_start_steps (:obj:`int`):
-            Number of ticks to call after initializing the world, allows the level to load and settle.
+            Number of ticks to call after initializing the world, allows the 
+                level to load and settle.
 
         show_viewport (:obj:`bool`, optional):
             If the viewport should be shown (Linux only) Defaults to True.
 
         ticks_per_sec (:obj:`int`, optional):
-            The number of frame ticks per unreal seconds. This will override whatever is 
+            The number of frame ticks per unreal seconds. This will override whatever is
             in the configuration json. Defaults to 30.
 
         frames_per_sec (:obj:`int` or :obj:`bool`, optional):
@@ -78,7 +78,7 @@ class HoloOceanEnvironment:
 
     def __init__(self, agent_definitions=None, binary_path=None, window_size=None,
                  start_world=True, uuid="", gl_version=4, verbose=False, pre_start_steps=2,
-                 show_viewport=True, ticks_per_sec=None, frames_per_sec=None, copy_state=True, 
+                 show_viewport=True, ticks_per_sec=None, frames_per_sec=None, copy_state=True,
                  scenario=None):
 
         if agent_definitions is None:
@@ -133,20 +133,17 @@ class HoloOceanEnvironment:
         else:
             self._ticks_per_sec = 30
 
-        # Choose one that was passed in function
-        if frames_per_sec is not None:
-            frames_per_sec = frames_per_sec
-        # otherwise use one in scenario
-        elif "frames_per_sec" in scenario:
+        # If one wasn't passed in, use one in scenario
+        if frames_per_sec is None and "frames_per_sec" in scenario:
             frames_per_sec = scenario["frames_per_sec"]
         # default to true
         else:
             frames_per_sec = True
 
         # parse frames_per_sec
-        if frames_per_sec == True:
+        if frames_per_sec is True:
             self._frames_per_sec = self._ticks_per_sec
-        elif frames_per_sec == False:
+        elif frames_per_sec is False:
             self._frames_per_sec = 0
         else:
             self._frames_per_sec = frames_per_sec
@@ -190,7 +187,7 @@ class HoloOceanEnvironment:
 
         self._client.acquire()
 
-        if os.name == "posix" and show_viewport == False:
+        if os.name == "posix" and show_viewport is False:
             self.should_render_viewport(False)
 
         # Flag indicates if the user has called .reset() before .tick() and .step()
@@ -239,9 +236,6 @@ class HoloOceanEnvironment:
         if self._scenario is None:
             return
 
-        # TODO Make list of beacons to use and pass to each beacon
-        # TODO When receiving messages, make sure only 1 is being transmitted at a time
-        # TODO Message to all beacons?
         for agent in self._scenario['agents']:
             sensors = []
             for sensor in agent['sensors']:
@@ -267,7 +261,7 @@ class HoloOceanEnvironment:
                 # set up sensor rates
                 if self._ticks_per_sec < sensor_config['Hz']:
                     raise ValueError(f"{sensor_config['sensor_name']} is sampled at {sensor_config['Hz']} which is less than ticks_per_sec {self._ticks_per_sec}")
-                
+
                 # round sensor rate as needed
                 tick_every = self._ticks_per_sec / sensor_config['Hz']
                 if int(tick_every) != tick_every:
@@ -289,7 +283,7 @@ class HoloOceanEnvironment:
                 if sensor_config['lcm_channel'] is not None and self._lcm is None:
                     globals()["lcm"] = __import__("lcm")
                     self._lcm = lcm.LCM(self._scenario['lcm_provider'])
-            
+
             # Default values for an agent
             agent_config = {
                 'location': [0, 0, 0],
@@ -407,7 +401,7 @@ class HoloOceanEnvironment:
 
         Args:
             action (:obj:`np.ndarray`): An action for the main agent to carry out on the next tick.
-            ticks (:obj:`int`): Number of times to step the environment wiht this action.
+            ticks (:obj:`int`): Number of times to step the environment with this action.
                 If ticks > 1, this function returns the last state generated.
             publish (:obj: `bool`): Whether or not to publish as defined by scenario. Defaults to True.
 
@@ -467,7 +461,7 @@ class HoloOceanEnvironment:
     def tick(self, num_ticks=1, publish=True):
         """Ticks the environment once. Normally used for multi-agent environments.
         Args:
-            num_ticks (:obj:`int`): Number of ticks to perform. Defaults to 1. 
+            num_ticks (:obj:`int`): Number of ticks to perform. Defaults to 1.
             publish (:obj: `bool`): Whether or not to publish as defined by scenario. Defaults to True.
         Returns:
             :obj:`dict`: A dictionary from agent name to its full state. The full state is another
@@ -490,7 +484,7 @@ class HoloOceanEnvironment:
 
             self._tick_sensor()
             self._num_ticks += 1
-            
+
         if publish and self._lcm is not None:
             self.publish(state)
 
@@ -509,7 +503,7 @@ class HoloOceanEnvironment:
                 if sensor.lcm_msg is not None and sensor_name in state[agent_name]:
                     # send message if it's in the dictionary and if LCM message is turned on
                     sensor.lcm_msg.set_value(int(1000 * self._num_ticks / self._ticks_per_sec), state[agent_name][sensor_name])
-                    self._lcm.publish(sensor.lcm_msg.channel, sensor.lcm_msg.sensor.encode())
+                    self._lcm.publish(sensor.lcm_msg.channel, sensor.lcm_msg.msg.encode())
 
     def _enqueue_command(self, command_to_send):
         self._command_center.enqueue_command(command_to_send)
@@ -545,10 +539,10 @@ class HoloOceanEnvironment:
         if is_main_agent:
             self._agent = self.agents[agent_def.name]
 
-    def spawn_prop(self, prop_type, location=None, rotation=None, scale=1, 
+    def spawn_prop(self, prop_type, location=None, rotation=None, scale=1,
                     sim_physics=False, material="", tag=""):
-        """Spawns a basic prop object in the world like a box or sphere. 
-        
+        """Spawns a basic prop object in the world like a box or sphere.
+
         Prop will not persist after environment reset.
 
         Args:
@@ -647,7 +641,7 @@ class HoloOceanEnvironment:
         """Draws a debug point in the world
 
         Args:
-            loc (:obj:`list` of :obj:`float`): The ``[x, y, z]`` start of the box. 
+            loc (:obj:`list` of :obj:`float`): The ``[x, y, z]`` start of the box.
                 (see :ref:`coordinate-system`)
             color (:obj:`list` of :obj:`float`): ``[r, g, b]`` color value
             thickness (:obj:`float`): thickness of the point
@@ -681,13 +675,13 @@ class HoloOceanEnvironment:
 
     def set_render_quality(self, render_quality):
         """Adjusts the rendering quality of Holodeck.
-        
+
         Args:
             render_quality (:obj:`int`): An integer between 0 = Low Quality and 3 = Epic quality.
         """
         self._enqueue_command(RenderQualityCommand(render_quality))
 
-    
+
     def set_control_scheme(self, agent_name, control_scheme):
         """Set the control scheme for a specific agent.
 
@@ -707,7 +701,7 @@ class HoloOceanEnvironment:
         A world command sends an abitrary command that may only exist in a specific world or
         package. It is given a name and any amount of string and number parameters that allow it to
         alter the state of the world.
-        
+
         If a command is sent that does not exist in the world, the environment will exit.
 
         Args:
@@ -735,24 +729,24 @@ class HoloOceanEnvironment:
             del environment['DISPLAY']
         self._world_process = \
             subprocess.Popen([binary_path, task_key, '-HolodeckOn', '-opengl' + str(gl_version),
-                              '-LOG=HolodeckLog.txt', '-ForceRes', '-ResX=' + str(self._window_size[1]),
-                              '-ResY=' + str(self._window_size[0]), '--HolodeckUUID=' + self._uuid,
-                              '-TicksPerSec=' + str(self._ticks_per_sec),
-                              '-FramesPerSec=' + str(self._frames_per_sec),
-                              '-EnvMinX=' + str(self._env_min[0]), '-EnvMinY=' + str(self._env_min[1]), '-EnvMinZ=' + str(self._env_min[2]),
-                              '-EnvMaxX=' + str(self._env_max[0]), '-EnvMaxY=' + str(self._env_max[1]), '-EnvMaxZ=' + str(self._env_max[2]),
-                              '-OctreeMin=' + str(self._octree_min), '-OctreeMax=' + str(self._octree_max)],
-                             stdout=out_stream,
-                             stderr=out_stream,
-                             env=environment)
+                        '-LOG=HolodeckLog.txt', '-ForceRes', '-ResX=' + str(self._window_size[1]),
+                        '-ResY=' + str(self._window_size[0]), '--HolodeckUUID=' + self._uuid,
+                        '-TicksPerSec=' + str(self._ticks_per_sec),
+                        '-FramesPerSec=' + str(self._frames_per_sec),
+                        '-EnvMinX=' + str(self._env_min[0]), '-EnvMinY=' + str(self._env_min[1]), '-EnvMinZ=' + str(self._env_min[2]),
+                        '-EnvMaxX=' + str(self._env_max[0]), '-EnvMaxY=' + str(self._env_max[1]), '-EnvMaxZ=' + str(self._env_max[2]),
+                        '-OctreeMin=' + str(self._octree_min), '-OctreeMax=' + str(self._octree_max)],
+                        stdout=out_stream,
+                        stderr=out_stream,
+                        env=environment)
 
         atexit.register(self.__on_exit__)
 
         try:
             loading_semaphore.acquire(10)
         except posix_ipc.BusyError:
-            raise HoloOceanException("Timed out waiting for binary to load. Ensure that holodeck is "
-                                    "not being run with root priveleges.")
+            raise HoloOceanException("Timed out waiting for binary to load. Ensure that holodeck "
+                                    "is not being run with root priveleges.")
         loading_semaphore.unlink()
 
     def __windows_start_process__(self, binary_path, task_key, verbose):
@@ -762,14 +756,14 @@ class HoloOceanEnvironment:
                                                        'Global\\HOLODECK_LOADING_SEM' + self._uuid)
         self._world_process = \
             subprocess.Popen([binary_path, task_key, '-HolodeckOn', '-LOG=HolodeckLog.txt',
-                              '-ForceRes', '-ResX=' + str(self._window_size[1]), '-ResY=' +
-                              str(self._window_size[0]), '-TicksPerSec=' + str(self._ticks_per_sec),
-                              '-FramesPerSec=' + str(self._frames_per_sec),
-                              '--HolodeckUUID=' + self._uuid,
-                              '-EnvMinX=' + str(self._env_min[0]), '-EnvMinY=' + str(self._env_min[1]), '-EnvMinZ=' + str(self._env_min[2]),
-                              '-EnvMaxX=' + str(self._env_max[0]), '-EnvMaxY=' + str(self._env_max[1]), '-EnvMaxZ=' + str(self._env_max[2]),
-                              '-OctreeMin=' + str(self._octree_min), '-OctreeMax=' + str(self._octree_max)],
-                             stdout=out_stream, stderr=out_stream)
+                        '-ForceRes', '-ResX=' + str(self._window_size[1]), '-ResY=' +
+                        str(self._window_size[0]), '-TicksPerSec=' + str(self._ticks_per_sec),
+                        '-FramesPerSec=' + str(self._frames_per_sec),
+                        '--HolodeckUUID=' + self._uuid,
+                        '-EnvMinX=' + str(self._env_min[0]), '-EnvMinY=' + str(self._env_min[1]), '-EnvMinZ=' + str(self._env_min[2]),
+                        '-EnvMaxX=' + str(self._env_max[0]), '-EnvMaxY=' + str(self._env_max[1]), '-EnvMaxZ=' + str(self._env_max[2]),
+                        '-OctreeMin=' + str(self._octree_min), '-OctreeMax=' + str(self._octree_max)],
+                        stdout=out_stream, stderr=out_stream)
 
         atexit.register(self.__on_exit__)
         response = win32event.WaitForSingleObject(loading_semaphore, 100000)  # 100 second timeout
@@ -804,7 +798,7 @@ class HoloOceanEnvironment:
                 # otherwise remove, it and reset count
                 else:
                     sensor.tick_count = 1
-    
+
     def _get_single_state(self):
         if self._agent is not None:
             # rebuild state dictionary to drop/change data as needed
@@ -874,7 +868,7 @@ class HoloOceanEnvironment:
 
     def send_acoustic_message(self, id_from, id_to, msg_type, msg_data):
         """Send a message from one beacon to another.
-        
+
         # TODO: Fill this out.
         """
         AcousticBeaconSensor.instances[id_from].send_message(id_to, msg_type, msg_data)
