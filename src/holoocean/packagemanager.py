@@ -175,6 +175,10 @@ def install(package_name, url=None, branch=None, commit=None):
     if package_name is None and url is None:
         raise HoloOceanException("You must specify the URL or a valid package name")
 
+    if package_name in installed_packages():
+        print(f"{package_name} already installed.")
+        return
+
     _check_for_old_versions()
     holodeck_path = util.get_holodeck_path()
 

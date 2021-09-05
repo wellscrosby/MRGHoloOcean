@@ -2,8 +2,11 @@ kind: pipeline
 type: docker
 name: test
 
+environment:
+  HOLODECKPATH: packages
+
 steps:
-- name: Build Docker Image
+- name: build_docker
   image: docker:latest
   volumes:
   - name: docker_sock
@@ -11,17 +14,48 @@ steps:
   commands:
   - docker build -t "${DRONE_REPO}:${DRONE_COMMIT:0:8}" .
 
-- name: Test
+- name: install_package
   image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  depends_on:
+  - build_docker
   commands:
   # Find what branch we need to pull from
   - BRANCH_EXISTS=$(git ls-remote --heads https://bitbucket.org/frostlab/HoloOcean-Engine.git ${DRONE_BRANCH} | wc -l)
   - if test "$BRANCH_EXISTS" = "1"; then BRANCH=${DRONE_BRANCH}; else BRANCH=develop; fi
   - echo $BRANCH
-  # Install, and run tests
-  - pip install .
+  # Install package
+  - pip3 install .
   - python3 -c "import holoocean; holoocean.install(\"Ocean\", branch=\"$BRANCH\")"
-  - py.test
+  - pip3 uninstall holoocean
+
+# iterate through all python versions
+- name: py35
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  depends_on:
+  - install_package
+  commands:
+  - tox -e py35
+
+- name: py36
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  depends_on:
+  - install_package
+  commands:
+  - tox -e py36
+
+- name: py37
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  depends_on:
+  - install_package
+  commands:
+  - tox -e py37
+
+- name: py38
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  depends_on:
+  - install_package
+  commands:
+  - tox -e py38
 
 
 volumes:
