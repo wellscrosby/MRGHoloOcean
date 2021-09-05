@@ -26,7 +26,6 @@ steps:
   # Install package
   - pip3 install .
   - python3 -c "import holoocean; holoocean.install(\"Ocean\", branch=\"$BRANCH\")"
-  - pip3 uninstall holoocean
 
 # iterate through all python versions
 - name: py35
