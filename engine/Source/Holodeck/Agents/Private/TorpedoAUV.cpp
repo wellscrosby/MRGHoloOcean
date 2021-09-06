@@ -12,7 +12,7 @@ ATorpedoAUV::ATorpedoAUV() {
 	AutoPossessAI = EAutoPossessAI::PlacedInWorld;
 
 	this->OffsetToOrigin = FVector(0, 0, 0);
-	this->CenterBuoyancy = FVector(0,0,5); 
+	this->CenterBuoyancy = FVector(0,0,7); 
 	this->CenterMass = FVector(0,0,0);
 	this->MassInKG = 36;
 	this->Volume =  MassInKG / WaterDensity; //0.0342867409204;	
@@ -22,8 +22,6 @@ void ATorpedoAUV::InitializeAgent() {
 	RootMesh = Cast<UStaticMeshComponent>(RootComponent);
 
 	Super::InitializeAgent();
-	LastCommand = TArray<float>(CommandArray, 5);
-	DiffCommand = TArray<float>(CommandArray, 5);
 }
 
 // Called every frame
@@ -40,10 +38,6 @@ void ATorpedoAUV::Tick(float DeltaSeconds) {
 	// Apply fin forces
 	for(int i=0;i<4;i++){
 		ApplyFin(i);
-
-		// Makes fins move in blueprint
-		DiffCommand[i] = CommandArray[i] - LastCommand[i];
-		LastCommand[i] = CommandArray[i];
 	}
 }
 
@@ -79,22 +73,21 @@ void ATorpedoAUV::ApplyFin(int i){
 	// I've just adjusted these until they seem to behave correctly
 	double sin = -FMath::Sin(angle*3.14/180);
 	double drag = 0.5 * u2 * sin*sin / 400;
-	double lift = 0.5 * u2 * sin / 200;
+	double lift = 0.5 * u2 * sin*sin*sin / 10;
 	// Sometimes they get out of hand, clamp them
-	double maxForce = 100;
-	drag = FMath::Clamp(drag, -maxForce, maxForce);
-	lift = FMath::Clamp(lift, -maxForce, maxForce);
-	
-	// Move force into body frame & apply
 	FVector fW = -FVector(drag, 0, lift);
+	fW = fW.GetClampedToMaxSize(400);
+
+	// Move force into body frame & apply
 	FVector fBody = WToBody.RotateVector(fW);
 	RootMesh->AddForceAtLocationLocal(fBody, finTranslation[i]);
 
 	// // Used to draw forces/frames for debugging
+	// UE_LOG(LogHolodeck, Warning, TEXT("Angle: %f, drag %f, lift %f"), angle, fW.X, fW.Z);
 	// FTransform finCoord = FTransform(finToBody, finTranslation[i]) * GetActorTransform();
 	// FVector fWorld = bodyToWorld.RotateVector(fBody);
 	// // View force vector
 	// DrawDebugLine(GetWorld(), finCoord.GetTranslation(), finCoord.GetTranslation()+fWorld*10, FColor::Red, false, .1, ECC_WorldStatic, 1.f);
 	// // View angle of attack coordinate frame
-	// // DrawDebugCoordinateSystem(GetWorld(), finCoord.GetTranslation(), finCoord.Rotator(), 15, false, .1, ECC_WorldStatic, 1.f);
+	// DrawDebugCoordinateSystem(GetWorld(), finCoord.GetTranslation(), finCoord.Rotator(), 15, false, .1, ECC_WorldStatic, 1.f);
 }

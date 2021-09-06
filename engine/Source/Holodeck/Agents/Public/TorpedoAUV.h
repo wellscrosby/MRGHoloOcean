@@ -8,10 +8,10 @@
 #include "HolodeckBuoyantAgent.h"
 #include "TorpedoAUV.generated.h"
 
-const float TAUV_MIN_THRUST = 0;
+const float TAUV_MIN_THRUST = -100;
 const float TAUV_MAX_THRUST = 100;
-const float TAUV_MIN_FIN = -90;
-const float TAUV_MAX_FIN = 90;
+const float TAUV_MIN_FIN = -45;
+const float TAUV_MAX_FIN = 45;
 
 UCLASS()
 /**
@@ -46,23 +46,17 @@ public:
 	float GetAccelerationLimit() override { return 400; }
 
 	// Location of all forces to apply
-	FVector thruster = FVector(-95,0,0);
-	TArray<FVector> finTranslation{ FVector(-75,7.07,0),
-									FVector(-75,0,7.07),
-									FVector(-75,-7.07,0),
-									FVector(-75,0,-7.07) };
+	FVector thruster = FVector(-120,0,0);
+	TArray<FVector> finTranslation{ FVector(-105,7.07,0),
+									FVector(-105,0,7.07),
+									FVector(-105,-7.07,0),
+									FVector(-105,0,-7.07) };
 	TArray<FRotator> finRotation{ 	FRotator(0,0,0),
 									FRotator(0,0,-90),
 									FRotator(0,0,-180),
 									FRotator(0,0,-270) };
 
 	void ApplyFin(int i);
-
-	// We copy command into here to be able to change fins in blueprint
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<float> DiffCommand;
-
-	TArray<float> LastCommand;
 
 private:
 	/** NOTE: These go counter-clockwise, starting in front right
