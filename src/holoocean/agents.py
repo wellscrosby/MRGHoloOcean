@@ -679,7 +679,7 @@ class HoveringAUV(HoloOceanAgent):
         np.copyto(self._action_buffer, action)
         
 
-class TorpedoAUV(HolodeckAgent):
+class TorpedoAUV(HoloOceanAgent):
     """A simple foward motion autonomous underwater vehicle.
 
     **Action Space**:::
@@ -690,16 +690,18 @@ class TorpedoAUV(HolodeckAgent):
 
     Inherits from :class:`HolodeckAgent`."""
     # constants in TorpedoAUV.h in holodeck-engine
-    __MAX_ACCEL = 100
-    __MIN_ACCEL = -__MAX_ACCEL
+    __MAX_THRUST = 100
+    __MAX_FIN = 45
+    __MIN_THRUST = -__MAX_THRUST
+    __MIN_FIN = -__MAX_FIN
 
     agent_type = "TorpedoAUV"
 
     @property
     def control_schemes(self):
         scheme = "[left_fin, top_fin, right_fin, bottom_fin, thrust]"
-        low = [self.__MIN_ACCEL]*5
-        high = [self.__MAX_ACCEL]*5
+        low = [self.__MIN_FIN]*4 + [self.__MIN_THRUST]
+        high = [self.__MAX_FIN]*4 + [self.__MAX_THRUST]
         return [(scheme, ContinuousActionSpace([5], low=low, high=high))]
 
     def get_joint_constraints(self, joint_name):
