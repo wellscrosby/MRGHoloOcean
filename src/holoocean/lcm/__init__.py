@@ -12,4 +12,8 @@ from .VelocitySensor import VelocitySensor
 from .OrientationSensor import OrientationSensor
 from .PoseSensor import PoseSensor
 from .AcousticBeaconSensor import AcousticBeaconSensor
+from .GPSSensor import GPSSensor
+from .SonarSensor import SonarSensor
+from .DepthSensor import DepthSensor
+from .RGBCamera import RGBCamera
 from .main import SensorData, gen

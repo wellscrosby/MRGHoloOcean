@@ -10,16 +10,18 @@ except ImportError:
 import struct
 
 class IMUSensor(object):
-    __slots__ = ["timestamp", "acceleration", "angular_velocity"]
+    __slots__ = ["timestamp", "acceleration", "angular_velocity", "acceleration_bias", "angular_velocity_bias"]
 
-    __typenames__ = ["int64_t", "float", "float"]
+    __typenames__ = ["int64_t", "float", "float", "float", "float"]
 
-    __dimensions__ = [None, [3], [3]]
+    __dimensions__ = [None, [3], [3], [3], [3]]
 
     def __init__(self):
         self.timestamp = 0
         self.acceleration = [ 0.0 for dim0 in range(3) ]
         self.angular_velocity = [ 0.0 for dim0 in range(3) ]
+        self.acceleration_bias = [ 0.0 for dim0 in range(3) ]
+        self.angular_velocity_bias = [ 0.0 for dim0 in range(3) ]
 
     def encode(self):
         buf = BytesIO()
@@ -31,6 +33,8 @@ class IMUSensor(object):
         buf.write(struct.pack(">q", self.timestamp))
         buf.write(struct.pack('>3f', *self.acceleration[:3]))
         buf.write(struct.pack('>3f', *self.angular_velocity[:3]))
+        buf.write(struct.pack('>3f', *self.acceleration_bias[:3]))
+        buf.write(struct.pack('>3f', *self.angular_velocity_bias[:3]))
 
     def decode(data):
         if hasattr(data, 'read'):
@@ -47,12 +51,14 @@ class IMUSensor(object):
         self.timestamp = struct.unpack(">q", buf.read(8))[0]
         self.acceleration = struct.unpack('>3f', buf.read(12))
         self.angular_velocity = struct.unpack('>3f', buf.read(12))
+        self.acceleration_bias = struct.unpack('>3f', buf.read(12))
+        self.angular_velocity_bias = struct.unpack('>3f', buf.read(12))
         return self
     _decode_one = staticmethod(_decode_one)
 
     def _get_hash_recursive(parents):
         if IMUSensor in parents: return 0
-        tmphash = (0x2b1e734f2aee4cdf) & 0xffffffffffffffff
+        tmphash = (0x400bb3336650f25a) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _get_hash_recursive = staticmethod(_get_hash_recursive)
