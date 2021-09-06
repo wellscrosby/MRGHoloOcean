@@ -22,6 +22,8 @@ The ``.zip`` file must contain the following elements
 
 3. Scenario configs for those worlds
 
+.. _`package-structure`:
+
 Package Structure
 -----------------
 
@@ -56,6 +58,8 @@ the format the config file is expected to follow:
          {
             "name": "{world_name}",
             "pre_start_steps": 2,
+            "env_min": [-10, -10, -10],
+            "env_max": [10, 10, 10]
          }
       ]
    }
@@ -63,3 +67,5 @@ the format the config file is expected to follow:
 The ``"pre_start_steps"`` attribute for a world defines how many ticks should 
 occur before starting the simulation, to work around world idiosyncrasies.
 
+The ``env_min``/``env_max`` attributes are used to set the upper/lower bounds of the environment,
+used when an octree is made for a sonar sensor.

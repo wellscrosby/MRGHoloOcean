@@ -24,9 +24,9 @@ Each of the following parameters can be placed in the configuration field
 for a cup game task sensor (see :ref:`scenario files <scenario-files>`.)
 
 The configuration can also be set programmatically by calling
-:meth:`~holodeck.sensors.CupGameTask.start_game` if the sensor has no
+:meth:`~holoocean.sensors.CupGameTask.start_game` if the sensor has no
 configuration block. That configuration will reset after every call to 
-:meth:`~holodeck.environments.reset`.
+:meth:`~holoocean.environments.reset`.
 
 Speed Multiplier
 ~~~~~~~~~~~~~~~~

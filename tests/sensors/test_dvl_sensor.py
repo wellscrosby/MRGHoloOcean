@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 import uuid
 
 import numpy as np
@@ -7,6 +7,7 @@ turtle_config = {
     "name": "test_velocity_sensor",
     "world": "Rooms",
     "main_agent": "turtle0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "turtle0",
@@ -34,10 +35,10 @@ def test_dvl_sensor_straight():
     """Make sure when we move forward x is positive, y is close to 0. Make sure when not moving both are close to 0
     """
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     turtle_config['agents'][0]['rotation'] = [0, 0, 0]
 
-    with holodeck.environments.HolodeckEnvironment(scenario=turtle_config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=turtle_config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -80,10 +81,10 @@ def test_dvl_sensor_rotated():
     """Make sure when we move forward x is positive, y is close to 0. Make sure when not moving both are close to 0
     """
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     turtle_config['agents'][0]['rotation'] = [0, 0, 90]
 
-    with holodeck.environments.HolodeckEnvironment(scenario=turtle_config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=turtle_config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -124,10 +125,10 @@ def test_dvl_sensor_rotated():
 
 def test_dvl_noise():
     """Make sure turning on noise actually turns it on"""
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     turtle_config['agents'][0]['rotation'] = [0, 0, 0]
 
-    with holodeck.environments.HolodeckEnvironment(scenario=turtle_config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=turtle_config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

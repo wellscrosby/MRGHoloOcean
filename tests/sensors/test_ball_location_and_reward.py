@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 import uuid
 import pytest
 
@@ -6,6 +6,7 @@ cfg = {
         "name": "test_ball_location_and_reward",
         "world": "CupGame",
         "main_agent": "sphere0",
+        "frames_per_sec": False,
         "agents": [
             {
                 "agent_name": "sphere0",
@@ -33,7 +34,7 @@ cfg = {
     }
 
 
-@pytest.mark.skipif("Dexterity" not in holodeck.installed_packages(),
+@pytest.mark.skipif("Dexterity" not in holoocean.installed_packages(),
                     reason='Dexterity package not installed')
 def test_ball_location_and_reward():
     """Shuffle the ball using a seed. Ensure that after shuffling the ball location sensor
@@ -41,9 +42,9 @@ def test_ball_location_and_reward():
     Make sure it receives a reward of 1.
     """
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("Dexterity")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Dexterity")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

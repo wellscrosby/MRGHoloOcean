@@ -1,5 +1,5 @@
-Holodeck Packages
-=================
+HoloOcean Packages
+==================
 
 These are the different packages available for download. A holodeck package
 contains one or more worlds, which each have one or more scenarios. 

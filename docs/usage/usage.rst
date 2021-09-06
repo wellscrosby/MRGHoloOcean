@@ -1,5 +1,5 @@
-Using Holodeck
-==============
+Using HoloOcean
+===============
 
 
 .. toctree::

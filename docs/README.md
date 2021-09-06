@@ -1,5 +1,5 @@
 This folder contains holodeck's user-facing documentation (hosted at
-holodeck.readthedocs.io), and is compiled with [Sphinx](http://www.sphinx-doc.org/en/master/).
+holoocean.readthedocs.io), and is compiled with [Sphinx](http://www.sphinx-doc.org/en/master/).
 
 The documentation can be built locally to preview changes before pushing to
 GitHub.

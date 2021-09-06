@@ -13,7 +13,7 @@ A clear and concise description of what the bug is.
 **To Reproduce**
 Please provide sample code to reproduce the bug.
 ```python
-import holodeck
+import holoocean
 ```
 **Expected behavior**
 A clear and concise description of what you expected to happen.
@@ -24,4 +24,4 @@ Please include the client side output and the Engine debug log.
 ```
 **Version Information:**
  - Platform / Version [e.g. Ubuntu 18.04 or Windows 10 1903]
- - Holodeck Version (output of `holodeck.util.get_holodeck_version()`)
+ - Holodeck Version (output of `holoocean.util.get_holodeck_version()`)

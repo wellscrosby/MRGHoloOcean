@@ -7,7 +7,7 @@ Configuring Weather and Time
 Holodeck worlds have weather and time that can be configured, either with
 :ref:`scenarios` or programmatically in real time.
 
-See the :class:`~holodeck.weather.WeatherController` documentation for
+See the :class:`~holoocean.weather.WeatherController` documentation for
 reference.
 
 
@@ -39,7 +39,7 @@ Programmatically
 
 .. code-block:: python
 
-   env = holodeck.make("...")
+   env = holoocean.make("...")
    env.weather.set_weather("rain")
 
 
@@ -67,7 +67,7 @@ Programmatically
 
 .. code-block:: python
 
-   env = holodeck.make("...")
+   env = holoocean.make("...")
    env.weather.set_fog_density(0.5)
 
 
@@ -97,7 +97,7 @@ Programmatically
 
 .. code-block:: python
 
-   env = holodeck.make("...")
+   env = holoocean.make("...")
    env.weather.start_day_cycle(60)
 
 
@@ -125,5 +125,5 @@ Programmatically
 
 .. code-block:: python
 
-   env = holodeck.make("...")
+   env = holoocean.make("...")
    env.weather.set_day_time(12)

@@ -1,9 +1,10 @@
-import holodeck
+import holoocean
 import cv2
 import copy
 import numpy as np
 import os
 import uuid
+import pytest
 
 from tests.utils.equality import mean_square_err
 
@@ -12,6 +13,7 @@ base_cfg = {
     "name": "test_rgb_camera",
     "world": "TestWorld",
     "main_agent": "sphere0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "sphere0",
@@ -30,7 +32,8 @@ base_cfg = {
     ]
 }
 
-
+@pytest.mark.skipif("DefaultWorlds" not in holoocean.installed_packages(),
+                    reason='DefaultWorlds package not installed')
 def test_rgb_camera(resolution, request):
     """Makes sure that the RGB camera is positioned and capturing correctly.
 
@@ -38,6 +41,7 @@ def test_rgb_camera(resolution, request):
     Then, use mse() to see how different the images are.
 
     """
+    
     global base_cfg
 
     cfg = copy.deepcopy(base_cfg)
@@ -47,9 +51,9 @@ def test_rgb_camera(resolution, request):
         "CaptureHeight": resolution
     }
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -57,6 +61,7 @@ def test_rgb_camera(resolution, request):
         for _ in range(5):
             env.tick()
 
+        print(request.fspath.dirname)
         pixels = env.tick()['TestCamera'][:, :, 0:3]
         baseline = cv2.imread(os.path.join(request.fspath.dirname, "expected", "{}.png".format(resolution)))
         err = mean_square_err(pixels, baseline)
@@ -80,9 +85,9 @@ def make_ticks_per_capture_env():
         "CaptureHeight": 512
     }
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
 
-    shared_ticks_per_capture_env = holodeck.environments.HolodeckEnvironment(
+    shared_ticks_per_capture_env = holoocean.environments.HoloOceanEnvironment(
         scenario=cfg,
         binary_path=binary_path,
         show_viewport=False,

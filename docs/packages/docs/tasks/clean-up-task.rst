@@ -27,10 +27,10 @@ Each of the following parameters can be placed in the configuration field
 for a clean up task sensor (see :ref:`scenario files <scenario-files>`.)
 
 The configuration can also be set programmatically by calling
-:meth:`~holodeck.sensors.CleanUpTask.start_task`. Do not call
+:meth:`~holoocean.sensors.CleanUpTask.start_task`. Do not call
 if the config file has a configuration block.
 That configuration will reset after every call to
-:meth:`~holodeck.environments.reset`.
+:meth:`~holoocean.environments.reset`.
 
 NumTrash
 ~~~~~~~~

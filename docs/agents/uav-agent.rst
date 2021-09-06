@@ -19,7 +19,7 @@ Description
 -----------
 A quadcopter UAV agent. 
 
-See the :class:`~holodeck.agents.UavAgent` class. 
+See the :class:`~holoocean.agents.UavAgent` class. 
 
 Control Schemes
 ---------------
