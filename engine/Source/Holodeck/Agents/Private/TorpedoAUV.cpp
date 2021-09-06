@@ -76,7 +76,11 @@ void ATorpedoAUV::ApplyFin(int i){
 	double lift = 0.5 * u2 * sin*sin*sin / 10;
 	// Sometimes they get out of hand, clamp them
 	FVector fW = -FVector(drag, 0, lift);
-	fW = fW.GetClampedToMaxSize(400);
+	fW = fW.GetClampedToMaxSize(300);
+	// flip it if we're going backwards
+	if(velBody.X < 0){
+		fW *= -1;
+	}
 
 	// Move force into body frame & apply
 	FVector fBody = WToBody.RotateVector(fW);
