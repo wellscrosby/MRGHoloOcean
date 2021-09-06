@@ -2,8 +2,6 @@ kind: pipeline
 type: docker
 name: test
 
-environment:
-  HOLODECKPATH: packages
 
 steps:
 - name: build_docker
@@ -16,6 +14,8 @@ steps:
 
 - name: install_package
   image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  environment:
+    HOLODECKPATH: packages
   depends_on:
   - build_docker
   commands:
@@ -28,13 +28,6 @@ steps:
   - python3 -c "import holoocean; holoocean.install(\"Ocean\", branch=\"$BRANCH\")"
 
 # iterate through all python versions
-- name: py35
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
-  depends_on:
-  - install_package
-  commands:
-  - tox -e py35
-
 - name: py36
   image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
   depends_on:
@@ -56,6 +49,12 @@ steps:
   commands:
   - tox -e py38
 
+- name: py39
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  depends_on:
+  - install_package
+  commands:
+  - tox -e py39
 
 volumes:
 - name: docker_sock
