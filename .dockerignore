@@ -19,3 +19,4 @@ pip-wheel-metadata
 docker
 .dockerignore
 .github
+packages
