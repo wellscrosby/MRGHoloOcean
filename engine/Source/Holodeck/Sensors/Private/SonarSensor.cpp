@@ -189,7 +189,7 @@ void USonarSensor::initOctree(){
 void USonarSensor::InitializeSensor() {
 	Super::InitializeSensor();
 
-	BinsElev = (int) Elevation * 10;
+	BinsElev = (int) Elevation * 32;
 	
 	// Get size of each bin
 	RangeRes = (MaxRange - MinRange) / BinsRange;
