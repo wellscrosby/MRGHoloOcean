@@ -662,6 +662,7 @@ class SonarSensor(HoloOceanSensor):
     - ``MaxRange``: Maximum range visible in meters, defaults to 30.
     - ``Azimuth``: Azimuth (side to side) angle visible in degrees, defaults to 130.
     - ``Elevation``: Elevation angle (up and down) visible in degrees, defaults to 20.
+    - ``InitOctreeRange``: Make all nodes within this range upon startup. Defaults to MaxRange.
     - ``ViewRegion``: Turns on green lines to see visible region. Defaults to false.
     - ``ViewOctree``: Highlights all voxels in range. Defaults to false.
     - ``AddSigma``/``AddCov``: Additive noise covariance/std from a Rayleigh distribution. Needs to be a float. Defaults to 0/off.
