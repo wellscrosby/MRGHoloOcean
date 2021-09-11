@@ -37,7 +37,7 @@ def test_folder_creation(size, config):
     """
 
     config["octree_min"] = size[0]
-    config["octree_max"] = size[1]-.01
+    config["octree_max"] = size[1]
 
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
