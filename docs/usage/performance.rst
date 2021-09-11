@@ -1,10 +1,10 @@
 .. _`improving-performance`:
 
-==============================
-Improving Holodeck Performance
-==============================
+================================
+Improving HoloOcean Performance
+================================
 
-Holodeck is fairly performant by default, but you can also sacrifice
+HoloOcean is fairly performant by default, but you can also sacrifice
 features to increase your frames per second.
 
 .. contents::
@@ -79,7 +79,7 @@ At lower ``RGBCamera`` resolutions, you can expect a ~40% frame time reduction.
 Change Render Quality
 ---------------------
 
-You can adjust Holodeck to render at a lower (or higher) quality to improve
+You can adjust HoloOcean to render at a lower (or higher) quality to improve
 performance. See the 
 :meth:`~holoocean.environments.HoloOceanEnvironment.set_render_quality` method
 

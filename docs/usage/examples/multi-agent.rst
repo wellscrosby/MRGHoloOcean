@@ -1,7 +1,7 @@
 Multi Agent Example
 ===================
 
-With Holodeck, you can control more than one agent at once. Instead of calling 
+With HoloOcean, you can control more than one agent at once. Instead of calling 
 ``.step()``, which both
 
 1. passes a single command to the main agent, and

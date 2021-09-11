@@ -4,7 +4,7 @@ Welcome to HoloOcean's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Holodeck Documentation
+   :caption: HoloOcean Documentation
 
    usage/installation
    usage/getting-started

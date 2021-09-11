@@ -644,7 +644,7 @@ class AbuseSensor(HoloOceanSensor):
     def data_shape(self):
         return [1]
 
-######################## HOLODECK-OCEAN CUSTOM SENSORS ###########################
+######################## HOLOOCEAN CUSTOM SENSORS ###########################
 #Make sure to also add your new sensor to SensorDefintion below
 
 class SonarSensor(HoloOceanSensor):

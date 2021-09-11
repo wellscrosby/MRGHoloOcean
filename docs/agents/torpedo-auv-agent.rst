@@ -13,7 +13,7 @@ Description
 -----------
 Our custom in-house hovering AUV.
 
-See the :class:`~holodeck.agents.HoveringAUV`.
+See the :class:`~holoocean.agents.HoveringAUV`.
 
 Control Schemes
 ---------------

@@ -1,8 +1,8 @@
-"""Holodeck Exceptions"""
+"""HoloOcean Exceptions"""
 
 
 class HoloOceanException(Exception):
-    """Base class for a generic exception in Holodeck.
+    """Base class for a generic exception in HoloOcean.
 
     Args:
         message (str): The error string.
@@ -10,7 +10,7 @@ class HoloOceanException(Exception):
 
 
 class HoloOceanConfigurationException(HoloOceanException):
-    """The user provided an invalid configuration for Holodeck"""
+    """The user provided an invalid configuration for HoloOcean"""
 
 
 class TimeoutException(HoloOceanException):

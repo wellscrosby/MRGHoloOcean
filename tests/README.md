@@ -1,4 +1,4 @@
-# Holodeck Integration Tests
+# HoloOcean Integration Tests
 
 ## Pre-reqs
 
@@ -7,33 +7,33 @@
 ### What is tox
 Tox automatically creates a virtualenv with the dependencies specified in
 `config.py` and runs `pytest` against that virtualenv. This allows us to
-test holodeck like it were a package installed on a fresh machine.
+test holoocean like it were a package installed on a fresh machine.
 
 ## I just want to run tests against the code I'm working with
 
-### Install your development copy of holodeck
-You can have pip install the `holodeck` module in "editable" mode - meaning
+### Install your development copy of holoocean
+You can have pip install the `holoocean` module in "editable" mode - meaning
 you can `import holoocean` anywhere, and it will use the code in
-`src/holodeck`.
+`src/holoocean`.
 
-First, remove whatever version of holodeck you have installed
-`pip uninstall holodeck`
+First, remove whatever version of holoocean you have installed
+`pip uninstall holoocean`
 
 Then, from the root of this repo run
 `pip install --editable .`
 
 Open a `python` terminal and make sure when you `import holoocean` and run
-`holoocean.util.get_holodeck_version()` it prints `"X.Y.Zdev"`
+`holoocean.util.get_holoocean_version()` it prints `"X.Y.Zdev"`
 
 ### Run pytest
 
-Once you have installed your dev copy of holodeck, run
+Once you have installed your dev copy of holoocean, run
 `pytest` from the root of this repo. You should see output like this
 ```
 ============================= test session starts =============================
 platform win32 -- Python 3.7.1, pytest-4.5.0, py-1.8.0, pluggy-0.12.0
 cachedir: .tox\py37\.pytest_cache
-rootdir: C:\Users\jayde\Documents\holodeck, inifile: pytest.ini
+rootdir: C:\Users\jayde\Documents\holoocean, inifile: pytest.ini
 collected 28 items
 
 tests\scenarios\test_loading_scenarios.py ..............           [ 50%]

@@ -1,8 +1,8 @@
-=================================
-Units and Coordinates in Holodeck
-=================================
+==================================
+Units and Coordinates in HoloOcean
+==================================
 
-Holodeck uses **meters** for units and a **right-handed coordinate system** for
+HoloOcean uses **meters** for units and a **right-handed coordinate system** for
 all locations, distances, and offsets.
 
 
@@ -11,10 +11,11 @@ all locations, distances, and offsets.
 Coordinate System
 =================
 
-Since Holodeck depends on Unreal Engine, we use a right handed coordinate system
-with positive ``z`` being up.
+Unreal Engine uses a left handed coordinate system by default, however
+to keep with general robotics conventions, we use a right handed coordinate 
+system with positive ``z`` being up.
 
-So, when you need to specify a location in Holodeck, the format is as follows
+So, when you need to specify a location in HoloOcean, the format is as follows
 
 ``[x, y, z]`` where:
 

@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for Holodeck
+about: Suggest an idea for HoloOcean
 title: ''
 labels: enhancement
 assignees: ''

@@ -6,7 +6,7 @@ Scenarios
 What is a scenario?
 -------------------
 
-A scenario tells Holodeck which world to load, which agents to place in the
+A scenario tells HoloOcean which world to load, which agents to place in the
 world, and which sensors they need.
 
 It defines:
@@ -17,10 +17,6 @@ It defines:
   - What type of agent they are
   - Where they are
   - What sensors they have
-- Tasks
-
-  - Which task
-  - Which agents play which role in the task
 
 .. tip::
    You can think of scenarios like a map or gametype variant from Halo:
@@ -32,8 +28,8 @@ and allows you to extend and customize the scenarios we provide to
 suit your needs without repackaging the engine.
 
 When you call ``holoocean.make()`` to create an environment, you pass in the
-name of a scenario, eg ``holoocean.make("UrbanCity-Follow")``. This tells
-Holodeck which world to load and where to place agents.
+name of a scenario, eg ``holoocean.make("Pier-Hovering")``. This tells
+HoloOcean which world to load and where to place agents.
 
 .. _`scenario-files`:
 
@@ -86,13 +82,13 @@ Configuring Octree
 
 When using a form of sonar sensor and initializing the world, an Octree will either be
 created or loaded from a cache. The parameters of these can be set using the ``env_min``,
-``env_max``, ``octree_min``, and ``octree_max``. The octrees are cached in the octree folder
+``env_max``, ``octree_min``, and ``octree_max``. The octrees are cached in the ``LinuxNoEditor/Holodeck/Octrees`` folder
 in the worlds folder. See :ref:`package-locations`.
 
 ``env_min``/``env_max`` are used to set the upper/lower bounds of the environment. They should 
 be set in :ref:`package-structure`, but the values set here will override it.
 
-``octree_min``/``octree_max`` are used to set the minimum/maximum size of the octree. ``octree_min``
+``octree_min``/``octree_max`` are used to set the minimum/mid-level size of the octree. ``octree_min``
 can go as low as .01 (1cm), and then the octree will double in size till it reaches ``octree_max``.
 
 
@@ -116,7 +112,7 @@ Agent objects
    }
 
 .. note::
-   Holodeck coordinates are **left handed** in meters. See :ref:`coordinate-system`
+   HoloOcean coordinates are **right handed** in meters. See :ref:`coordinate-system`
 
 .. _`location-randomization`:
 
@@ -126,7 +122,7 @@ Location Randomization
 ``location_randomization`` and ``rotation_randomization`` are optional. If
 provided, the agent's start location and/or rotation will vary by a
 random amount between the negative and the positive values of the
-provided randomization values.
+provided randomization values as sampled from a uniform distribution.
 
 The location value is measured in meters, in the format ``[dx, dy, dz]``
 and the rotation is ``[roll, pitch, yaw]``.
@@ -139,9 +135,10 @@ Here are valid ``agent_type`` s:
 ========================= ========================
 Agent Type                String in agent_type
 ========================= ========================
+:ref:`hovering-auv-agent`  ``HoveringAUV``
+:ref:`Torpedo-auv-agent`   ``TorpedoAUV``
 :ref:`turtle-agent`        ``TurtleAgent``
 :ref:`uav-agent`           ``UAV``
-:ref:`hovering-auv-agent`   ``HoveringAUV``
 ========================= ========================
 
 Control Schemes
@@ -162,8 +159,7 @@ Sensor Objects
       "location": [1.0, 2.0, 3.0],
       "rotation": [1.0, 2.0, 3.0],
       "socket": "socket name or \"\"",
-      "publish": "lcm",
-      "channel": "channel_name",
+      "lcm_channel": "channel_name",
       "configuration": {
 
       }
@@ -209,15 +205,14 @@ Sensors have a couple options for placement.
 
 4 **Publish Message**
 
-   Currently, Holodeck-Ocean supports publishing mesages to LCM (with possible ROS package coming).
+   Currently, HoloOcean supports publishing mesages to LCM (with possible ROS package coming).
    To publish sensor data to LCM, specify the type to publish.
 
    .. code-block:: json
 
       {
          "sensor_type": "RGBCamera",
-         "publish": "lcm",
-         "channel": "CAMERA"
+         "lcm_channel": "CAMERA"
       }
 
    The channel parameter specifies which channel to publish the sensor data to.
@@ -233,7 +228,7 @@ rest will default as shown below
       "rotation": [0, 0, 0],
       "socket": "",
       "publish": "",
-      "channel": "sensor_type",
+      "lcm_channel": "",
       "configuration": {}
    }
 

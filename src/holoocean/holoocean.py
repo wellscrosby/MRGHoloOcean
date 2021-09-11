@@ -22,7 +22,7 @@ class GL_VERSION:
 
 def make(scenario_name="", scenario_cfg=None, gl_version=GL_VERSION.OPENGL4, window_res=None, verbose=False,
          show_viewport=True, ticks_per_sec=None, frames_per_sec=None, copy_state=True):
-    """Creates a Holodeck environment
+    """Creates a HoloOcean environment
 
     Args:
         world_name (:obj:`str`):
@@ -58,7 +58,7 @@ def make(scenario_name="", scenario_cfg=None, gl_version=GL_VERSION.OPENGL4, win
             If the state should be copied or passed as a reference when returned. Defaults to True
 
     Returns:
-        :class:`~holoocean.environments.HoloOceanEnvironment`: A holodeck environment instantiated
+        :class:`~holoocean.environments.HoloOceanEnvironment`: A holoocean environment instantiated
             with all the settings necessary for the specified world, and other supplied arguments.
 
     """

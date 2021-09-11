@@ -1,12 +1,12 @@
 # HoloOcean
 
-![Holodeck Image](docs/images/inspect_plane.jpg)
+![HoloOcean Image](docs/images/inspect_plane.jpg)
 
 [![Documentation Status](https://readthedocs.org/projects/holoocean/badge/?version=latest)](https://holoocean.readthedocs.io/en/latest/?badge=latest)
  [![Build Status](https://robots.et.byu.edu:4000/api/badges/frostlab/holoocean/status.svg?ref=refs/heads/develop)](https://robots.et.byu.edu:4000/frostlab/holoocean)
 
 
-Holodeck is a high-fidelity simulator for underwater robotics built on top of Unreal Engine 4, and forked from Holodeck by BYU's PCCL Lab.
+HoloOcean is a high-fidelity simulator for underwater robotics built on top of Unreal Engine 4, and forked from Holodeck by BYU's PCCL Lab.
 
 ## Features
  - 7+ rich worlds for training agents in, and many scenarios for those worlds
@@ -29,7 +29,7 @@ See [Installation](https://holoocean.readthedocs.io/en/latest/usage/installation
 * [Changelog](https://holoocean.readthedocs.io/en/latest/changelog/changelog.html)
 * [Examples](https://holoocean.readthedocs.io/en/latest/usage/getting-started.html#code-examples)
 * [Agents](https://holoocean.readthedocs.io/en/latest/agents/agents.html)
-* [Sensors](https://holoocean.readthedocs.io/en/latest/holodeck/sensors.html)
+* [Sensors](https://holoocean.readthedocs.io/en/latest/holoocean/sensors.html)
 * [Available Packages and Worlds](https://holoocean.readthedocs.io/en/latest/packages/packages.html)
 * [Docs](https://holoocean.readthedocs.io/en/latest/)
 
@@ -72,10 +72,10 @@ print(state["LocationSensor"])
 ## Multi Agent-Environments
 HoloOcean supports multi-agent environments.
 
-Calls to [`step`](https://holoocean.readthedocs.io/en/latest/holodeck/environments.html#holoocean.environments.HoloOceanEnvironment.step) only provide an action for the main agent, and then tick the simulation. 
+Calls to [`step`](https://holoocean.readthedocs.io/en/latest/holoocean/environments.html#holoocean.environments.HoloOceanEnvironment.step) only provide an action for the main agent, and then tick the simulation. 
 
-[`act`](https://holoocean.readthedocs.io/en/latest/holodeck/environments.html#holoocean.environments.HoloOceanEnvironment.act) provides a persistent action for a specific agent, and does not tick the simulation. After an 
-action has been provided, [`tick`](https://holoocean.readthedocs.io/en/latest/holodeck/environments.html#holoocean.environments.HoloOceanEnvironment.tick) will advance the simulation forward. The action is persisted until another call to `act` provides a different action.
+[`act`](https://holoocean.readthedocs.io/en/latest/holoocean/environments.html#holoocean.environments.HoloOceanEnvironment.act) provides a persistent action for a specific agent, and does not tick the simulation. After an 
+action has been provided, [`tick`](https://holoocean.readthedocs.io/en/latest/holoocean/environments.html#holoocean.environments.HoloOceanEnvironment.tick) will advance the simulation forward. The action is persisted until another call to `act` provides a different action.
 
 ```python
 import holoocean

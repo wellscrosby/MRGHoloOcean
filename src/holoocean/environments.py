@@ -1,5 +1,5 @@
-"""Module containing the environment interface for Holodeck.
-An environment contains all elements required to communicate with a world binary or HolodeckCore
+"""Module containing the environment interface for HoloOcean.
+An environment contains all elements required to communicate with a world binary or HoloOceanCore
 editor.
 
 It specifies an environment, which contains a number of agents, and the interface for communicating
@@ -26,7 +26,7 @@ from holoocean.sensors import AcousticBeaconSensor
 from holoocean.sensors import OpticalModemSensor
 
 class HoloOceanEnvironment:
-    """Proxy for communicating with a Holodeck world
+    """Proxy for communicating with a HoloOcean world
 
     Instantiate this object using :meth:`holoocean.holoocean.make`.
 
@@ -674,7 +674,7 @@ class HoloOceanEnvironment:
         self._enqueue_command(RenderViewportCommand(render_viewport))
 
     def set_render_quality(self, render_quality):
-        """Adjusts the rendering quality of Holodeck.
+        """Adjusts the rendering quality of HoloOcean.
 
         Args:
             render_quality (:obj:`int`): An integer between 0 = Low Quality and 3 = Epic quality.
@@ -745,7 +745,7 @@ class HoloOceanEnvironment:
         try:
             loading_semaphore.acquire(10)
         except posix_ipc.BusyError:
-            raise HoloOceanException("Timed out waiting for binary to load. Ensure that holodeck "
+            raise HoloOceanException("Timed out waiting for binary to load. Ensure that holoocean "
                                     "is not being run with root priveleges.")
         loading_semaphore.unlink()
 
@@ -862,7 +862,7 @@ class HoloOceanEnvironment:
         return None  # Not implemented for other types
 
 
-######################### HOLODECK-OCEAN CUSTOM #############################
+######################### HOLOOCEAN CUSTOM #############################
 
 ######################## ACOUSTIC BEACON HELPERS ###########################
 

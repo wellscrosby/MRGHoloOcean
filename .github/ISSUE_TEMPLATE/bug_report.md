@@ -24,4 +24,4 @@ Please include the client side output and the Engine debug log.
 ```
 **Version Information:**
  - Platform / Version [e.g. Ubuntu 18.04 or Windows 10 1903]
- - Holodeck Version (output of `holoocean.util.get_holodeck_version()`)
+ - HoloOcean Version (output of `holoocean.util.get_holoocean_version()`)

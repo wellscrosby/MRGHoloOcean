@@ -1,7 +1,7 @@
 HoloOcean Packages
 ==================
 
-These are the different packages available for download. A holodeck package
+These are the different packages available for download. A holoocean package
 contains one or more worlds, which each have one or more scenarios. 
 
 .. _`all-packages`:
@@ -18,6 +18,5 @@ contains one or more worlds, which each have one or more scenarios.
 
    docs/package-structure
    docs/scenarios
-   docs/tasks/tasks
    docs/installation
 

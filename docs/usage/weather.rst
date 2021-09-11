@@ -1,10 +1,10 @@
 .. _`weather`:
 
 Configuring Weather and Time
-============================
+===============================
 
 
-Holodeck worlds have weather and time that can be configured, either with
+HoloOcean worlds have weather and time that can be configured, either with
 :ref:`scenarios` or programmatically in real time.
 
 See the :class:`~holoocean.weather.WeatherController` documentation for
@@ -20,7 +20,7 @@ Type
 .. image:: weathers.png
    :scale: 55%
 
-Holodeck worlds have three possible types of weather: ``sunny``
+HoloOcean worlds have three possible types of weather: ``sunny``
 ``cloudy`` and ``rain``.
 
 In a scenario
@@ -76,7 +76,7 @@ Day length
 
 .. image:: day_length.gif
 
-.. note:: By default, the day cycle in Holodeck worlds is turned off and time 
+.. note:: By default, the day cycle in HoloOcean worlds is turned off and time 
    is fixed.
 
 The day cycle length is set in minutes.

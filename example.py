@@ -1,4 +1,4 @@
-"""This file contains multiple examples of how you might use Holodeck."""
+"""This file contains multiple examples of how you might use HoloOcean."""
 import numpy as np
 
 import holoocean

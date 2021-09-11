@@ -4,9 +4,9 @@
 Custom Scenario Configurations
 ==============================
 
-Holodeck worlds are meant to be configurable by changing out the scenario
-(see :ref:`scenarios`). There are some scenarios included with Holodeck 
-packages distributed as ``.json`` files, but Holodeck is intended to be used
+HoloOcean worlds are meant to be configurable by changing out the scenario
+(see :ref:`scenarios`). There are some scenarios included with HoloOcean 
+packages distributed as ``.json`` files, but HoloOcean is intended to be used
 with user-created scenarios as well. 
 
 These can be created using a dictionary in a Python script or by creating a
@@ -64,20 +64,20 @@ Using a ``.json`` file for a Scenario Config
 You can specify a custom scenario by creating a ``.json`` file that follows
 the format given in :ref:`scenario-files` and either:
 
-1. Placing it in Holodeck's scenario search path
+1. Placing it in HoloOcean's scenario search path
 2. Loading it yourself and parsing it into a dictionary, and then using that 
    dictionary as described in :ref:`dictionary-scenario-config`
 
-Holodeck's Scenario Search Path
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+HoloOcean's Scenario Search Path
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When you give a scenario name to :func:`holoocean.make`, Holodeck will search
+When you give a scenario name to :func:`holoocean.make`, HoloOcean will search
 look each package folder (see :ref:`package-locations`) until it finds a
 ``.json`` file that matches the scenario name. 
 
 So, you can place your custom scenario ``.json`` files in that folder and 
-Holodeck will automatically find and use it.
+HoloOcean will automatically find and use it.
 
 .. warning::
-   If you remove and re-install a package, Holodeck will clear the contents of
+   If you remove and re-install a package, HoloOcean will clear the contents of
    that folder
