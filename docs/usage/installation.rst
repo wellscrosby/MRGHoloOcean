@@ -4,7 +4,7 @@
 Installation
 ============
 
-Holodeck-Ocean is installed in two portions: a client python library (``holodeck``)
+HoloOcean is installed in two portions: a client python library (``holoocean``)
 is installed first, which then downloads world packages. The python portion is
 very small, while the world packages ("binaries") can be several gigabytes.
 
@@ -12,15 +12,38 @@ very small, while the world packages ("binaries") can be several gigabytes.
 Requirements
 ============
 
-- >= Python 3.5
+- >= Python 3.6
 - Several gigabytes of storage
 - pip3
 - Linux: OpenGL 3+
 
-Install Client via git
-=======================
+Stable Installation
+=====================
 
-To use the latest version of Holodeck-Ocean, you can install and use Holodeck simply
+The easiest installation is via the pypi repository, done as,
+::
+
+   pip install holoocean
+
+And then to install the binary, simply run
+
+::
+
+   import holoocean
+   holoocean.install("Ocean")
+
+
+Or as a single console command,
+
+::
+
+   python -c `import holoocean; holoocean.install("Ocean")`
+
+
+Development Installation
+==========================
+
+To use the latest version of HoloOcean, you can install and use HoloOcean simply
 by cloning the `frostlab/holoocean`_, and ensuring it is on your
 ``sys.path``.
 
@@ -29,12 +52,14 @@ by cloning the `frostlab/holoocean`_, and ensuring it is on your
 The ``master`` branch is kept in sync with the pip repository, the ``develop``
 branch is the bleeding edge of development.
 
-To install, simply run
+To install the develop branch, simply run
 
 ::
 
    git clone https://bitbucket.org/frostlab/holoocean/
-   pip install holoocean/
+   cd holoocean
+   git checkout develop
+   pip install .
 
 
 Then to install the most recent version of the oceans package, run the python command 
@@ -42,44 +67,45 @@ Then to install the most recent version of the oceans package, run the python co
 ::
 
    import holoocean
-   holoocean.install("Ocean", "https://robots.et.byu.edu/holo/Ocean/develop/latest.zip")
+   holoocean.install("Ocean", branch="develop")
 
 
 Or as a single console command,
 
 ::
 
-   python -c `import holoocean; holoocean.install("Ocean", "https://robots.et.byu.edu/holo/Ocean/develop/latest.zip")`
+   python -c `import holoocean; holoocean.install("Ocean", branch="develop")`
 
 
 .. _docker:
 
 Note you can replace "develop" with whichever branch of HoloOcean-Engine you'd like to install.
 
-Docker Installation
-===================
+..
+   Docker Installation
+   ===================
 
-Holodeck's docker image is only supported on Linux hosts.
+   Holodeck's docker image is only supported on Linux hosts.
 
-You will need ``nvidia-docker`` installed.
+   You will need ``nvidia-docker`` installed.
 
-The repository on DockerHub is `pccl/holodeck`_.
+   The repository on DockerHub is `pccl/holodeck`_.
 
-Currently the following tags are availible:
+   Currently the following tags are availible:
 
-- ``base`` : base image without any worlds
-- ``default-worlds`` : comes with the default worlds pre-installed
-- ``dexterity`` : comes with the dexterity package pre-installed
+   - ``base`` : base image without any worlds
+   - ``default-worlds`` : comes with the default worlds pre-installed
+   - ``dexterity`` : comes with the dexterity package pre-installed
 
-.. _`pccl/holodeck`: https://hub.docker.com/r/pccl/holodeck
+   .. _`pccl/holodeck`: https://hub.docker.com/r/pccl/holodeck
 
-This is an example command to start a holodeck container
+   This is an example command to start a holodeck container
 
-``nvidia-docker run --rm -it --name holodeck pccl/holodeck:default-worlds``
+   ``nvidia-docker run --rm -it --name holodeck pccl/holodeck:default-worlds``
 
-.. note::
-   Holodeck cannot be run with root privileges, so the user ``holodeckuser`` with
-   no password is provided in the docker image.
+   .. note::
+      Holodeck cannot be run with root privileges, so the user ``holodeckuser`` with
+      no password is provided in the docker image.
 
 Managing World Packages
 =======================
@@ -96,15 +122,15 @@ Install a Package Automatically
    >>> packagemanager.installed_packages()
    []
    >>> packagemanager.available_packages()
-   {'DefaultWorlds': ['0.1.0', '0.1.1'], 'MoveBox': ['0.0.1']}
-   >>> packagemanager.install("DefaultWorlds")
-   Installing DefaultWorlds ver. 0.1.1 from http://localhost:8080/packages/0.2.0/DefaultWorlds/Linux/0.1.1.zip
+   ['Ocean']
+   >>> packagemanager.install("Ocean")
+   Installing Ocean ver. 0.1.0 from https://robots.et.byu.edu/holo/Ocean/v0.1.0/Linux.zip
    File size: 1.55 GB
    |████████████████████████| 100%
    Unpacking worlds...
    Finished.
    >>> packagemanager.installed_packages()
-   ['DefaultWorlds']
+   ['Ocean']
 
 Installation Location
 ---------------------
@@ -154,37 +180,58 @@ and scenarios to be easily inspected.
 
 ::
 
-   >>> packagemanager.package_info("DefaultWorlds")
-   Package: DefaultWorlds
+   >>> packagemanager.package_info("Ocean")
+   Package: Ocean
       Platform: Linux
-      Version: 1.04
+      Version: 0.1.0
       Path: LinuxNoEditor/Holodeck/Binaries/Linux/Holodeck
       Worlds:
-      UrbanCity
+      Rooms
             Scenarios:
-            UrbanCity-Follow:
+            Rooms-DataGen:
                Agents:
-                  Name: ThisIsAScenario
+                  Name: turtle0
+                  Type: TurtleAgent
+                  Sensors:
+                     LocationSensor
+                        lcm_channel: POSITION
+                     RotationSensor
+                        lcm_channel: ROTATION
+                     RangeFinderSensor
+                        lcm_channel: LIDAR
+                        configuration
+                           LaserCount: 64
+                           LaserMaxDistance: 20
+                           LaserAngle: 0
+                           LaserDebug: True
+            Rooms-IEKF:
+               Agents:
+                  Name: uav0
                   Type: UavAgent
                   Sensors:
-                  RGBCamera
-                  OrientationSensor
-                  LocationSensor
-      CyberPunkCity
+                     PoseSensor
+                     VelocitySensor
+                     IMUSensor
+      SimpleUnderwater
             Scenarios:
-            CyberPunkCity-Follow:
+            SimpleUnderwater-AUV:
                Agents:
-                  Name: ThisIsAScenario
-                  Type: UavAgent
+                  Name: auv0
+                  Type: HoveringAUV
                   Sensors:
-                  RGBCamera
-                  OrientationSensor
-                  LocationSensor
+                     PoseSensor
+                        socket: IMUSocket
+                     VelocitySensor
+                        socket: IMUSocket
+                     IMUSensor
+                        socket: IMUSocket
+                     DVLSensor
+                        socket: DVLSocket
 
 
 You can also look for information for a specific world or scenario
 
 ::
 
-   packagemanager.world_info("UrbanCity")
-   packagemanager.scenario_info("UrbanCity-Follow")
+   packagemanager.world_info("SimpleUnderwater")
+   packagemanager.scenario_info("Rooms-DataGen")

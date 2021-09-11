@@ -11,8 +11,6 @@ contains one or more worlds, which each have one or more scenarios.
    :caption: Packages
 
    Ocean/Ocean
-   DefaultWorlds/DefaultWorlds
-
 
 .. toctree::
    :maxdepth: 2

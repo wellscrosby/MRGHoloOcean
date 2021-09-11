@@ -89,7 +89,16 @@ def _print_agent_info(agents, base_indent=0):
         print(base_indent*' ', "Type:", agent["agent_type"])
         print(base_indent*' ', "Sensors:")
         for sensor in agent["sensors"]:
-            print((base_indent + 2)*' ', sensor)
+            print((base_indent + 2)*' ', sensor['sensor_type'])
+            for k, v in sensor.items():
+                if k == "sensor_type":
+                    continue
+                elif k == "configuration":
+                    print((base_indent + 4)*' ', k)
+                    for opt, val in v.items():
+                        print((base_indent + 6)*' ', opt+":", val)
+                else:
+                    print((base_indent + 4)*' ', k+":", v)
 
 
 def world_info(world_name, world_config=None, base_indent=0):
