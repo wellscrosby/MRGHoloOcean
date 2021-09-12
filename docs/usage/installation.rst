@@ -81,31 +81,30 @@ Or as a single console command,
 
 Note you can replace "develop" with whichever branch of HoloOcean-Engine you'd like to install.
 
-..
-   Docker Installation
-   ===================
+Docker Installation
+===================
 
-   HoloOcean's docker image is only supported on Linux hosts.
+HoloOcean's docker image is only supported on Linux hosts.
 
-   You will need ``nvidia-docker`` installed.
+You will need ``nvidia-docker`` installed.
 
-   The repository on DockerHub is `pccl/holodeck`_.
+The repository on DockerHub is `frostlab/holoocean`_.
 
-   Currently the following tags are availible:
+Currently the following tags are availible:
 
-   - ``base`` : base image without any worlds
-   - ``default-worlds`` : comes with the default worlds pre-installed
-   - ``dexterity`` : comes with the dexterity package pre-installed
+- ``base`` : base image without any worlds
+- ``ocean`` : comes with the Ocean package preinstalled
+- ``all/latest`` : comes with the all packages pre-installed
 
-   .. _`pccl/holodeck`: https://hub.docker.com/r/pccl/holodeck
+.. _`frostlab/holoocean`: https://hub.docker.com/r/frostlab/holoocean
 
-   This is an example command to start a holodeck container
+This is an example command to start a holodeck container
 
-   ``nvidia-docker run --rm -it --name holodeck pccl/holodeck:default-worlds``
+``nvidia-docker run --rm -it --name holoocean frostlab/holoocean:ocean``
 
-   .. note::
-      HoloOcean cannot be run with root privileges, so the user ``holodeckuser`` with
-      no password is provided in the docker image.
+.. note::
+   HoloOcean cannot be run with root privileges, so the user ``holooceanuser`` with
+   no password is provided in the docker image.
 
 Managing World Packages
 =======================
