@@ -1,5 +1,0 @@
-FROM pccl/holodeck:base
-
-RUN python3 -c 'import holoocean; holoocean.install("DefaultWorlds")'
-
-CMD ["/bin/bash"]

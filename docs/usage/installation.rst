@@ -85,7 +85,7 @@ Note you can replace "develop" with whichever branch of HoloOcean-Engine you'd l
    Docker Installation
    ===================
 
-   Holodeck's docker image is only supported on Linux hosts.
+   HoloOcean's docker image is only supported on Linux hosts.
 
    You will need ``nvidia-docker`` installed.
 
@@ -104,7 +104,7 @@ Note you can replace "develop" with whichever branch of HoloOcean-Engine you'd l
    ``nvidia-docker run --rm -it --name holodeck pccl/holodeck:default-worlds``
 
    .. note::
-      Holodeck cannot be run with root privileges, so the user ``holodeckuser`` with
+      HoloOcean cannot be run with root privileges, so the user ``holodeckuser`` with
       no password is provided in the docker image.
 
 Managing World Packages
@@ -135,14 +135,14 @@ Install a Package Automatically
 Installation Location
 ---------------------
 
-By default, Holodeck will install packages local to your user profile. See
+By default, HoloOcean will install packages local to your user profile. See
 :ref:`package-locations` for more information.
 
 Manually Installing a Package
 -----------------------------
 
 To manually install a package, you will be provided a ``.zip`` file.
-Extract it into the ``worlds`` folder in your Holodeck installation location 
+Extract it into the ``worlds`` folder in your HoloOcean installation location 
 (see :ref:`package-locations`)
 
 .. note::

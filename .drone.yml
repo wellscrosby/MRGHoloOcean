@@ -64,7 +64,7 @@ volumes:
 ---
 kind: pipeline
 type: docker
-name: pypi
+name: publish
 
 steps:
 - name: pypi_publish
@@ -77,3 +77,40 @@ steps:
   when:
     event:
       - tag 
+
+- name: docker_base_publish
+  image: plugins/docker
+  settings:
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    repo: frostlab/holoocean
+    dockerfile: docker/Dockerfile
+    tags:
+      - base
+
+- name: docker_base_publish
+  image: plugins/docker
+  settings:
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    repo: frostlab/holoocean
+    dockerfile: docker/Dockerfile_ocean
+    tags:
+      - ocean
+
+- name: docker_base_publish
+  image: plugins/docker
+  settings:
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    repo: frostlab/holoocean
+    dockerfile: docker/Dockerfile_latest
+    tags:
+      - all
+      - latest
