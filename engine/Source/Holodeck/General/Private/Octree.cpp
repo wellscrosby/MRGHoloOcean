@@ -71,11 +71,11 @@ void Octree::initOctree(UWorld* w){
 
     // Make max/root a multiple of min
     tempVal = OctreeMin;
-    while(tempVal <= OctreeMax){
+    while(tempVal < OctreeMax){
         tempVal *= 2;
     }
     OctreeMax = tempVal;
-    while(tempVal <= OctreeRoot){
+    while(tempVal < OctreeRoot){
         tempVal *= 2;
     }
     OctreeRoot = tempVal;
