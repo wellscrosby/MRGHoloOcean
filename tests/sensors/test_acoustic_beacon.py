@@ -68,7 +68,7 @@ def test_sending(config):
         assert state['One'] == ["OWAY", 0, "my_message"]
 
 
-@pytest.mark.parametrize('num', range(3))
+@pytest.mark.parametrize('num', range(5))
 def test_timing(config, num):
     # do random distance
     dist = np.random.uniform(0, 1000)
@@ -95,7 +95,7 @@ def test_timing(config, num):
         assert state["Two"] == ["OWAY", 0, "my_message"]
 
 
-@pytest.mark.parametrize('num', range(3))
+@pytest.mark.parametrize('num', range(5))
 def test_distance(config, num):
     # do random distance
     dist = np.random.uniform(0, 1000)

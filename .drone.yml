@@ -16,6 +16,8 @@ steps:
   image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
   environment:
     HOLODECKPATH: packages
+  depends_on:
+  - build_docker
   commands:
   # Find what branch we need to pull from
   - BRANCH_EXISTS=$(git ls-remote --heads https://bitbucket.org/frostlab/HoloOcean-Engine.git ${DRONE_BRANCH} | wc -l)
@@ -26,25 +28,33 @@ steps:
   - python3 -c "import holoocean; holoocean.install(\"Ocean\", branch=\"$BRANCH\")"
 
 # iterate through all python versions
-- name: py39
+- name: py36
   image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  depends_on:
+  - install_package
   commands:
-  - tox -e py39
-
-- name: py38
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
-  commands:
-  - tox -e py38
+  - tox -e py36
 
 - name: py37
   image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  depends_on:
+  - install_package
   commands:
   - tox -e py37
 
-- name: py36
+- name: py38
   image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  depends_on:
+  - install_package
   commands:
-  - tox -e py36
+  - tox -e py38
+
+- name: py39
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  depends_on:
+  - install_package
+  commands:
+  - tox -e py39
 
 volumes:
 - name: docker_sock
