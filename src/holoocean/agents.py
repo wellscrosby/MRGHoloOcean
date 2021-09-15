@@ -699,7 +699,7 @@ class TorpedoAUV(HoloOceanAgent):
 
     @property
     def control_schemes(self):
-        scheme = "[left_fin, top_fin, right_fin, bottom_fin, thrust]"
+        scheme = "[right_fin, top_fin, left_fin, bottom_fin, thrust]"
         low = [self.__MIN_FIN]*4 + [self.__MIN_THRUST]
         high = [self.__MAX_FIN]*4 + [self.__MAX_THRUST]
         return [(scheme, ContinuousActionSpace([5], low=low, high=high))]

@@ -26,15 +26,24 @@ Control Schemes
 Sockets
 -------
 
-- ``COM`` true center of mass as calculated from Solidworks.
-- ``COMPerf`` perfected center of mass to be between thrusters and below COB for even floating.
-- ``DVLSocket`` potential location for the DVL
-- ``IMUSocket`` potential location for the IMU.
+- ``COM`` Center of mass
+- ``DVLSocket`` Location of the DVL
+- ``IMUSocket`` Location of the IMU.
+- ``DepthSocket`` Location of the depth sensor.
+- ``SonarSocket`` Location of the sonar sensor.
+- ``CameraRightSocket`` Location of the left camera.
+- ``CameraLeftSocket`` Location of the right camera.
 - ``Origin`` true center of the robot
 - ``Viewport`` where the robot is viewed from.
 
-.. image:: images/hovering-auv-sockets-close.png
+.. image:: images/hovering-angled.png
    :scale: 50%
 
-.. image:: images/hovering-auv-sockets.png
-   :scale: 60%
+.. image:: images/hovering-top.png
+   :scale: 50%
+
+.. image:: images/hovering-right.png
+   :scale: 50%
+
+.. image:: images/hovering-front.png
+   :scale: 50%

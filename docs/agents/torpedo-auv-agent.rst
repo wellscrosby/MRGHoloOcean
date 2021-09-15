@@ -1,40 +1,43 @@
 .. _`torpedo-auv-agent`:
 
-HoveringAUV
+TorpedoAUV
 ============
 
 Images
 ------
 
-.. image:: images/hovering-auv.png
-   :scale: 40%
+.. image:: images/torpedo-auv.png
+   :scale: 60%
 
 Description
 -----------
-Our custom in-house hovering AUV.
+A generic AUV.
 
-See the :class:`~holoocean.agents.HoveringAUV`.
+See the :class:`~holoocean.agents.TorpedoAUV`.
 
 Control Schemes
 ---------------
 
-**AUV Thrusters (``0``)**
-  An 8-length floating point vector used to specify the control on each thruster. They begin with the front right vertical thrusters, then goes around counter-clockwise, then repeat the last four with the sideways thrusters.
+**AUV Fins (``0``)**
+  Takes in a 5 length vector. The first element is the right fin angle from -45 to 45 degrees, then top, left, and bottom. The last element is the "thruster" with a value of -100 to 100.
 
 
 
 Sockets
 -------
 
-- ``COM`` true center of mass as calculated from Solidworks.
-- ``COMPerf`` perfected center of mass to be between thrusters and below COB for even floating.
-- ``DVLSocket`` potential location for the DVL
-- ``IMUSocket`` potential location for the IMU.
-- ``Origin`` true center of the robot
+- ``COM`` Center of mass
+- ``DVLSocket`` Location of the DVL
+- ``IMUSocket`` Location of the IMU.
+- ``DepthSocket`` Location of the depth sensor.
+- ``SonarSocket`` Location of the sonar sensor.
 - ``Viewport`` where the robot is viewed from.
 
-.. image:: images/hovering-auv-sockets-close.png
+.. image:: images/torpedo-angled.png
    :scale: 50%
 
-.. image:: images/hovering-auv-sockets.png
-   :scale: 60%
+.. image:: images/torpedo-top.png
+   :scale: 50%
+
+.. image:: images/torpedo-right.png
+   :scale: 50%
