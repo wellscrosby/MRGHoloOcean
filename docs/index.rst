@@ -10,7 +10,6 @@ Welcome to HoloOcean's documentation!
    usage/getting-started
    usage/usage
    packages/packages
-   lcm/lcm
    agents/agents
    changelog/changelog
 

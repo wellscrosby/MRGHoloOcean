@@ -17,6 +17,5 @@ contains one or more worlds, which each have one or more scenarios.
    :caption: Package Documentation
 
    docs/package-structure
-   docs/scenarios
    docs/installation
 

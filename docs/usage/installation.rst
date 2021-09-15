@@ -44,10 +44,10 @@ Development Installation
 ==========================
 
 To use the latest version of HoloOcean, you can install and use HoloOcean simply
-by cloning the `frostlab/holoocean`_, and ensuring it is on your
+by cloning the `bitbucket.org/frostlab/holoocean`_, and ensuring it is on your
 ``sys.path``.
 
-.. _`frostlab/holoocean`: https://bitbucket.org/frostlab/holoocean/
+.. _`bitbucket.org/frostlab/holoocean`: https://bitbucket.org/frostlab/holoocean/
 
 The ``master`` branch is kept in sync with the pip repository, the ``develop``
 branch is the bleeding edge of development.

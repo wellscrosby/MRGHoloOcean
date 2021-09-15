@@ -1,5 +1,5 @@
-Getting Started
-===============
+Getting Started & Examples
+==========================
 First, see :ref:`installation` to get the ``holoocean`` package and 
 ``Ocean`` installed.
 
@@ -41,9 +41,6 @@ Check out the different
 :ref:`worlds<all-packages>` that are available, read the 
 :ref:`API documentation<holoocean-api-index>`, or get started on making your own
 custom :ref:`scenarios<scenarios>`.
-
-Code Examples
--------------
 
 Below are some snippets that show how to use different aspects of HoloOcean.
 
