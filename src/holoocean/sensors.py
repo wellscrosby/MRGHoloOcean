@@ -660,6 +660,7 @@ class SonarSensor(HoloOceanSensor):
     - ``BinsAzimuth``: Number of azimuth bins of resulting image, defaults to 128.
     - ``MinRange``: Minimum range visible in meters, defaults to 3.
     - ``MaxRange``: Maximum range visible in meters, defaults to 30.
+    - ``InitOctreeRange``: Upon startup, all mid-level octrees within this distance will be created.
     - ``Azimuth``: Azimuth (side to side) angle visible in degrees, defaults to 130.
     - ``Elevation``: Elevation angle (up and down) visible in degrees, defaults to 20.
     - ``ViewRegion``: Turns on green lines to see visible region. Defaults to false.

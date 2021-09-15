@@ -51,6 +51,8 @@ Scenario File
       "name": "{Scenario Name}",
       "world": "{world it is associated with}",
       "lcm_provider": "{Optional, where to publish lcm to}",
+      "ticks_per_sec": 30,
+      "frames_per_sec": 30,
       "env_min": [-10, -10, -10],
       "env_max": [10, 10, 10],
       "octree_min": 0.1,
@@ -76,6 +78,21 @@ environment is created. For more information about weather options, see
    The first agent in the ``agents`` array is the "main agent"
 
 .. _`configure-octree`:
+
+Frame Rates
+~~~~~~~~~~~
+There's two parameters you can configure that'll handle frame rate changes: ``ticks_per_sec`` and ``frames_per_sec``.
+
+``ticks_per_sec`` changes how many ticks in a simulation second. This must be higher than any "Hz" sampling rate of the sensors used. Defaults to 30.
+
+``frames_per_sec`` is the max FPS the environment can run at. If `true`, it will match ``ticks_per_sec``. If `false`, FPS will not be capped,
+and the environment will run as fast as possible. If a number, that'll be the frame rate cap.
+
+For a few examples of how you might want to configure these. If you're manually controlling the robot(s), you'll likely want it to run at realtime,
+thus you'll want to set ``frames_per_sec`` to true. When using a quality GPU, simulations can run much faster than realtime, making things difficult to control otherwise.
+If you're running headless/autonomous, you'll likely want the simulation to run as fast as possible,
+thus a good ``frames_per_sec`` would be false. 
+
 
 Configuring Octree
 ~~~~~~~~~~~~~~~~~~
