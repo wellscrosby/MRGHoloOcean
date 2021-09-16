@@ -909,8 +909,8 @@ class HoloOceanEnvironment:
         """Sends data between various instances of OpticalModemSensor
 
         Args:
-            id_from (:obj: `int`): The integer ID of the transmitting modem.
-            id_to (:obj: `int`): The integer ID of the receiving modem.
+            id_from (:obj:`int`): The integer ID of the transmitting modem.
+            id_to (:obj:`int`): The integer ID of the receiving modem.
             msg_data : The message to be transmitted. Currently can be any python object.
         """
 
