@@ -568,8 +568,7 @@ class HoloOceanEnvironment:
                 empty, the prop will have the a simple checkered gray material.
 
             tag (:obj:`string`):
-                The tag to apply to the prop. Useful for task references, like the
-                :ref:`location-task`.
+                The tag to apply to the prop. Useful for task references.
         """
         location = [0, 0, 0] if location is None else location
         rotation = [0, 0, 0] if rotation is None else rotation
@@ -869,20 +868,39 @@ class HoloOceanEnvironment:
     def send_acoustic_message(self, id_from, id_to, msg_type, msg_data):
         """Send a message from one beacon to another.
 
-        # TODO: Fill this out.
+        Args:
+            id_from (:obj:`int`): The integer ID of the transmitting modem.
+            id_to (:obj:`int`): The integer ID of the receiving modem.
+            msg_type (:obj:`str`): The message type. See :class:`holoocean.sensors.AcousticBeaconSensor` for a list.
+            msg_data : The message to be transmitted. Currently can be any python object.
         """
         AcousticBeaconSensor.instances[id_from].send_message(id_to, msg_type, msg_data)
 
     @property
     def beacons(self):
+        """Gets all instances of AcousticBeaconSensor in the environment.
+        
+        Returns:
+            (:obj:`list` of :obj:`AcousticBeaconSensor`): List of all AcousticBeaconSensor in environment
+        """
         return AcousticBeaconSensor.instances
 
     @property
     def beacons_id(self):
+        """Gets all ids of AcousticBeaconSensor in the environment.
+        
+        Returns:
+            (:obj:`list` of :obj:`int`): List of all AcousticBeaconSensor ids in environment
+        """
         return list(AcousticBeaconSensor.instances.keys())
 
     @property
     def beacons_status(self):
+        """Gets all status of AcousticBeaconSensor in the environment.
+        
+        Returns:
+            (:obj:`list` of :obj:`str`): List of all AcousticBeaconSensor status in environment
+        """
         return [i.status for i in AcousticBeaconSensor.instances.values()]
 
 ####################### OPTICAL MODEM HELPERS ###############################
@@ -893,14 +911,25 @@ class HoloOceanEnvironment:
         Args:
             id_from (:obj: `int`): The integer ID of the transmitting modem.
             id_to (:obj: `int`): The integer ID of the receiving modem.
+            msg_data : The message to be transmitted. Currently can be any python object.
         """
 
         OpticalModemSensor.instances[id_from].send_message(id_to, msg_data)
 
     @property
     def modems(self):
+        """Gets all instances of OpticalModemSensor in the environment.
+        
+        Returns:
+            (:obj:`list` of :obj:`OpticalModemSensor`): List of all OpticalModemSensor in environment
+        """
         return OpticalModemSensor.instances
 
     @property
     def modems_id(self):
+        """Gets all ids of OpticalModemSensor in the environment.
+        
+        Returns:
+            (:obj:`list` of :obj:`int`): List of all OpticalModemSensor ids in environment
+        """
         return list(OpticalModemSensor.instances.keys())
