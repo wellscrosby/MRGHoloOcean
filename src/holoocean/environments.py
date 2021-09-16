@@ -163,7 +163,7 @@ class HoloOceanEnvironment:
                 raise HoloOceanException("Unknown platform: " + os.name)
 
         # Initialize Client
-        self._client = HoloOceanClient(self._uuid, start_world)
+        self._client = HoloOceanClient(self._uuid)
         self._command_center = CommandCenter(self._client)
         self._client.command_center = self._command_center
         self._reset_ptr = self._client.malloc("RESET", [1], np.bool_)
@@ -180,12 +180,16 @@ class HoloOceanEnvironment:
         # Set the default state function
         self.num_agents = len(self.agents)
 
+        # Whether we need to wait for a sonar to load
+        self.start_world = start_world
+        self._loading_sonar = False
+
         if self.num_agents == 1:
             self._default_state_fn = self._get_single_state
         else:
             self._default_state_fn = self._get_full_state
 
-        self._client.acquire()
+        self._client.acquire(self._timeout)
 
         if os.name == "posix" and show_viewport is False:
             self.should_render_viewport(False)
@@ -193,6 +197,20 @@ class HoloOceanEnvironment:
         # Flag indicates if the user has called .reset() before .tick() and .step()
         self._initial_reset = False
         self.reset()
+
+    @property
+    def _timeout(self):
+        # Make a larger timeout when creating octrees at the start
+        if not self.start_world:
+            if os.name == "posix":
+                return None
+            elif os.name == "nt":
+                return win32event.INFINITE
+
+        elif self._num_ticks < 20 and self._loading_sonar: 
+            return 120*60
+        else:
+            return 10
 
     @property
     def action_space(self):
@@ -278,6 +296,9 @@ class HoloOceanEnvironment:
                                                 config=sensor_config['configuration'],
                                                 tick_every=sensor_config['tick_every'],
                                                 lcm_channel=sensor_config['lcm_channel']))
+
+                if sensor_config['sensor_type'] == "SonarSensor":
+                    self._loading_sonar = True
 
                 # Import LCM if needed
                 if sensor_config['lcm_channel'] is not None and self._lcm is None:
@@ -422,7 +443,7 @@ class HoloOceanEnvironment:
 
             self._command_center.handle_buffer()
             self._client.release()
-            self._client.acquire()
+            self._client.acquire(self._timeout)
 
             reward, terminal = self._get_reward_terminal()
             last_state = self._default_state_fn(), reward, terminal, None
@@ -478,7 +499,7 @@ class HoloOceanEnvironment:
             self._command_center.handle_buffer()
 
             self._client.release()
-            self._client.acquire()
+            self._client.acquire(self._timeout)
 
             state = self._default_state_fn()
 

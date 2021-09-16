@@ -10,9 +10,8 @@ class HoloOceanClient:
     Args:
         uuid (:obj:`str`, optional): A UUID to indicate which server this client is associated with.
             The same UUID should be passed to the world through a command line flag. Defaults to "".
-        should_timeout (:obj:`boolean`, optional): If the client should time out after 5s waiting for the engine
     """
-    def __init__(self, uuid="", should_timeout=False):
+    def __init__(self, uuid=""):
         self._uuid = uuid
 
         # Important functions
@@ -22,7 +21,6 @@ class HoloOceanClient:
         self._semaphore2 = None
         self.unlink = None
         self.command_center = None
-        self.should_timeout = should_timeout
 
         self._memory = dict()
         self._sensors = dict()
@@ -40,9 +38,6 @@ class HoloOceanClient:
         import win32event
         semaphore_all_access = 0x1F0003
 
-        # Make the timeout 10 minutes, so we wait for Octrees to load if necessary
-        self.timeout = 10*60*1000 if self.should_timeout else win32event.INFINITE            
-
         self._semaphore1 = \
             win32event.OpenSemaphore(semaphore_all_access, False,
                                      "Global\\HOLODECK_SEMAPHORE_SERVER" + self._uuid)
@@ -50,8 +45,8 @@ class HoloOceanClient:
             win32event.OpenSemaphore(semaphore_all_access, False,
                                      "Global\\HOLODECK_SEMAPHORE_CLIENT" + self._uuid)
 
-        def windows_acquire_semaphore(sem):
-            result = win32event.WaitForSingleObject(sem, self.timeout)
+        def windows_acquire_semaphore(sem, timeout):
+            result = win32event.WaitForSingleObject(sem, timeout*1000)
 
             if result != win32event.WAIT_OBJECT_0:
                 raise TimeoutError("Timed out or error waiting for engine!")
@@ -73,11 +68,8 @@ class HoloOceanClient:
 
         # Unfortunately, OSX doesn't support sem_timedwait(), so setting this timeout
         # does nothing.
-        # Make the timeout 10 minutes, so we wait for Octrees to load if necessary
-        self.timeout = 10*60 if self.should_timeout else None
-
-        def posix_acquire_semaphore(sem):
-            sem.acquire(self.timeout)
+        def posix_acquire_semaphore(sem, timeout):
+            sem.acquire(timeout)
 
         def posix_release_semaphore(sem):
             sem.release()
@@ -92,11 +84,11 @@ class HoloOceanClient:
         self._release_semaphore_fn = posix_release_semaphore
         self.unlink = posix_unlink
 
-    def acquire(self):
+    def acquire(self, timeout=10):
         """Used to acquire control. Will wait until the HolodeckServer has finished its work.
 
         """
-        self._get_semaphore_fn(self._semaphore2)
+        self._get_semaphore_fn(self._semaphore2, timeout)
 
     def release(self):
         """Used to release control. Will allow the HolodeckServer to take a step.
