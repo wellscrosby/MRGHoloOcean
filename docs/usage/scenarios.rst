@@ -77,7 +77,7 @@ environment is created. For more information about weather options, see
 .. note::
    The first agent in the ``agents`` array is the "main agent"
 
-.. _`configure-octree`:
+.. _`configure-framerate`:
 
 Frame Rates
 ~~~~~~~~~~~
@@ -93,6 +93,7 @@ thus you'll want to set ``frames_per_sec`` to true. When using a quality GPU, si
 If you're running headless/autonomous, you'll likely want the simulation to run as fast as possible,
 thus a good ``frames_per_sec`` would be false. 
 
+.. _`configure-octree`:
 
 Configuring Octree
 ~~~~~~~~~~~~~~~~~~
