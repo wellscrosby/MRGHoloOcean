@@ -842,6 +842,8 @@ class AcousticBeaconSensor(HoloOceanSensor):
     - ``MSG_REQX``: Requests a return message of MSG_RESPX and sends ``["MSG_REQX", from_sensor, payload, ϕ, ϴ, d]``
     - ``MSG_RESPX``: Return message that sends ``["MSG_RESPX", from_sensor, payload, ϕ, ϴ, r, d]``
 
+    These messages types are based on the `Blueprint Subsea SeaTrac X150 <https://www.blueprintsubsea.com/pages/product.php?PN=BP00795>`_
+
     **Configuration**
 
     The ``configuration`` block (see :ref:`configuration-block`) accepts the
