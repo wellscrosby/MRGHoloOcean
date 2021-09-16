@@ -6,8 +6,6 @@ from holoocean import agents
 from holoocean.environments import *
 from holoocean import sensors
 
-# TODO: Update all these examples to use our Ocean Package
-
 def hovering_example():
     """A basic example of how to use the HoveringAUV agent."""
     env = holoocean.make("SimpleUnderwater-Hovering")
