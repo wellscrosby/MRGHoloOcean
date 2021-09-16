@@ -12,4 +12,3 @@ Using HoloOcean
    units-and-coordinates
    performance
    running-headless
-   weather
