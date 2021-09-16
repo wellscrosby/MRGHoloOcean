@@ -166,6 +166,8 @@ Control schemes are represented as an integer. For valid values and a
 description of how each scheme works, see the documentation pages for each
 agent.
 
+.. _`configure-sensors`:
+
 Sensor Objects
 ~~~~~~~~~~~~~~
 
@@ -177,6 +179,7 @@ Sensor Objects
       "location": [1.0, 2.0, 3.0],
       "rotation": [1.0, 2.0, 3.0],
       "socket": "socket name or \"\"",
+      "Hz": 5,
       "lcm_channel": "channel_name",
       "configuration": {
 
@@ -219,6 +222,19 @@ Sensors have a couple options for placement.
       {
          "sensor_type": "RGBCamera",
          "location": [1.0, 2.0, 3.0]
+      }
+
+3. **Provide a sensor sample rate**
+
+   The sensor will be sampled at this rate. Note this must be less then ``ticks_per_sec``, and
+   preferably a divisor of ``ticks_per_sec`` as well. See :ref:`configure-framerate` for more info
+   on ``ticks_per_sec``.
+
+   .. code-block:: json
+
+      {
+         "sensor_type": "RGBCamera",
+         "Hz": 20
       }
 
 4 **Publish Message**
