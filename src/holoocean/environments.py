@@ -205,6 +205,7 @@ class HoloOceanEnvironment:
             if os.name == "posix":
                 return None
             elif os.name == "nt":
+                import win32event
                 return win32event.INFINITE
 
         elif self._num_ticks < 20 and self._loading_sonar: 
