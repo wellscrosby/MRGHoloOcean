@@ -658,15 +658,16 @@ class SonarSensor(HoloOceanSensor):
 
     - ``BinsRange``: Number of range bins of resulting image, defaults to 300.
     - ``BinsAzimuth``: Number of azimuth bins of resulting image, defaults to 128.
+    - ``BinsElevation``: Number of elevation bins to use during shadowing, defaults to 10*Elevation (0.1 degree per bin).
+    - ``Azimuth``: Azimuth (side to side) angle visible in degrees, defaults to 130.
+    - ``Elevation``: Elevation angle (up and down) visible in degrees, defaults to 20.
     - ``MinRange``: Minimum range visible in meters, defaults to 3.
     - ``MaxRange``: Maximum range visible in meters, defaults to 30.
     - ``InitOctreeRange``: Upon startup, all mid-level octrees within this distance will be created.
-    - ``Azimuth``: Azimuth (side to side) angle visible in degrees, defaults to 130.
-    - ``Elevation``: Elevation angle (up and down) visible in degrees, defaults to 20.
-    - ``ViewRegion``: Turns on green lines to see visible region. Defaults to false.
-    - ``ViewOctree``: Highlights all voxels in range. Defaults to false.
     - ``AddSigma``/``AddCov``: Additive noise covariance/std from a Rayleigh distribution. Needs to be a float. Defaults to 0/off.
     - ``MultSigma``/``MultCov``: Multiplication noise covariance/std from a normal distribution. Needs to be a float. Defaults to 0/off.
+    - ``ViewRegion``: Turns on green lines to see visible region. Defaults to false.
+    - ``ViewOctree``: Highlights all voxels in range. Defaults to false.
 
     """
 
