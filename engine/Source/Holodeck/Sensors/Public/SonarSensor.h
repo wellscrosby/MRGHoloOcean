@@ -74,7 +74,7 @@ protected:
 	int32 BinsAzimuth = 128;
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsElev;
+	int32 BinsElevation = 0;
 
 	UPROPERTY(EditAnywhere)
 	bool ViewRegion = false;

@@ -95,6 +95,10 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 			BinsAzimuth = JsonParsed->GetIntegerField("BinsAzimuth");
 		}
 
+		if (JsonParsed->HasTypedField<EJson::Number>("BinsElevation")) {
+			BinsElevation = JsonParsed->GetIntegerField("BinsElevation");
+		}
+
 		if (JsonParsed->HasTypedField<EJson::Boolean>("ViewRegion")) {
 			ViewRegion = JsonParsed->GetBoolField("ViewRegion");
 		}
@@ -114,6 +118,9 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 
 	if(InitOctreeRange == 0){
 		InitOctreeRange = MaxRange;
+	}
+	if(BinsElevation == 0){
+		BinsElevation = Elevation*10;
 	}
 }
 
@@ -179,7 +186,7 @@ void USonarSensor::initOctree(){
 			tempLeafs.Add(TArray<Octree*>());
 			tempLeafs[i].Reserve(10000);
 		}
-		for(int i=0;i<BinsAzimuth*BinsElev;i++){
+		for(int i=0;i<BinsAzimuth*BinsElevation;i++){
 			sortedLeafs.Add(TArray<Octree*>());
 			sortedLeafs[i].Reserve(10000);
 		}
@@ -188,13 +195,11 @@ void USonarSensor::initOctree(){
 
 void USonarSensor::InitializeSensor() {
 	Super::InitializeSensor();
-
-	BinsElev = (int) Elevation * 32;
 	
 	// Get size of each bin
 	RangeRes = (MaxRange - MinRange) / BinsRange;
 	AzimuthRes = Azimuth / BinsAzimuth;
-	ElevRes = Elevation / BinsElev;
+	ElevRes = Elevation / BinsElevation;
 
 	minAzimuth = -Azimuth/2;
 	maxAzimuth = Azimuth/2;
@@ -340,7 +345,7 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 
 		// HANDLE SHADOWING
 		float eps = 16;
-		ParallelFor(BinsAzimuth*BinsElev, [&](int32 i){
+		ParallelFor(BinsAzimuth*BinsElevation, [&](int32 i){
 			TArray<Octree*>& binLeafs = sortedLeafs.GetData()[i]; 
 
 			// sort from closest to farthest
