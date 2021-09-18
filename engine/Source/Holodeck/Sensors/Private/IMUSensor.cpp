@@ -8,6 +8,79 @@ UIMUSensor::UIMUSensor() {
 	SensorName = "IMUSensor";
 }
 
+void UIMUSensor::ParseSensorParms(FString ParmsJson) {
+	Super::ParseSensorParms(ParmsJson);
+
+	TSharedPtr<FJsonObject> JsonParsed;
+	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ParmsJson);
+	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
+
+		if (JsonParsed->HasTypedField<EJson::Boolean>("ReturnBias")) {
+			ReturnBias = JsonParsed->GetBoolField("ReturnBias");
+		}
+
+		// Acceleration noise
+		if (JsonParsed->HasTypedField<EJson::Number>("AccelSigma")) {
+			mvnAccel.initSigma(JsonParsed->GetNumberField("AccelSigma"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Array>("AccelSigma")) {
+			mvnAccel.initSigma(JsonParsed->GetArrayField("AccelSigma"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("AccelCov")) {
+			mvnAccel.initCov(JsonParsed->GetNumberField("AccelCov"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Array>("AccelCov")) {
+			mvnAccel.initCov(JsonParsed->GetArrayField("AccelCov"));
+		}
+
+		// Angular Velocity noise
+		if (JsonParsed->HasTypedField<EJson::Number>("AngVelSigma")) {
+			mvnOmega.initSigma(JsonParsed->GetNumberField("AngVelSigma"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Array>("AngVelSigma")) {
+			mvnOmega.initSigma(JsonParsed->GetArrayField("AngVelSigma"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("AngVelCov")) {
+			mvnOmega.initCov(JsonParsed->GetNumberField("AngVelCov"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Array>("AngVelCov")) {
+			mvnOmega.initCov(JsonParsed->GetArrayField("AngVelCov"));
+		}
+
+		// Acceleration Bias noise
+		if (JsonParsed->HasTypedField<EJson::Number>("AccelBiasSigma")) {
+			mvnBiasAccel.initSigma(JsonParsed->GetNumberField("AccelBiasSigma"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Array>("AccelBiasSigma")) {
+			mvnBiasAccel.initSigma(JsonParsed->GetArrayField("AccelBiasSigma"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("AccelBiasCov")) {
+			mvnBiasAccel.initCov(JsonParsed->GetNumberField("AccelBiasCov"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Array>("AccelBiasCov")) {
+			mvnBiasAccel.initCov(JsonParsed->GetArrayField("AccelBiasCov"));
+		}
+
+		// Angular Velocity noise
+		if (JsonParsed->HasTypedField<EJson::Number>("AngVelBiasSigma")) {
+			mvnBiasOmega.initSigma(JsonParsed->GetNumberField("AngVelBiasSigma"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Array>("AngVelBiasSigma")) {
+			mvnBiasOmega.initSigma(JsonParsed->GetArrayField("AngVelBiasSigma"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("AngVelBiasCov")) {
+			mvnBiasOmega.initCov(JsonParsed->GetNumberField("AngVelBiasCov"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Array>("AngVelBiasCov")) {
+			mvnBiasOmega.initCov(JsonParsed->GetArrayField("AngVelBiasCov"));
+		}
+
+	}
+	else {
+		UE_LOG(LogHolodeck, Fatal, TEXT("UIMUSensor::ParseSensorParms:: Unable to parse json."));
+	}
+}
+
 void UIMUSensor::InitializeSensor() {
 	Super::InitializeSensor();
 
@@ -36,20 +109,35 @@ void UIMUSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActo
 		LinearAccelerationVector = ConvertLinearVector(LinearAccelerationVector, UEToClient);
 		AngularVelocityVector = ConvertAngularVector(AngularVelocityVector, NoScale);
 
+		// Introduce noise
+		BiasAccel += mvnBiasAccel.sampleFVector();
+		BiasOmega += mvnBiasOmega.sampleFVector();
+		LinearAccelerationVector += BiasAccel + mvnAccel.sampleFVector();
+		AngularVelocityVector    += BiasOmega + mvnOmega.sampleFVector();
+
 		FloatBuffer[0] = LinearAccelerationVector.X;
 		FloatBuffer[1] = LinearAccelerationVector.Y;
 		FloatBuffer[2] = LinearAccelerationVector.Z;
 		FloatBuffer[3] = AngularVelocityVector.X;
 		FloatBuffer[4] = AngularVelocityVector.Y;
 		FloatBuffer[5] = AngularVelocityVector.Z;
+
+		if(ReturnBias){
+			FloatBuffer[6] = BiasAccel.X;
+			FloatBuffer[7] = BiasAccel.Y;
+			FloatBuffer[8] = BiasAccel.Z;
+			FloatBuffer[9] = BiasOmega.X;
+			FloatBuffer[10] = BiasOmega.Y;
+			FloatBuffer[11] = BiasOmega.Z;
+		}
 	}
 }
 
 void UIMUSensor::CalculateAccelerationVector(float DeltaTime) {
 	VelocityThen = VelocityNow;
-	VelocityNow = Parent->GetPhysicsAngularVelocityInDegrees();
+	VelocityNow  = Parent->GetPhysicsLinearVelocityAtPoint(this->GetComponentLocation());
 
-	RotationNow = this->GetAttachParent()->GetComponentRotation();
+	RotationNow = this->GetComponentRotation();
 
 	LinearAccelerationVector = VelocityNow - VelocityThen;
 	LinearAccelerationVector /= DeltaTime;
@@ -60,7 +148,7 @@ void UIMUSensor::CalculateAccelerationVector(float DeltaTime) {
 }
 
 void UIMUSensor::CalculateAngularVelocityVector() {
-	AngularVelocityVector = Parent->GetPhysicsAngularVelocityInDegrees();
+	AngularVelocityVector = Parent->GetPhysicsAngularVelocityInRadians();
 
 	AngularVelocityVector.X = AngularVelocityVector.X;
 	AngularVelocityVector.Y = AngularVelocityVector.Y;

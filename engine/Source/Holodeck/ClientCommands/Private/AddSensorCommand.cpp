@@ -44,21 +44,27 @@ void UAddSensorCommand::Execute() {
 										{ "WorldNumSensor", UWorldNumSensor::StaticClass() }, 
 										{ "RangeFinderSensor", URangeFinderSensor::StaticClass() },
 										{ "CleanUpTask", UCleanUpTask::StaticClass() },
-										{ "DVLSensor", UDVLSensor::StaticClass() }, };
+										{ "DVLSensor", UDVLSensor::StaticClass() },
+										{ "PoseSensor", UPoseSensor::StaticClass() },
+										{ "AcousticBeaconSensor", UAcousticBeaconSensor::StaticClass() },
+										{ "SonarSensor", USonarSensor::StaticClass() },
+										{ "GPSSensor", UGPSSensor::StaticClass() },
+										{ "DepthSensor", UDepthSensor::StaticClass() },
+										{ "OpticalModemSensor", UOpticalModemSensor::StaticClass() }, };
 
 	FString AgentName = StringParams[0].c_str();
 	FString SensorName = StringParams[1].c_str();
 	FString TypeName = StringParams[2].c_str();
 	FString ParmsJson = StringParams[3].c_str();
 	FString SocketName = StringParams[4].c_str();
-	int LocationX = NumberParams[0];
-	int LocationY = NumberParams[1];
-	int LocationZ = NumberParams[2];
+	float LocationX = NumberParams[0];
+	float LocationY = NumberParams[1];
+	float LocationZ = NumberParams[2];
 
-	// Coordinates from the python side come in roll (x), pitch (y), yaw, (z) order
-	int RotationRoll = NumberParams[3];
-	int RotationPitch = NumberParams[4];
-	int RotationYaw = NumberParams[5];
+	// Note that we have to re-order the parameters since FRotator takes pitch, yaw, roll
+	// but the coordinates from the Python side com in roll, pitch, yaw order
+	FRotator Rotation = FRotator(NumberParams[4], NumberParams[5], NumberParams[3]);
+	Rotation = ConvertAngularVector(Rotation, ClientToUE);
 
 	AHolodeckAgent* Agent = GetAgent(AgentName);
 
@@ -68,7 +74,7 @@ void UAddSensorCommand::Execute() {
 	Sensor->SensorName = SensorName;
 	Sensor->ParseSensorParms(ParmsJson);
 	Sensor->SetRelativeLocation(ConvertLinearVector(FVector(LocationX, LocationY, LocationZ), ClientToUE));
-	Sensor->SetRelativeRotation(FRotator(RotationPitch, RotationYaw, RotationRoll));
+	Sensor->SetRelativeRotation(Rotation);
 
 	if (Sensor && Agent)
 	{

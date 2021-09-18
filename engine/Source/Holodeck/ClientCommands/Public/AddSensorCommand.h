@@ -23,6 +23,12 @@
 #include "CupGameTask.h"
 #include "CleanUpTask.h"
 #include "DVLSensor.h"
+#include "PoseSensor.h"
+#include "AcousticBeaconSensor.h"
+#include "SonarSensor.h"
+#include "GPSSensor.h"
+#include "DepthSensor.h"
+#include "OpticalModemSensor.h"
 
 #include "Command.h"
 #include "AddSensorCommand.generated.h"
