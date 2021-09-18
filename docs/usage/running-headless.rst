@@ -1,7 +1,7 @@
-Using Holodeck Headless
-=======================
+Using HoloOcean Headless
+=========================
 
-On Linux, Holodeck can run headless without opening a viewport window. This
+On Linux, HoloOcean can run headless without opening a viewport window. This
 can happen automatically, or you can force it to not appear
 
 Headless Mode vs Disabling Viewport Rendering
@@ -40,7 +40,7 @@ Automatic Headless Mode
 -----------------------
 
 If the engine does not detect the ``DISPLAY`` environment variable, it will
-not open a window. This will happen automatically if Holodeck is run from a
+not open a window. This will happen automatically if HoloOcean is run from a
 SSH session.
 
 .. note::

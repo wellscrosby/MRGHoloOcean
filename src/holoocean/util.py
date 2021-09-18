@@ -10,34 +10,34 @@ except NameError:
     unicode = str  # Python 3
 
 
-def get_holodeck_version():
-    """Gets the current version of holodeck
+def get_holoocean_version():
+    """Gets the current version of holoocean
 
     Returns:
         (:obj:`str`): the current version
     """
     return holoocean.__version__
 
-def _get_holodeck_folder():
+def _get_holoocean_folder():
     if "HOLODECKPATH" in os.environ and os.environ["HOLODECKPATH"] != "":
         return os.environ["HOLODECKPATH"]
 
     if os.name == "posix":
-        return os.path.expanduser("~/.local/share/holodeck")
+        return os.path.expanduser("~/.local/share/holoocean")
 
     if os.name == "nt":
-        return os.path.expanduser("~\\AppData\\Local\\holodeck")
+        return os.path.expanduser("~\\AppData\\Local\\holoocean")
 
-    raise NotImplementedError("holodeck is only supported for Linux and Windows")
+    raise NotImplementedError("holoocean is only supported for Linux and Windows")
 
-def get_holodeck_path():
-    """Gets the path of the holodeck environment
+def get_holoocean_path():
+    """Gets the path of the holoocean environment
 
     Returns:
-        (:obj:`str`): path to the current holodeck environment
+        (:obj:`str`): path to the current holoocean environment
     """
 
-    return os.path.join(_get_holodeck_folder(), get_holodeck_version())
+    return os.path.join(_get_holoocean_folder(), get_holoocean_version())
 
 
 def convert_unicode(value):
@@ -74,7 +74,7 @@ def get_os_key():
     if os.name == "nt":
         return "Windows"
 
-    raise NotImplementedError("Holodeck is only supported for Linux and Windows")
+    raise NotImplementedError("HoloOcean is only supported for Linux and Windows")
 
 
 def human_readable_size(size_bytes):

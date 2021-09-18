@@ -1,4 +1,4 @@
-.. _`holodeck-api-index`:
+.. _`holoocean-api-index`:
 
 HoloOcean
 =========

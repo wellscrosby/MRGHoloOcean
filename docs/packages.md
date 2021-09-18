@@ -7,10 +7,10 @@ Packages are located on an S3 bucket, due to the size of the files and the
 bandwidth required to distribute them. 
 
 ### Retrieving Package List
-A version of holodeck has a certain set of packages that are associated with it. 
-Each package can have multiple versions, and a version of holodeck can be 
+A version of holoocean has a certain set of packages that are associated with it. 
+Each package can have multiple versions, and a version of holoocean can be 
 compatible with multiple versions of a package. A package can also be added
-after shipping a version of holodeck, so the client fetches a list of available
+after shipping a version of holoocean, so the client fetches a list of available
 packages from the backend.
 
 The client will post a GET to the following endpoint:

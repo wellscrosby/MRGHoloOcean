@@ -1,4 +1,4 @@
-"""Holodeck is a high fidelity simulator for reinforcement learning.
+"""HoloOcean is an underwater robotics simulator.
 """
 __version__ = '0.1.0'
 

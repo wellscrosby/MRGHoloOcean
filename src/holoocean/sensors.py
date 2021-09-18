@@ -644,7 +644,7 @@ class AbuseSensor(HoloOceanSensor):
     def data_shape(self):
         return [1]
 
-######################## HOLODECK-OCEAN CUSTOM SENSORS ###########################
+######################## HOLOOCEAN CUSTOM SENSORS ###########################
 #Make sure to also add your new sensor to SensorDefintion below
 
 class SonarSensor(HoloOceanSensor):
@@ -658,15 +658,16 @@ class SonarSensor(HoloOceanSensor):
 
     - ``BinsRange``: Number of range bins of resulting image, defaults to 300.
     - ``BinsAzimuth``: Number of azimuth bins of resulting image, defaults to 128.
-    - ``MinRange``: Minimum range visible in meters, defaults to 3.
-    - ``MaxRange``: Maximum range visible in meters, defaults to 30.
+    - ``BinsElevation``: Number of elevation bins to use during shadowing, defaults to 10*Elevation (0.1 degree per bin).
     - ``Azimuth``: Azimuth (side to side) angle visible in degrees, defaults to 130.
     - ``Elevation``: Elevation angle (up and down) visible in degrees, defaults to 20.
-    - ``InitOctreeRange``: Make all nodes within this range upon startup. Defaults to MaxRange.
-    - ``ViewRegion``: Turns on green lines to see visible region. Defaults to false.
-    - ``ViewOctree``: Highlights all voxels in range. Defaults to false.
+    - ``MinRange``: Minimum range visible in meters, defaults to 3.
+    - ``MaxRange``: Maximum range visible in meters, defaults to 30.
+    - ``InitOctreeRange``: Upon startup, all mid-level octrees within this distance will be created.
     - ``AddSigma``/``AddCov``: Additive noise covariance/std from a Rayleigh distribution. Needs to be a float. Defaults to 0/off.
     - ``MultSigma``/``MultCov``: Multiplication noise covariance/std from a normal distribution. Needs to be a float. Defaults to 0/off.
+    - ``ViewRegion``: Turns on green lines to see visible region. Defaults to false.
+    - ``ViewOctree``: Highlights all voxels in range. Defaults to false.
 
     """
 
@@ -827,12 +828,29 @@ class PoseSensor(HoloOceanSensor):
         return [4, 4]
 
 class AcousticBeaconSensor(HoloOceanSensor):
-    """Acoustic Beacon Sensor. Can send message to an other beacon from the `~holoocean.HoloOceanEnvironment.send_acoustic_message` command.
+    """Acoustic Beacon Sensor. Can send message to other beacon from the :meth:`~holoocean.HoloOceanEnvironment.send_acoustic_message` command.
 
-    Returning array depends on sent message type. 
+    Returning array depends on sent message type. Note received message will be delayed due to time of 
+    acoustic wave traveling. Possibly message types are, with ϕ representing the azimuth, ϴ
+    elevation, r range, and d depth in water,
 
-    # TODO Document all possible message types.
+    - ``OWAY``: One way message that sends ``["OWAY", from_sensor, payload]``
+    - ``OWAYU``: One way message that sends ``["OWAYU", from_sensor, payload, ϕ, ϴ]``
+    - ``MSG_REQ``: Requests a return message of MSG_RESP and sends ``["MSG_REQ", from_sensor, payload]``
+    - ``MSG_RESP``: Return message that sends ``["MSG_RESP", from_sensor, payload]``
+    - ``MSG_REQU``: Requests a return message of MSG_RESPU and sends ``["MSG_REQU", from_sensor, payload, ϕ, ϴ]``
+    - ``MSG_RESPU``: Return message that sends ``["MSG_RESPU", from_sensor, payload, ϕ, ϴ, r]``
+    - ``MSG_REQX``: Requests a return message of MSG_RESPX and sends ``["MSG_REQX", from_sensor, payload, ϕ, ϴ, d]``
+    - ``MSG_RESPX``: Return message that sends ``["MSG_RESPX", from_sensor, payload, ϕ, ϴ, r, d]``
 
+    These messages types are based on the `Blueprint Subsea SeaTrac X150 <https://www.blueprintsubsea.com/pages/product.php?PN=BP00795>`_
+
+    **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the
+    following options:
+
+    - ``id``: Id of this sensor. If not given, they are numbered sequentially.
     """
 
     sensor_type = "AcousticBeaconSensor"
@@ -911,29 +929,32 @@ class AcousticBeaconSensor(HoloOceanSensor):
 
             # otherwise parse through type
             else:
+                from_sensor = sending[0]
                 # stop sending to this beacon
-                self.__class__.instances[sending[0]].sending_to.remove(self.id)
+                self.__class__.instances[from_sensor].sending_to.remove(self.id)
 
-                data = [self.msg_type, sending[0], self.msg_data]
+                data = [self.msg_type, from_sensor, self.msg_data]
+
+                phi, theta, dist, depth = self._sensor_data_buffer
 
                 if self.msg_type == "OWAY":
                     pass
                 elif self.msg_type == "OWAYU":
-                    data.extend(self._sensor_data_buffer[0:2])
+                    data.extend([phi, theta])
                 elif self.msg_type == "MSG_REQ":
-                    self.send_message(sending[0], "MSG_RESP", None)
+                    self.send_message(from_sensor, "MSG_RESP", None)
                 elif self.msg_type == "MSG_RESP":
                     pass
                 elif self.msg_type == "MSG_REQU":
-                    self.send_message(sending[0], "MSG_RESPU", None)
-                    data.extend(self._sensor_data_buffer[0:2])
+                    self.send_message(from_sensor, "MSG_RESPU", None)
+                    data.extend([phi, theta])
                 elif self.msg_type == "MSG_RESPU":
-                    data.extend(self._sensor_data_buffer[0:3])
+                    data.extend([phi, theta, dist])
                 elif self.msg_type == "MSG_REQX":
-                    self.send_message(sending[0], "MSG_RESPX", None)
-                    data.extend(self._sensor_data_buffer[[0,1,3]])
+                    self.send_message(from_sensor, "MSG_RESPX", None)
+                    data.extend([phi, theta, depth])
                 elif self.msg_type == "MSG_RESPX":
-                    data.extend(self._sensor_data_buffer)
+                    data.extend([phi, theta, dist, depth])
                 else:
                     raise ValueError("Invalid Acoustic MSG type")
 
@@ -950,7 +971,7 @@ class AcousticBeaconSensor(HoloOceanSensor):
         self.__class__.instances = dict()
 
 class OpticalModemSensor(HoloOceanSensor):
-    """Handles communication between agents using an optical modem.
+    """Handles communication between agents using an optical modem. Can send message to other modem from the :meth:`~holoocean.HoloOceanEnvironment.send_optical_message` command.
 
     **Configuration**
 
@@ -958,13 +979,12 @@ class OpticalModemSensor(HoloOceanSensor):
     following options:
 
     - ``MaxDistance``: Max Distance in meters of OpticalModem. (default 50)
+    - ``id``: Id of this sensor. If not given, they are numbered sequentially.
+    - ``DistanceSigma``/``DistanceCov``: Determines the standard deviation/covariance of the noise on MaxDistance. Must be scalar value. (default 0 => no noise)
+    - ``AngleSigma``/``AngleCov``: Determines the standard deviation of the noise on LaserAngle. Must be scalar value. (default 0 => no noise)
+    - ``LaserDebug``: Show debug traces. (default false)
     - ``DebugNumSides``: Number of sides on the debug cone. (default 72)
     - ``LaserAngle``: Angle of lasers from origin. Measured in degrees. (default 60)
-    - ``LaserDebug``: Show debug traces. (default false)
-    - ``DistanceSigma``: Determines the standard deviation of the noise of MaxDistance. (defualt 0)
-    - ``AngleSigma``: Determines the standard deviation of the noise of LaserAngle. (default 0)
-    - ``DistanceCov``: Determines the covariance of the noise of MaxDistance. (defualt 0)
-    - ``AngleCov``: Determines the covariance of the noise of LaserAngle. (default 0)
 
     """
     sensor_type = "OpticalModemSensor"

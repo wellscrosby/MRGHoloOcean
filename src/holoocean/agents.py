@@ -1,4 +1,4 @@
-"""Definitions for different agents that can be controlled from Holodeck"""
+"""Definitions for different agents that can be controlled from HoloOcean"""
 from functools import reduce
 
 import numpy as np
@@ -54,7 +54,7 @@ class ControlSchemes:
 
 
 class HoloOceanAgent:
-    """A learning agent in Holodeck
+    """A learning agent in HoloOcean
 
     Agents can act, receive rewards, and receive observations from their sensors.
     Examples include the Android, UAV, and SphereRobot.
@@ -257,7 +257,7 @@ class HoloOceanAgent:
 
 
 class UavAgent(HoloOceanAgent):
-    # constants in Uav.h in holodeck-engine
+    # constants in Uav.h in holoocean-engine
     __MAX_ROLL = 6.5080
     __MIN_ROLL = -__MAX_ROLL
 
@@ -304,7 +304,7 @@ class UavAgent(HoloOceanAgent):
 
 
 class SphereAgent(HoloOceanAgent):
-    # constants in SphereRobot.h in holodeck-engine
+    # constants in SphereRobot.h in holoocean-engine
     __DISCRETE_MIN = 0
     __DISCRETE_MAX = 4
 
@@ -379,7 +379,7 @@ class AndroidAgent(HoloOceanAgent):
     There are 18 joints with 3 DOF, 10 with 2 DOF, and 20 with 1 DOF.
 
     Inherits from :class:`HoloOceanAgent`."""
-    # constants in Android.h in holodeck-engine
+    # constants in Android.h in holoocean-engine
     __MAX_TORQUE = 20
     __MIN_TORQUE = -__MAX_TORQUE
     __JOINTS_VECTOR_SIZE = 94
@@ -494,7 +494,7 @@ class HandAgent(HoloOceanAgent):
     Inherits from :class:`HoloOceanAgent`.
     
     """
-    # constants in HandAgent.h in holodeck-engine
+    # constants in HandAgent.h in holoocean-engine
     __MAX_MOVEMENT_METERS = 0.5
     __MIN_MOVEMENT_METERS = -__MAX_MOVEMENT_METERS
 
@@ -584,7 +584,7 @@ class NavAgent(HoloOceanAgent):
        
     """
 
-    # constants in NavAgent.h in holodeck-engine
+    # constants in NavAgent.h in holoocean-engine
     __MAX_DISTANCE = 0.5
     __MIN_DISTANCE = -__MAX_DISTANCE
 
@@ -617,7 +617,7 @@ class TurtleAgent(HoloOceanAgent):
     - ``rot_force`` is capped at 35 either direction
 
     Inherits from :class:`HoloOceanAgent`."""
-    # constants in TurtleAgent.h in holodeck-engine
+    # constants in TurtleAgent.h in holoocean-engine
     __MAX_THRUST = 160.0
     __MIN_THRUST = -__MAX_THRUST
 
@@ -655,7 +655,7 @@ class HoveringAUV(HoloOceanAgent):
     -  All are capped by max acceleration
 
     Inherits from :class:`HoloOceanAgent`."""
-    # constants in HoveringAUV.h in holodeck-engine
+    # constants in HoveringAUV.h in holoocean-engine
     __MAX_ACCEL = 100
     __MIN_ACCEL = -__MAX_ACCEL
 
@@ -688,8 +688,8 @@ class TorpedoAUV(HoloOceanAgent):
 
     -  All are capped by max acceleration
 
-    Inherits from :class:`HolodeckAgent`."""
-    # constants in TorpedoAUV.h in holodeck-engine
+    Inherits from :class:`HoloOceanAgent`."""
+    # constants in TorpedoAUV.h in holoocean-engine
     __MAX_THRUST = 100
     __MAX_FIN = 45
     __MIN_THRUST = -__MAX_THRUST
@@ -699,7 +699,7 @@ class TorpedoAUV(HoloOceanAgent):
 
     @property
     def control_schemes(self):
-        scheme = "[left_fin, top_fin, right_fin, bottom_fin, thrust]"
+        scheme = "[right_fin, top_fin, left_fin, bottom_fin, thrust]"
         low = [self.__MIN_FIN]*4 + [self.__MIN_THRUST]
         high = [self.__MAX_FIN]*4 + [self.__MAX_THRUST]
         return [(scheme, ContinuousActionSpace([5], low=low, high=high))]

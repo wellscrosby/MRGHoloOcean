@@ -9,7 +9,7 @@ setup(
     description="Autonomous Underwater Vehicle Simulator",
     long_description=readme,
     long_description_content_type="text/markdown",
-    author="Joshua Greaves, Max Robinson, Nick Walton, Jayden Milne, Vin Howe, Daniel Ekpo, Kolby Nottingham",
+    author="Easton Potokar, Spencer Ashford, BYU FRoSt & PCCL Labs",
     author_email="contagon@byu.edu",
     url="https://bitbucket.org/frostlab/holoocean",
     packages=find_packages('src'),

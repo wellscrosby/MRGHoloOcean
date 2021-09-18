@@ -6,10 +6,9 @@ Using HoloOcean
    :maxdepth: 2
    :caption: Resources:
    
-   getting-started
+   scenarios
    hotkeys
-   installation
+   lcm
    units-and-coordinates
    performance
    running-headless
-   weather

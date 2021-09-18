@@ -38,6 +38,8 @@ def test_all_agents_and_sensors_present(env_scenario):
             "length of sensors did not match!"
 
         for sensor in agent['sensors']:
-            assert sensor['sensor_type'] in env.agents[agent['agent_name']].sensors, \
+            sensor_name = sensor['sensor_name'] if 'sensor_name' in sensor else sensor['sensor_type']
+            assert sensor_name in env.agents[agent['agent_name']].sensors, \
                 "Sensor is missing!"
 
+    env.__on_exit__()

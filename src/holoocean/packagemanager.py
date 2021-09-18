@@ -1,4 +1,4 @@
-"""Package manager for worlds available to download and use for Holodeck"""
+"""Package manager for worlds available to download and use for HoloOcean"""
 import json
 import os
 import shutil
@@ -34,13 +34,13 @@ def _get_from_backend(rel_url):
 
 
 def available_packages():
-    """Returns a list of package names available for the current version of Holodeck
+    """Returns a list of package names available for the current version of HoloOcean
 
     Returns (:obj:`list` of :obj:`str`):
         List of package names
     """
     # Get the index json file from the backend
-    url = "{ver}/available".format(ver=util.get_holodeck_version())
+    url = "{ver}/available".format(ver=util.get_holoocean_version())
     try:
         index = _get_from_backend(url)
         index = json.loads(index)
@@ -89,7 +89,16 @@ def _print_agent_info(agents, base_indent=0):
         print(base_indent*' ', "Type:", agent["agent_type"])
         print(base_indent*' ', "Sensors:")
         for sensor in agent["sensors"]:
-            print((base_indent + 2)*' ', sensor)
+            print((base_indent + 2)*' ', sensor['sensor_type'])
+            for k, v in sensor.items():
+                if k == "sensor_type":
+                    continue
+                elif k == "configuration":
+                    print((base_indent + 4)*' ', k)
+                    for opt, val in v.items():
+                        print((base_indent + 6)*' ', opt+":", val)
+                else:
+                    print((base_indent + 4)*' ', k+":", v)
 
 
 def world_info(world_name, world_config=None, base_indent=0):
@@ -123,7 +132,7 @@ def world_info(world_name, world_config=None, base_indent=0):
 
 def _find_file_in_worlds_dir(filename):
     """
-    Recursively tries to find filename in the worlds directory of holodeck
+    Recursively tries to find filename in the worlds directory of holoocean
 
     Args:
         filename (:obj:`str`): Pattern to try and match (fnmatch)
@@ -132,7 +141,7 @@ def _find_file_in_worlds_dir(filename):
         :obj:`str`: The path or an empty string if the file was not found
 
     """
-    for root, _, filenames in os.walk(util.get_holodeck_path(), "worlds"):
+    for root, _, filenames in os.walk(util.get_holoocean_path(), "worlds"):
         for match in fnmatch.filter(filenames, filename):
             return os.path.join(root, match)
     return ""
@@ -166,7 +175,7 @@ def scenario_info(scenario_name="", scenario=None, base_indent=0):
 
 
 def install(package_name, url=None, branch=None, commit=None):
-    """Installs a holodeck package.
+    """Installs a holoocean package.
 
     Args:
         package_name (:obj:`str`): The name of the package to install
@@ -180,7 +189,7 @@ def install(package_name, url=None, branch=None, commit=None):
         return
 
     _check_for_old_versions()
-    holodeck_path = util.get_holodeck_path()
+    holodeck_path = util.get_holoocean_path()
 
     if url is None:
         # If the URL is none, we need to derive it
@@ -198,7 +207,7 @@ def install(package_name, url=None, branch=None, commit=None):
                 commit = "latest"
 
         else:
-            branch = "v{holodeck_version}".format(holodeck_version=util.get_holodeck_version())
+            branch = "v{holodeck_version}".format(holodeck_version=util.get_holoocean_version())
             commit = util.get_os_key()
 
         # example: %backend%/Ocean/v0.1.0/Linux.zip
@@ -222,7 +231,7 @@ def _check_for_old_versions():
     if "HOLODECKPATH" in os.environ:
         return
 
-    path = util._get_holodeck_folder()
+    path = util._get_holoocean_folder()
 
     if not os.path.exists(path):
         return
@@ -233,14 +242,14 @@ def _check_for_old_versions():
         f_path = os.path.join(path, f)
         if f == "ignore_old_packages":
             return
-        if f == util.get_holodeck_version():
+        if f == util.get_holoocean_version():
             continue
         elif not os.path.isfile(f_path):
             not_matching.append(f)
 
     if not_matching:
         print("**********************************************")
-        print("* You have old versions of Holodeck packages *")
+        print("* You have old versions of HoloOcean packages *")
         print("**********************************************")
         print("Use packagemanager.prune() to delete old packages")
         print("Versions:", not_matching)
@@ -248,7 +257,7 @@ def _check_for_old_versions():
         print()
 
 def prune():
-    """Prunes old versions of holodeck, other than the running version.
+    """Prunes old versions of holoocean, other than the running version.
 
     **DO NOT USE WITH HOLODECKPATH**
 
@@ -258,14 +267,14 @@ def prune():
         print("This function is not available when using HOLODECKPATH", stream=sys.stderr)
         return
 
-    holodeck_folder = util._get_holodeck_folder()
+    holodeck_folder = util._get_holoocean_folder()
 
     # Delete everything in holodeck_folder that isn't the current holodeck version
     for file in os.listdir(holodeck_folder):
         file_path = os.path.join(holodeck_folder, file)
         if os.path.isfile(file_path):
             continue
-        if file == util.get_holodeck_version():
+        if file == util.get_holoocean_version():
             continue
         # Delete it!
         print("Deleting {}".format(file_path))
@@ -274,7 +283,7 @@ def prune():
     print("Done")
 
 def remove(package_name):
-    """Removes a holodeck package.
+    """Removes a holoocean package.
 
     Args:
         package_name (:obj:`str`): the name of the package to remove
@@ -285,7 +294,7 @@ def remove(package_name):
 
 
 def remove_all_packages():
-    """Removes all holodeck packages.
+    """Removes all holoocean packages.
 
     """
     for _, path in _iter_packages():
@@ -324,7 +333,7 @@ def get_scenario(scenario_name):
         raise FileNotFoundError(
             "The file `{file}.json` could not be found in {path}. "
             "Make sure the package that contains {file} " \
-            "is installed.".format(file=scenario_name, path=util.get_holodeck_path()))
+            "is installed.".format(file=scenario_name, path=util.get_holoocean_path()))
 
     return load_scenario_file(config_path)
 
@@ -394,7 +403,7 @@ def get_package_config_for_scenario(scenario):
 
 
 def _iter_packages():
-    path = util.get_holodeck_path()
+    path = util.get_holoocean_path()
     worlds_path = os.path.join(path, "worlds")
     if not os.path.exists(worlds_path):
         os.makedirs(worlds_path)

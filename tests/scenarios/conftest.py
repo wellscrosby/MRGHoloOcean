@@ -13,7 +13,16 @@ def pytest_generate_tests(metafunc):
     for config, full_path in pm._iter_packages():
         for world_entry in config["worlds"]:
             for config, full_path in pm._iter_scenarios(world_entry["name"]):
-                scenarios.add("{}-{}".format(config["world"], config["name"]))
+                # Don't make ones with a sonar
+                use = True
+                name = "{}-{}".format(config["world"], config["name"])
+                config = holoocean.packagemanager.get_scenario(name)
+                for agent in config['agents']:
+                    for sensor in agent['sensors']:
+                        if sensor["sensor_type"] == "SonarSensor":
+                            use = False
+                if use:
+                    scenarios.add(name)
 
     if "scenario" in metafunc.fixturenames:
         metafunc.parametrize("scenario", scenarios)

@@ -38,8 +38,6 @@ def test_ball_location_and_reward():
     Eventually there should be a way to add a debug option in the config so it can be tested programmatically.
     """
 
-    # TODO: Spawn trash above trashcan so it falls in and the reward can be verified
-
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Dexterity")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=cfg,

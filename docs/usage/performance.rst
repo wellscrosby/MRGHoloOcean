@@ -1,10 +1,10 @@
 .. _`improving-performance`:
 
-==============================
-Improving Holodeck Performance
-==============================
+================================
+Improving HoloOcean Performance
+================================
 
-Holodeck is fairly performant by default, but you can also sacrifice
+HoloOcean is fairly performant by default, but you can also sacrifice
 features to increase your frames per second.
 
 .. contents::
@@ -19,7 +19,9 @@ context switch deep in the rendering code of the engine, which has a
 significant performance penalty.
 
 This chart shows how much performance you can expect to gain or loose 
-adjusting the RGBCamera (left column is frame time in milleseconds)
+adjusting the RGBCamera (left column is frame time in milleseconds). Note
+all these tests were done in the original Holodeck, but the results should be
+the same.
 
 +------------+----------+---------+-----------+---------+----------+---------+
 | Resolution | UrbanCity          | MazeWorld           | AndroidPlayground  |
@@ -60,11 +62,31 @@ See :class:`~holoocean.sensors.RGBCamera` for more details.
 Changing ticks per capture
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The number of ticks per capture can be adjusted to give a lower average frame
-time.
+The camera sample rate can be reduced to increase the average frames per second.
+See :ref:`configure-sensors` and the ``Hz`` parameter for more info.
 
-See the 
-:meth:`~holoocean.sensors.RGBCamera.set_ticks_per_capture` method.
+SonarSensor
+--------------------------
+
+The SonarSensor can also be taxing on performance. There's a number of things that can be
+done to help improve it's performance as well.
+
+Lowering Octree Resolution
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Octree resolution has a large impact on sonar performance. The higher ``octree_min``
+is, the less leaves there are to search through, and the faster it'll run. This will have an
+impact on image quality, especially at close distances. If most objects that are being
+inspected are a ways away, this parameter can be safely increased quite a bit.
+
+See :ref:`configure-octree` for info on how to do that.
+
+Changing ticks per capture
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The sonar sample rate can be reduced to increase the average frames per second.
+See :ref:`configure-sensors` and the ``Hz`` parameter for more info.
+
 
 Disable Viewport Rendering
 --------------------------
@@ -79,7 +101,7 @@ At lower ``RGBCamera`` resolutions, you can expect a ~40% frame time reduction.
 Change Render Quality
 ---------------------
 
-You can adjust Holodeck to render at a lower (or higher) quality to improve
+You can adjust HoloOcean to render at a lower (or higher) quality to improve
 performance. See the 
 :meth:`~holoocean.environments.HoloOceanEnvironment.set_render_quality` method
 

@@ -1,5 +1,5 @@
-"""This module contains the classes used for formatting and sending commands to the Holodeck
-backend. Most of these commands are just used internally by Holodeck, regular users do not need to
+"""This module contains the classes used for formatting and sending commands to the HoloOcean
+backend. Most of these commands are just used internally by HoloOcean, regular users do not need to
 worry about these.
 
 """
@@ -51,7 +51,7 @@ class CommandsGroup:
 class Command:
     """Base class for Command objects.
 
-    Commands are used for IPC between the holodeck python bindings and holodeck
+    Commands are used for IPC between the holoocean python bindings and holoocean
     binaries.
 
     Derived classes must set the ``_command_type``.
@@ -127,7 +127,7 @@ class CommandCenter:
 
         # Set up command buffer
         self._command_bool_ptr = self._client.malloc("command_bool", [1], np.bool_)
-        # This is the size of the command buffer that Holodeck expects/will read.
+        # This is the size of the command buffer that HoloOcean expects/will read.
         self.max_buffer = 1048576
         self._command_buffer_ptr = self._client.malloc("command_buffer", [self.max_buffer], np.byte)
         self._commands = CommandsGroup()
@@ -171,7 +171,7 @@ class CommandCenter:
 
         """
         np.copyto(self._command_bool_ptr, True)
-        to_write += '0'  # The gason JSON parser in holodeck expects a 0 at the end of the file.
+        to_write += '0'  # The gason JSON parser in holoocean expects a 0 at the end of the file.
         input_bytes = str.encode(to_write)
         if len(input_bytes) > self.max_buffer:
             raise HoloOceanException("Error: Command length exceeds buffer size")
@@ -384,7 +384,7 @@ class RGBCameraRateCommand(Command):
 
 
 class RenderQualityCommand(Command):
-    """Adjust the rendering quality of Holodeck
+    """Adjust the rendering quality of HoloOcean
 
     Args:
         render_quality (int): 0 = low, 1 = medium, 3 = high, 3 = epic
@@ -419,7 +419,7 @@ class CustomCommand(Command):
         self.add_string_parameters(string_params)
 
 
-######################## HOLODECK-OCEAN CUSTOM COMMANDS ###########################
+######################## HOLOOCEAN CUSTOM COMMANDS ###########################
 
 class SendAcousticMessageCommand(Command):
     """Set the number of ticks between captures of the RGB camera.

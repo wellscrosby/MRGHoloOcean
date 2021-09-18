@@ -1,5 +1,5 @@
-"""Module containing the environment interface for Holodeck.
-An environment contains all elements required to communicate with a world binary or HolodeckCore
+"""Module containing the environment interface for HoloOcean.
+An environment contains all elements required to communicate with a world binary or HoloOceanCore
 editor.
 
 It specifies an environment, which contains a number of agents, and the interface for communicating
@@ -26,7 +26,7 @@ from holoocean.sensors import AcousticBeaconSensor
 from holoocean.sensors import OpticalModemSensor
 
 class HoloOceanEnvironment:
-    """Proxy for communicating with a Holodeck world
+    """Proxy for communicating with a HoloOcean world
 
     Instantiate this object using :meth:`holoocean.holoocean.make`.
 
@@ -163,7 +163,7 @@ class HoloOceanEnvironment:
                 raise HoloOceanException("Unknown platform: " + os.name)
 
         # Initialize Client
-        self._client = HoloOceanClient(self._uuid, start_world)
+        self._client = HoloOceanClient(self._uuid)
         self._command_center = CommandCenter(self._client)
         self._client.command_center = self._command_center
         self._reset_ptr = self._client.malloc("RESET", [1], np.bool_)
@@ -180,12 +180,16 @@ class HoloOceanEnvironment:
         # Set the default state function
         self.num_agents = len(self.agents)
 
+        # Whether we need to wait for a sonar to load
+        self.start_world = start_world
+        self._loading_sonar = False
+
         if self.num_agents == 1:
             self._default_state_fn = self._get_single_state
         else:
             self._default_state_fn = self._get_full_state
 
-        self._client.acquire()
+        self._client.acquire(self._timeout)
 
         if os.name == "posix" and show_viewport is False:
             self.should_render_viewport(False)
@@ -193,6 +197,19 @@ class HoloOceanEnvironment:
         # Flag indicates if the user has called .reset() before .tick() and .step()
         self._initial_reset = False
         self.reset()
+
+    @property
+    def _timeout(self):
+        # Make a larger timeout when creating octrees at the start
+        if (self._num_ticks < 20 and self._loading_sonar) or not self.start_world:
+            if os.name == "posix":
+                return None
+            elif os.name == "nt":
+                import win32event
+                return win32event.INFINITE
+
+        else:
+            return 10
 
     @property
     def action_space(self):
@@ -278,6 +295,9 @@ class HoloOceanEnvironment:
                                                 config=sensor_config['configuration'],
                                                 tick_every=sensor_config['tick_every'],
                                                 lcm_channel=sensor_config['lcm_channel']))
+
+                if sensor_config['sensor_type'] == "SonarSensor":
+                    self._loading_sonar = True
 
                 # Import LCM if needed
                 if sensor_config['lcm_channel'] is not None and self._lcm is None:
@@ -422,7 +442,7 @@ class HoloOceanEnvironment:
 
             self._command_center.handle_buffer()
             self._client.release()
-            self._client.acquire()
+            self._client.acquire(self._timeout)
 
             reward, terminal = self._get_reward_terminal()
             last_state = self._default_state_fn(), reward, terminal, None
@@ -478,7 +498,7 @@ class HoloOceanEnvironment:
             self._command_center.handle_buffer()
 
             self._client.release()
-            self._client.acquire()
+            self._client.acquire(self._timeout)
 
             state = self._default_state_fn()
 
@@ -568,8 +588,7 @@ class HoloOceanEnvironment:
                 empty, the prop will have the a simple checkered gray material.
 
             tag (:obj:`string`):
-                The tag to apply to the prop. Useful for task references, like the
-                :ref:`location-task`.
+                The tag to apply to the prop. Useful for task references.
         """
         location = [0, 0, 0] if location is None else location
         rotation = [0, 0, 0] if rotation is None else rotation
@@ -674,7 +693,7 @@ class HoloOceanEnvironment:
         self._enqueue_command(RenderViewportCommand(render_viewport))
 
     def set_render_quality(self, render_quality):
-        """Adjusts the rendering quality of Holodeck.
+        """Adjusts the rendering quality of HoloOcean.
 
         Args:
             render_quality (:obj:`int`): An integer between 0 = Low Quality and 3 = Epic quality.
@@ -745,7 +764,7 @@ class HoloOceanEnvironment:
         try:
             loading_semaphore.acquire(10)
         except posix_ipc.BusyError:
-            raise HoloOceanException("Timed out waiting for binary to load. Ensure that holodeck "
+            raise HoloOceanException("Timed out waiting for binary to load. Ensure that holoocean "
                                     "is not being run with root priveleges.")
         loading_semaphore.unlink()
 
@@ -862,27 +881,46 @@ class HoloOceanEnvironment:
         return None  # Not implemented for other types
 
 
-######################### HOLODECK-OCEAN CUSTOM #############################
+######################### HOLOOCEAN CUSTOM #############################
 
 ######################## ACOUSTIC BEACON HELPERS ###########################
 
     def send_acoustic_message(self, id_from, id_to, msg_type, msg_data):
         """Send a message from one beacon to another.
 
-        # TODO: Fill this out.
+        Args:
+            id_from (:obj:`int`): The integer ID of the transmitting modem.
+            id_to (:obj:`int`): The integer ID of the receiving modem.
+            msg_type (:obj:`str`): The message type. See :class:`holoocean.sensors.AcousticBeaconSensor` for a list.
+            msg_data : The message to be transmitted. Currently can be any python object.
         """
         AcousticBeaconSensor.instances[id_from].send_message(id_to, msg_type, msg_data)
 
     @property
     def beacons(self):
+        """Gets all instances of AcousticBeaconSensor in the environment.
+        
+        Returns:
+            (:obj:`list` of :obj:`AcousticBeaconSensor`): List of all AcousticBeaconSensor in environment
+        """
         return AcousticBeaconSensor.instances
 
     @property
     def beacons_id(self):
+        """Gets all ids of AcousticBeaconSensor in the environment.
+        
+        Returns:
+            (:obj:`list` of :obj:`int`): List of all AcousticBeaconSensor ids in environment
+        """
         return list(AcousticBeaconSensor.instances.keys())
 
     @property
     def beacons_status(self):
+        """Gets all status of AcousticBeaconSensor in the environment.
+        
+        Returns:
+            (:obj:`list` of :obj:`str`): List of all AcousticBeaconSensor status in environment
+        """
         return [i.status for i in AcousticBeaconSensor.instances.values()]
 
 ####################### OPTICAL MODEM HELPERS ###############################
@@ -891,16 +929,27 @@ class HoloOceanEnvironment:
         """Sends data between various instances of OpticalModemSensor
 
         Args:
-            id_from (:obj: `int`): The integer ID of the transmitting modem.
-            id_to (:obj: `int`): The integer ID of the receiving modem.
+            id_from (:obj:`int`): The integer ID of the transmitting modem.
+            id_to (:obj:`int`): The integer ID of the receiving modem.
+            msg_data : The message to be transmitted. Currently can be any python object.
         """
 
         OpticalModemSensor.instances[id_from].send_message(id_to, msg_data)
 
     @property
     def modems(self):
+        """Gets all instances of OpticalModemSensor in the environment.
+        
+        Returns:
+            (:obj:`list` of :obj:`OpticalModemSensor`): List of all OpticalModemSensor in environment
+        """
         return OpticalModemSensor.instances
 
     @property
     def modems_id(self):
+        """Gets all ids of OpticalModemSensor in the environment.
+        
+        Returns:
+            (:obj:`list` of :obj:`int`): List of all OpticalModemSensor ids in environment
+        """
         return list(OpticalModemSensor.instances.keys())

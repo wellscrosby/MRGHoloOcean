@@ -11,366 +11,45 @@ Changelog
     merged it at the end in parentheses
   - see https://github.com/BYU-PCCL/holodeck/wiki/Holodeck-Release-Notes-Template
 
-Holodeck 0.3.1
---------------
-*04/02/2020*
+HoloOcean 0.4.0
+----------------
+*9/17/2021*
 
-More bug fixes, improvements, and even a few new features.
+First official release!
 
 Highlights
 ~~~~~~~~~~
-- **Holodeck now requires Python 3.5 or greater**
-- Added :class:`~holoocean.sensors.AbuseSensor` and 
-  :class:`~holoocean.sensors.RangeFinderSensor`
-- Added programmatic spawning of props, see
-  :meth:`~holoocean.environments.HoloOceanEnvironment.spawn_prop`
-- Weather can be specified in scenarios, see :ref:`weather`.
+- New Ocean environment package.
+- 2 new agents and 7 new sensors, along with updating of all previous sensors.
+- Complete rebranding to HoloOcean.  
 
 New Features
 ~~~~~~~~~~~~
-- Added optional start location and rotation randomization on 
-  :meth:`~holoocean.environments.HoloOceanEnvironment.reset`. See 
-  :ref:`location-randomization`.
-  (`#295 <https://github.com/BYU-PCCL/holodeck/issues/295>`_)
-- :meth:`~holoocean.environments.HoloOceanEnvironment.spawn_prop` now allows 
-  basic objects (spheres, cubes, cylinders) to be spawned at arbitrary 
-  locations in the environment.
-  (`#397 <https://github.com/BYU-PCCL/holodeck/issues/397>`_)
-- :ref:`distance-task` by default now calculates the distance to the objective
-  along the XY plane, to discourage flying straight up.
-  (`#360 <https://github.com/BYU-PCCL/holodeck/issues/360>`_)
+- Added agents :class:`~holoocean.agents.HoveringAUV` and :class:`~holoocean.agents.TorpedoAUV`
+- Added a plethora of new sensors, all with optional noise configurations
 
-  If the full 3D distance is desired, set the ``3dDistance`` flag in the
-  configuration block of the :ref:`distance-task`.
-  (`#360 <https://github.com/BYU-PCCL/holodeck/issues/360>`_)
-- Added :class:`~holoocean.sensors.AbuseSensor`, which senses if an agent
-  has been abused. Agents experience abuse when they fall from a high distance
-  or other agent-specific situations.
-  (`#262 <https://github.com/BYU-PCCL/holodeck/issues/262>`_)
-- Environment weather/time can be optionally configured with :ref:`scenarios`
-  (`#263 <https://github.com/BYU-PCCL/holodeck/issues/263>`_). See
-  :ref:`weather`.
-- :meth:`~holoocean.weather.WeatherController.set_weather` now has sunny
-  weather available, which allows you to revert back to the default weather.
-  (`#376 <https://github.com/BYU-PCCL/holodeck/issues/376>`_)
-- Added :class:`~holoocean.sensors.RangeFinderSensor` which calculates the
-  distance from the sensor to the first collision in the environment. The 
-  sensor can send out multiple rays in a circle if desired.
+  - :class:`~holoocean.sensors.SonarSensor`
+  - :class:`~holoocean.sensors.DVLSensor`
+  - :class:`~holoocean.sensors.DepthSensor`
+  - :class:`~holoocean.sensors.GPSSensor`
+  - :class:`~holoocean.sensors.PoseSensor`
+  - :class:`~holoocean.sensors.AcousticBeaconSensor`
+  - :class:`~holoocean.sensors.OpticalModemSensor`
+- New :ref:`Ocean <ocean>` package.
+- Added frame rate capping option.
+- Added ticks_per_sec and frames_per_sec to scenario config, see :ref:`configure-framerate`.
 
 Changes
 ~~~~~~~
-
-- **Holodeck now requires Python >= 3.5**
-  (`#389 <https://github.com/BYU-PCCL/holodeck/issues/389>`_)
-- Moved weather/time methods from
-  :class:`~holoocean.environments.HoloOceanEnvironment` to new
-  :class:`~holoocean.weather.WeatherController`
-  (`#196 <https://github.com/BYU-PCCL/holodeck/issues/196>`_,
-  `#263 <https://github.com/BYU-PCCL/holodeck/issues/263>`_)
-- Calling :meth:`~holoocean.environments.HoloOceanEnvironment.send_world_command`
-  for an environment without the given command will now cause
-  the environment to exit rather than fail silently.
-  This includes all relevant methods in the
-  :class:`~holoocean.weather.WeatherController`.
-- Removed the ability to toggle sensors during runtime with the removal of
-  :class:`~holoocean.environments.command.SetSensorEnabledCommand`,
-  :meth:`~holoocean.environments.HoloOceanEnvironment.set_sensor_enabled`, and
-  :meth:`~holoocean.sensors.HolodeckSensor.set_sensor_enable`.
-  To specify which sensors to include, use :ref:`custom-scenarios`.
-  (`#268 <https://github.com/BYU-PCCL/holodeck/issues/268>`_)
-- Improved Docker images. See docker.
-  (`#347 <https://github.com/BYU-PCCL/holodeck/issues/347>`_)
-  
-  - Tests can now be run inside of Docker containers
-  - All images are based on Ubuntu 18.04 now
-  - Added image for Dexterity package, and an image with every package
-- Every control scheme now has limits on inputs (ie maximum or minimum thrust)
-  (`#369 <https://github.com/BYU-PCCL/holodeck/issues/369>`_)
-
-  See :meth:`~holoocean.spaces.ActionSpace.get_high` and 
-  :meth:`~holoocean.spaces.ActionSpace.get_low` to read them.
-- Scenario Changes:
-
-  - **EuropeanForest-MaxDistance, RedwoodForest-MaxDistance,**
-    **UrbanCity-MaxDistance:** Added :class:`~holoocean.sensors.AbuseSensor`
-  - **InfiniteForest-MaxDistance:** Added :class:`~holoocean.sensors.AbuseSensor` 
-    and :class:`~holoocean.sensors.RangeFinderSensor`.
-  - **MazeWorld-FinishMazeSphere:** Added 
-    :class:`~holoocean.sensors.RangeFinderSensor`
-
+- Everything is now rebranded from Holodeck -> HoloOcean.
 
 Bug Fixes
 ~~~~~~~~~
-- Fixed UAV blades rotating incorrectly (thanks @sethmnielsen!)
-  (`#331 <https://github.com/BYU-PCCL/holodeck/issues/331>`_)
-- Fixed some ``posix_ipc.BusyError: Semaphore is busy`` errors on Linux systems 
-  when creating a scenario
-  (`#285 <https://github.com/BYU-PCCL/holodeck/issues/285>`_)
-- Fixed a bug where the UE4 editor crashes when an agent is manually added
-  to a level
-  (`#361 <https://github.com/BYU-PCCL/holodeck/issues/361>`_)
-- Fixed crash when manually disabling viewport when it would've been disabled 
-  anyway.
-  (`#378 <https://github.com/BYU-PCCL/holodeck/issues/378>`_)
-- Fixed SphereAgent having the incorrect default control scheme
-  (`#350 <https://github.com/BYU-PCCL/holodeck/issues/350>`_)
-  
-Holodeck 0.3.0
+- Sensors now return values from their location, not the agent location.
+- IMU now returns angular velocity instead of linear velocity.
+- Various integer -> float changes in scenario loading.
+
+
+Pre-HoloOcean
 --------------
-*11/02/2019*
-
-This is a content release focused on improving the android-agent and
-adding more scenarios and tasks for it. We also added a new floating hand
-agent to provide a simpler agent that can do many of the dexterity tasks.
-
-Highlights
-~~~~~~~~~~
-- Added dexterity-package with new worlds and scenarios (see below for
-  comprehensive listing)
-- Added clean-up-task and cup-game-task tasks
-- Added hand-agent
-
-New Features
-~~~~~~~~~~~~
-- Added the dexterity-package with new worlds and scenarios:
-
-  - playroom-world
-
-    - playroom-android
-    - playroom-hand
-    - playroom-standfromground
-    - playroom-standfromstanding
-
-  - clean-up-world
-    (`#290 <https://github.com/BYU-PCCL/holodeck/issues/290>`_)
-
-    - cleanup-groundandroid
-    - cleanup-groundhand
-    - cleanup-tableandroid
-    - cleanup-tablehand
-
-  - cup-game-world
-    (`#288 <https://github.com/BYU-PCCL/holodeck/issues/288>`_)
-
-    - cupgame-custom
-    - cupgame-easy
-    - cupgame-hard
-
-  - grip-world
-
-    - grip-liftbottle
-
-- Added the hand-agent - a simplified Android hand that can float
-  around
-  (`#287 <https://github.com/BYU-PCCL/holodeck/issues/287>`_)
-
-  - HandAgent can be used with the same Android-specific sensors (
-    :class:`~holoocean.sensors.JointRotationSensor`,
-    :class:`~holoocean.sensors.PressureSensor`,
-    :class:`~holoocean.sensors.RelativeSkeletalPositionSensor`)
-
-- Added new tasks sensors for specific worlds
-
-  - :ref:`cup-game-task`
-    (`#318 <https://github.com/BYU-PCCL/holodeck/pull/318>`_)
-
-  - :ref:`clean-up-task`
-    (`#321 <https://github.com/BYU-PCCL/holodeck/pull/321>`_)
-
-- Packages can be installed directly from a URL
-  (see :class:`~holoocean.packagemanager.install`)
-  (`#129 <https://github.com/BYU-PCCL/holodeck/issues/129>`_)
-- Agent sensors can now be rotated at run time with
-  :meth:`~holoocean.sensors.HolodeckSensor.rotate`.
-  (`#305 <https://github.com/BYU-PCCL/holodeck/issues/305>`_)
-- The config files can now specify whether an agent should be spawned
-  (`#303 <https://github.com/BYU-PCCL/holodeck/pull/303>`_)
-- Pressing ``h`` now shows the coordinates of the agent the viewport is
-  following or the coordinates of the camera if it is detached (see
-  :ref:`hotkeys`).
-  (`#253 <https://github.com/BYU-PCCL/holodeck/issues/253>`_)
-- The viewport now follows the main agent as specified in the
-  config file by default.
-  (`#238 <https://github.com/BYU-PCCL/holodeck/issues/238>`_)
-- You can now specify the number of ticks you want to occur in the
-  :meth:`~holoocean.environments.HoloOceanEnvironment.tick` and the
-  :meth:`~holoocean.environments.HoloOceanEnvironment.step` methods,
-  (`#313 <https://github.com/BYU-PCCL/holodeck/pull/313>`_)
-
-Changes
-~~~~~~~
-- Increased the android-agent's strength in the
-  ``ANDROID_MAX_SCALED_TORQUES`` control scheme.
-
-  - Previously the AndroidAgent didn't have enough strength to even move its
-    legs.
-  - Strength was approximately doubled (See
-    `JointMaxTorqueControlScheme.h <https://github.com/BYU-PCCL/holodeck-engine/blob/develop/Source/Holodeck/Agents/Public/JointMaxTorqueControlScheme.h#L50>`_
-    )
-- Location sensor now returns the location of the sensor, not just the agent
-  (`#306 <https://github.com/BYU-PCCL/holodeck/issues/306>`_)
-- Updated to Unreal Engine 4.22
-  (`#241 <https://github.com/BYU-PCCL/holodeck/issues/241>`_)
-- :ref:`turtle-agent` is now subject to gravity, has increased power,
-  is black, and slightly smaller.
-  (`#217 <https://github.com/BYU-PCCL/holodeck/issues/217>`_)
-- Removed the ``set_state()`` and ``teleport()`` methods from the
-  :class:`~holoocean.environments.HoloOceanEnvironment` class.
-
-  These methods were duplicates of the corresponding methods on the
-  :class:`~holoocean.agents.HolodeckAgent` class. See the linked issue for
-  migration suggestions 👉
-  (`#311 <https://github.com/BYU-PCCL/holodeck/issues/311>`_)
-- Removed the ``get/set_ticks_per_capture`` methods from the
-  :class:`~holoocean.agents.HolodeckAgent` and
-  :class:`~holoocean.environments.HoloOceanEnvironment` classes, moved
-  :meth:`~holoocean.sensors.RGBCamera.set_ticks_per_capture` method to the
-  :class:`~holoocean.sensors.RGBCamera` class.
-  (`#197 <https://github.com/BYU-PCCL/holodeck/issues/197>`_)
-- Viewport will now follow the main agent by default.
-  (`#238 <https://github.com/BYU-PCCL/holodeck/issues/238>`_)
-- Viewport will not be rendered when it is hidden (``show_viewport`` param in
-  :class:`~holoocean.environments.HoloOceanEnvironment`, Linux only)
-  (`#283 <https://github.com/BYU-PCCL/holodeck/issues/283>`_)
-
-Bug Fixes
-~~~~~~~~~
-- Fixed the :class:`~holoocean.sensors.RelativeSkeletalPositionSensor`.
-
-  - This sensor returns the location of bones, not sensors. Since there are
-    more bones than joints, previously it returned them in a completely
-    different order than expected.
-  - Now the order for this sensor is explicitly specified in
-    android-bones and hand-bones.
-  - Previously on the first tick it would return uninitialized garbage on the
-    first tick
-- Fixed being unable to spawn the :ref:`turtle-agent`.
-  (`#308 <https://github.com/BYU-PCCL/holodeck/issues/308>`_)
-- Fixed the :meth:`~holoocean.agents.HolodeckAgent.set_physics_state` method.
-  (`#311 <https://github.com/BYU-PCCL/holodeck/issues/311>`_)
-- Fixed agent spawn rotations being in the incorrect order. Fixed the
-  documentation that specified the incorrect order as well (:ref:`rotations`)
-  (`#309 <https://github.com/BYU-PCCL/holodeck/issues/309>`_)
-- Fixed being unable to set the ticks per capture of a camera if it was not
-  named ``RGBCamera``.
-  (`#197 <https://github.com/BYU-PCCL/holodeck/issues/197>`_)
-- Fixed being unable to make a Holodeck window larger than the current screen
-  resolution
-  (`#301 <https://github.com/BYU-PCCL/holodeck/issues/301>`_)
-- Fixed being unable to configure :class:`~holoocean.sensors.ViewportCapture`
-  sensor.
-  (`#301 <https://github.com/BYU-PCCL/holodeck/issues/301>`_)
-
-Known Issues
-~~~~~~~~~~~~
-- The TurtleAgent does not move consistently between Linux and Windows.
-  (`#336 <https://github.com/BYU-PCCL/holodeck/issues/336>`_)
-
-
-Holodeck 0.2.2
---------------
-*06/20/2019*
-
-This is mostly a maintenance release focused on cleaning up bugs that were
-unresolved in ``0.2.1``
-
-
-New Features
-~~~~~~~~~~~~
-- When freecamming around, :ref:`pressing shift <hotkeys>` moves the
-  camera faster.
-  (`#99 <https://github.com/BYU-PCCL/holodeck/issues/99>`_)
-- Agents can have a rotation specified in the scenario config files
-  (`#209 <https://github.com/BYU-PCCL/holodeck/issues/209>`_)
-- Custom scenarios can be made with dictionaries as well as ``json`` files.
-  See :ref:`custom-scenarios`
-  (`#275 <https://github.com/BYU-PCCL/holodeck/issues/275>`_)
-- Documented how to improve Holodeck performance.
-  See :ref:`improving-performance`
-  (`#109 <https://github.com/BYU-PCCL/holodeck/issues/109>`_)
-
-
-Bug Fixes
-~~~~~~~~~
-- Fixed :meth:`~holoocean.environments.HoloOceanEnvironment.info` method
-  (`#182 <https://github.com/BYU-PCCL/holodeck/issues/182>`_)
-- Fixed command buffer not being reset after calling
-  :meth:`~holoocean.environments.HoloOceanEnvironment.reset`.
-  (`#254 <https://github.com/BYU-PCCL/holodeck/issues/254>`_)
-- Fixed rain not being very visible on Linux
-  (`#235 <https://github.com/BYU-PCCL/holodeck/issues/235>`_)
-- Fixed teleport command not working on the Android
-  (`#209 <https://github.com/BYU-PCCL/holodeck/issues/209>`_)
-- Fixed RGBCamera intermittently returning a matrix of zeros after resetting
-  (`#271 <https://github.com/BYU-PCCL/holodeck/issues/271>`_)
-- Fixed ``EXCEPTION_ACCESS_VIOLATION`` on Windows after creating an environment
-  (`#270 <https://github.com/BYU-PCCL/holodeck/issues/270>`_)
-- Fixed :ref:`MazeWorld-FinishMazeSphere` task not going terminal when task
-  was finished.
-
-  - Added a post with a golden ball on top to the end of the maze,
-    this is now the tasks's target
-
-Holodeck 0.2.1
---------------
-*05/20/2019*
-
-This release of Holodeck is focused on polishing existing features and allowing
-worlds to be customized more.
-
-This summer we are planning on adding much more content (worlds, agents, etc).
-
-Highlights
-~~~~~~~~~~
-- Added :ref:`Scenarios <scenarios>` to allow worlds to be more flexible and
-  customizable
-- Documentation has been greatly expanded
-
-New Features
-~~~~~~~~~~~~
-- Added expanded teleport functionality
-  (`#128 <https://github.com/BYU-PCCL/holodeck/issues/128>`_)
-- Add ticks per capture command for RGB Camera
-  (`#127 <https://github.com/BYU-PCCL/holodeck/issues/127>`_)
-- Add ``__enter__`` and ``__exit__`` methods to :class:`~holoocean.environments.HoloOceanEnvironment`
-  (`#125 <https://github.com/BYU-PCCL/holodeck/issues/125>`_)
-- Add option to run headless on Linux
-  (:meth:`~holoocean.environments.HoloOceanEnvironment.set_render_quality` on
-  :class:`~holoocean.environments.HoloOceanEnvironment`)
-  (`#135 <https://github.com/BYU-PCCL/holodeck/issues/135>`_)
-- Add ability to adjust rendering options
-  (:meth:`~holoocean.environments.HoloOceanEnvironment.set_render_quality`)
-  (`#136 <https://github.com/BYU-PCCL/holodeck/issues/136>`_)
-- Add environment flag that allows state to be returned as copied object
-  instead of reference
-  (`#151 <https://github.com/BYU-PCCL/holodeck/issues/151>`_)
-- Packages are not hard-coded on server, binaries are saved in version-specific
-  folder to prevent crosstalk
-  (`#188 <https://github.com/BYU-PCCL/holodeck/pull/188>`_)
-- Sensors can be disabled to improve performance
-  (`#152 <https://github.com/BYU-PCCL/holodeck/pull/152>`_)
-- Add the ability to draw points, lines, arrows and boxes in the worlds
-  (`#144 <https://github.com/BYU-PCCL/holodeck/pull/144>`_)
-- Added new tasks for use with scenarios
-- Added new scaled torque control scheme to the Android
-  (`#150 <https://github.com/BYU-PCCL/holodeck/pull/144>`_)
-
-
-Bug Fixes
-~~~~~~~~~
-- Fixed ``mmap length is greater than filesize`` error on startup
-  (`#115 <https://github.com/BYU-PCCL/holodeck/issues/115>`_)
-- Make all unit conversions on holodeck-engine side
-  (`#162 <https://github.com/BYU-PCCL/holodeck/issues/162>`_)
-- Fix multi-agent example (thanks bradyz!)
-  (`#118 <https://github.com/BYU-PCCL/holodeck/issues/118>`_)
-- Make sure :meth:`~holoocean.environments.HoloOceanEnvironment.reset` called before
-  :meth:`~holoocean.environments.HoloOceanEnvironment.tick` and
-  :meth:`~holoocean.environments.HoloOceanEnvironment.act`
-  (`#156 <https://github.com/BYU-PCCL/holodeck/issues/156>`_)
-- And many smaller bugs!
-
-Holodeck 0.1.0
---------------
-
-Initial public release.
+See `Holodeck changelog <https://holodeck.readthedocs.io/en/latest/changelog/changelog.html>`_

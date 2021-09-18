@@ -1,13 +1,13 @@
 Package Structure
 =================
 
-A holodeck package is a ``.zip`` file containing a build of `holodeck-engine`_
+A holoocean package is a ``.zip`` file containing a build of `holoocean-engine`_
 that contains worlds and :ref:`scenarios` for those worlds.
 
-.. _`holodeck-engine`: https://github.com/BYU-PCCL/holodeck-engine
+.. _`holoocean-engine`: https://bitbucket.org/frostlab/holoocean-engine
 
 A package file is platform specific, since it contains a compiled binary of
-Holodeck.
+HoloOcean.
 
 .. _`package-contents`:
 
@@ -16,7 +16,7 @@ Package Contents
 
 The ``.zip`` file must contain the following elements
 
-1. A build of `holodeck-engine`_
+1. A build of `holoocean-engine`_
 
 2. A ``config.json`` file that defines the worlds present in the package
 

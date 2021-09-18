@@ -48,7 +48,7 @@ def test_folder_creation(size, config):
         for _ in range(10):
             env.tick()
 
-    dir = os.path.join(holoocean.util.get_holodeck_path(), "worlds/Ocean/LinuxNoEditor/Holodeck/Octrees")
+    dir = os.path.join(holoocean.util.get_holoocean_path(), "worlds/Ocean/LinuxNoEditor/Holodeck/Octrees")
     dir = os.path.join(dir, f"{config['world']}/min{int(size[0]*100)}_max{int(size[1]*100)}")
 
     assert os.path.isdir(dir), "Sonar folder wasn't created"
