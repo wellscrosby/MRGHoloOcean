@@ -51,7 +51,7 @@ env = holoocean.make("PierHarbor-Hovering")
 env.reset()                         
 
 # The AUV takes commands for each thruster
-command = [0, 0, 0, 10, 10, 10, 10]   
+command = [0, 0, 0, 0, 10, 10, 10, 10]   
 
 for i in range(30):
     state, reward, terminal, info = env.step(command)  
@@ -85,7 +85,7 @@ env = holoocean.make("Dam-Hovering")
 env.reset()
 
 # Provide an action for each agent
-env.act('auv0', np.array([0, 0, 0, 10, 10, 10, 10]))
+env.act('auv0', np.array([0, 0, 0, 0, 10, 10, 10, 10]))
 
 # Advance the simulation
 for i in range(300):
