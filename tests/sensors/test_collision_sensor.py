@@ -1,10 +1,11 @@
-import holodeck
+import holoocean
 import uuid
 
 uav_config = {
     "name": "test_collision_sensor",
-    "world": "TestWorld",
+    "world": "ExampleLevel",
     "main_agent": "uav0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "uav0",
@@ -15,7 +16,7 @@ uav_config = {
                 }
             ],
             "control_scheme": 0,
-            "location": [0, 0, 5]
+            "location": [0, 0, 3]
         }
     ]
 }
@@ -26,9 +27,9 @@ def test_collision_sensor_uav_falling():
     and it turns off when the UAV goes flying into the air
     """
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=uav_config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=uav_config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

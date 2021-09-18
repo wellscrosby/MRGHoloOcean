@@ -1,13 +1,13 @@
 Package Structure
 =================
 
-A holodeck package is a ``.zip`` file containing a build of `holodeck-engine`_
+A holoocean package is a ``.zip`` file containing a build of `holoocean-engine`_
 that contains worlds and :ref:`scenarios` for those worlds.
 
-.. _`holodeck-engine`: https://github.com/BYU-PCCL/holodeck-engine
+.. _`holoocean-engine`: https://bitbucket.org/frostlab/holoocean-engine
 
 A package file is platform specific, since it contains a compiled binary of
-Holodeck.
+HoloOcean.
 
 .. _`package-contents`:
 
@@ -16,11 +16,13 @@ Package Contents
 
 The ``.zip`` file must contain the following elements
 
-1. A build of `holodeck-engine`_
+1. A build of `holoocean-engine`_
 
 2. A ``config.json`` file that defines the worlds present in the package
 
 3. Scenario configs for those worlds
+
+.. _`package-structure`:
 
 Package Structure
 -----------------
@@ -56,6 +58,8 @@ the format the config file is expected to follow:
          {
             "name": "{world_name}",
             "pre_start_steps": 2,
+            "env_min": [-10, -10, -10],
+            "env_max": [10, 10, 10]
          }
       ]
    }
@@ -63,3 +67,5 @@ the format the config file is expected to follow:
 The ``"pre_start_steps"`` attribute for a world defines how many ticks should 
 occur before starting the simulation, to work around world idiosyncrasies.
 
+The ``env_min``/``env_max`` attributes are used to set the upper/lower bounds of the environment,
+used when an octree is made for a sonar sensor.

@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 import numpy as np
 from tests.utils.equality import almost_equal
 import uuid
@@ -6,8 +6,9 @@ import uuid
 
 base_cfg = {
     "name": "test_orientation_sensor",
-    "world": "TestWorld",
+    "world": "ExampleLevel",
     "main_agent": "sphere0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "sphere0",
@@ -28,9 +29,9 @@ def test_orientation_sensor_after_teleport():
     """Make sure that the orientation sensor correctly updates after using a teleport command to 
     rotate the agent
     """
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=base_cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=base_cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -45,9 +46,9 @@ def test_orientation_sensor_after_teleport():
         sensed_orientation = state["OrientationSensor"]
 
         accurate_or = np.zeros((3, 3))
-        accurate_or[0, 2] = 1
-        accurate_or[1, 1] = -1
-        accurate_or[2, 0] = -1
+        accurate_or[0, 2] = -1
+        accurate_or[1, 1] = 1
+        accurate_or[2, 0] = 1
 
         assert almost_equal(accurate_or, sensed_orientation), \
             "Expected orientation did not match the expected orientation!"

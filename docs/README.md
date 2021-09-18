@@ -1,5 +1,5 @@
-This folder contains holodeck's user-facing documentation (hosted at
-holodeck.readthedocs.io), and is compiled with [Sphinx](http://www.sphinx-doc.org/en/master/).
+This folder contains holoocean's user-facing documentation (hosted at
+holoocean.readthedocs.io), and is compiled with [Sphinx](http://www.sphinx-doc.org/en/master/).
 
 The documentation can be built locally to preview changes before pushing to
 GitHub.
@@ -12,7 +12,7 @@ GitHub.
 
 From this directory,
 ```console
-~/dev/holodeck/docs$ make clean && make html
+~/dev/holoocean/docs$ make clean && make html
 ```
 
 [This VSCode extension](https://marketplace.visualstudio.com/items?itemName=lextudio.restructuredtext)

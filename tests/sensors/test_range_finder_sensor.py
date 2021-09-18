@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 import uuid
 
 from tests.utils.equality import almost_equal
@@ -6,8 +6,9 @@ from tests.utils.equality import almost_equal
 
 sphere_config = {
     "name": "test_range_finder_sensor",
-    "world": "TestWorld",
+    "world": "ExampleLevel",
     "main_agent": "sphere0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "sphere0",
@@ -31,9 +32,9 @@ sphere_config = {
 def test_range_finder_sensor_max():
     """Make sure the range sensor set max distance correctly.
     """
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=sphere_config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=sphere_config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
@@ -52,8 +53,9 @@ def test_range_finder_sensor_max():
 
 uav_config = {
     "name": "test_range_finder_sensor",
-    "world": "TestWorld",
+    "world": "ExampleLevel",
     "main_agent": "uav0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "uav0",
@@ -68,7 +70,7 @@ uav_config = {
                 }
             ],
             "control_scheme": 0,
-            "location": [0, 0, 10]
+            "location": [0, 0, 5]
         }
     ]
 }
@@ -78,9 +80,9 @@ def test_range_finder_sensor_falling():
     """Makes sure that the range sensor updates as the UAV falls, and after it comes to a rest.
     """
 
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=uav_config,
+    with holoocean.environments.HoloOceanEnvironment(scenario=uav_config,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

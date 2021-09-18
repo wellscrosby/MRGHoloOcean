@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 import numpy as np
 from tests.utils.equality import almost_equal
 import uuid
@@ -6,8 +6,9 @@ import uuid
 
 base_cfg = {
     "name": "test_rotation_sensor",
-    "world": "TestWorld",
+    "world": "ExampleLevel",
     "main_agent": "sphere0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "sphere0",
@@ -29,9 +30,9 @@ def test_rotation_sensor_after_teleport():
     rotate the agent
 
     """
-    binary_path = holodeck.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holodeck.environments.HolodeckEnvironment(scenario=base_cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=base_cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:

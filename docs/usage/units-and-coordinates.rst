@@ -1,8 +1,8 @@
-=================================
-Units and Coordinates in Holodeck
-=================================
+==================================
+Units and Coordinates in HoloOcean
+==================================
 
-Holodeck uses **meters** for units and a **left-handed coordinate system** for
+HoloOcean uses **meters** for units and a **right-handed coordinate system** for
 all locations, distances, and offsets.
 
 
@@ -11,21 +11,17 @@ all locations, distances, and offsets.
 Coordinate System
 =================
 
-Since Holodeck depends on Unreal Engine, we use a left handed coordinate system
-with positive ``z`` being up.
-This is something baked deep into the engine that we 
-`can't easily change <https://twitter.com/timsweeneyepic/status/952661474501111808?lang=en>`_.
+Unreal Engine uses a left handed coordinate system by default, however
+to keep with general robotics conventions, we use a right handed coordinate 
+system with positive ``z`` being up.
 
-So, when you need to specify a location in Holodeck, the format is as follows
+So, when you need to specify a location in HoloOcean, the format is as follows
 
 ``[x, y, z]`` where:
 
 - Positive ``x`` is **forward**
-- Positive ``y`` is **right**
+- Positive ``y`` is **left**
 - Positive ``z`` is **up**
-
-.. image:: axis.png
-   :scale: 80%
 
 Remember that the units for ``[x, y, z]`` are in meters (Unreal Engine
 defaults to centimeters, we've changed this to make things a bit easier).
@@ -35,7 +31,7 @@ defaults to centimeters, we've changed this to make things a bit easier).
 Rotations
 =========
 
-Rotations are specified in ``[roll, pitch, yaw]`` / ``[x, y, z]`` format, in in degrees. This means
+Rotations are specified in ``[roll, pitch, yaw]`` / ``[x, y, z]`` format, in in degrees (usually). This means
 
 - **Roll**: Rotation around the forward (``x``) axis
 - **Pitch**: Rotation around the right (``y``) axis

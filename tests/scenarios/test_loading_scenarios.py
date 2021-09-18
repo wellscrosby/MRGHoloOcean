@@ -1,4 +1,4 @@
-import holodeck
+import holoocean
 
 
 def test_load_scenario(scenario):
@@ -11,7 +11,7 @@ def test_load_scenario(scenario):
         scenario (str): Scenario to test
 
     """
-    env = holodeck.make(scenario, show_viewport=False)
+    env = holoocean.make(scenario, show_viewport=False, frames_per_sec=False)
     for _ in range(30):
         env.tick()
     env.__on_exit__()
@@ -21,11 +21,11 @@ def test_all_agents_and_sensors_present(env_scenario):
     """Test that every agent has every sensor that is present in the config file
 
     Args:
-        env_scenario ((HolodeckEnvironment, str)): environment and scenario we are testing
+        env_scenario ((HoloOceanEnvironment, str)): environment and scenario we are testing
 
     """
     env, scenario = env_scenario
-    scenario = holodeck.packagemanager.get_scenario(scenario)
+    scenario = holoocean.packagemanager.get_scenario(scenario)
 
     assert len(env.agents) == len(scenario['agents']), \
         "Length of agents did not match!"
@@ -38,6 +38,8 @@ def test_all_agents_and_sensors_present(env_scenario):
             "length of sensors did not match!"
 
         for sensor in agent['sensors']:
-            assert sensor['sensor_type'] in env.agents[agent['agent_name']].sensors, \
+            sensor_name = sensor['sensor_name'] if 'sensor_name' in sensor else sensor['sensor_type']
+            assert sensor_name in env.agents[agent['agent_name']].sensors, \
                 "Sensor is missing!"
 
+    env.__on_exit__()

@@ -9,17 +9,17 @@ next window.
 
 ::
 
-   import holodeck, cv2
+    import holoocean, cv2
 
-   env = holodeck.make("MazeWorld-FinishMazeSphere")
-   env.act('sphere0', [0])
+    env = holoocean.make("Dam-HoveringCamera")
+    env.act('auv0', [10,10,10,10,0,0,0,0])
 
-   for _ in range(10):
-      state = env.tick()
+    for _ in range(200):
+    state = env.tick()
 
-      pixels = state['sphere0'][holodeck.sensors.RGBCamera.sensor_type]
-      cv2.namedWindow("Camera Output")
-      cv2.moveWindow("Camera Output", 500, 500)
-      cv2.imshow("Camera Output", pixels[:, :, 0:3])
-      cv2.waitKey(0)
-      cv2.destroyAllWindows()
+    if "LeftCamera" in state:
+        pixels = state["LeftCamera"]
+        cv2.namedWindow("Camera Output")
+        cv2.imshow("Camera Output", pixels[:, :, 0:3])
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()

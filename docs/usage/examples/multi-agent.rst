@@ -1,7 +1,7 @@
 Multi Agent Example
 ===================
 
-With Holodeck, you can control more than one agent at once. Instead of calling 
+With HoloOcean, you can control more than one agent at once. Instead of calling 
 ``.step()``, which both
 
 1. passes a single command to the main agent, and
@@ -18,29 +18,56 @@ will be supplied to the agent. To change the command, just call ``.act()`` again
 
 The state returned from tick is also somewhat different. 
 
-The state is now a dictionary from agent name to sensor dictionary. 
+The state is now a dictionary from agent name to sensor dictionary.
 
-You can access the reward, terminal and location for the UAV as shown below.
-
-Code
-~~~~
+Press tab to switch the viewport between agents. See :ref:`hotkeys` for more.
 
 ::
 
-   import holodeck
-   import numpy as np
+    import holoocean
+    import numpy as np
 
-   env = holodeck.make('CyberPunkCity-Follow')
-   env.reset()
+    cfg = {
+        "name": "test_rgb_camera",
+        "world": "SimpleUnderwater",
+        "package_name": "Ocean",
+        "main_agent": "auv0",
+        "ticks_per_sec": 60,
+        "agents": [
+            {
+                "agent_name": "auv0",
+                "agent_type": "TorpedoAUV",
+                "sensors": [
+                    {
+                        "sensor_type": "IMUSensor"
+                    }
+                ],
+                "control_scheme": 0,
+                "location": [0, 0, -5]
+            },
+            {
+                "agent_name": "auv1",
+                "agent_type": "HoveringAUV",
+                "sensors": [
+                    {
+                        "sensor_type": "DVLSensor"
+                    }
+                ],
+                "control_scheme": 0,
+                "location": [0, 2, -5]
+            }
+        ]
+    }
 
-   env.act('uav0', np.array([0, 0, 0, 100]))
-   env.act('nav0', np.array([0, 0, 0]))
-   for i in range(300):
-      states = env.tick()
+    env = holoocean.make(scenario_cfg=cfg)
+    env.reset()
 
-      # states is a dictionary
-      task = states["uav0"]["FollowTask"]
+    env.act('auv0', np.array([0,0,0,0,75]))
+    env.act('auv1', np.array([0,0,0,0,20,20,20,20]))
+    for i in range(300):
+        states = env.tick()
 
-      reward = task[0]
-      terminal = task[1]
-      location = states["uav0"]["LocationSensor"]
+        # states is a dictionary
+        imu = states["auv0"]["IMUSensor"]
+
+        vel = states["auv1"]["DVLSensor"]
