@@ -10,7 +10,7 @@ A minimal HoloOcean usage example is below:
    import holoocean
    import numpy as np
 
-   env = holoocean.make("Pier-Hovering")
+   env = holoocean.make("PierHarbor-Hovering")
 
    # The hovering AUV takes a command for each thruster
    command = np.array([10,10,10,10,0,0,0,0])
@@ -33,7 +33,7 @@ You can access data from a specific sensor with the state dictionary:
 
 ::
 
-   location_data = state["LocationSensor"]
+   dvl = state["DVLSensor"]
 
 **That's it!** HoloOcean is meant to be fairly simple to use. 
 
