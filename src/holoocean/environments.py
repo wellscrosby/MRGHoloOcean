@@ -209,7 +209,7 @@ class HoloOceanEnvironment:
                 return win32event.INFINITE
 
         else:
-            return 10
+            return 15
 
     @property
     def action_space(self):
@@ -796,7 +796,7 @@ class HoloOceanEnvironment:
         self._client.unlink()
         if hasattr(self, '_world_process'):
             self._world_process.kill()
-            self._world_process.wait(5)
+            self._world_process.wait(10)
 
         self._exited = True
 
