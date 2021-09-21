@@ -291,7 +291,7 @@ FVector spherToEuc(float r, float theta, float phi, FTransform SensortoWorld){
 }
 
 void USonarSensor::viewLeafs(Octree* tree){
-	if(tree->leafs.Num() == 0){
+	if(tree->size == Octree::OctreeMin){
 		DrawDebugPoint(GetWorld(), tree->loc, 5, FColor::Red, false, .03*TicksPerCapture);
 	}
 	else{

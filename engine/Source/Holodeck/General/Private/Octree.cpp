@@ -19,7 +19,7 @@ TArray<FVector> Octree::sides = {FVector( 0, 0, 1),
                                     FVector( 0,-1, 0),
                                     FVector( 1, 0, 0),
                                     FVector(-1, 0, 0)};
-FVector Octree::offset = 10*FVector(KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER) / sqrt(2.9);
+FVector Octree::offset = 100*FVector(KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER, KINDA_SMALL_NUMBER);
 float Octree::cornerSize = 0.01;
 FCollisionQueryParams Octree::params = Octree::init_params();
 
