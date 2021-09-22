@@ -78,7 +78,6 @@ steps:
 - name: docker_base_publish
   image: plugins/docker
   settings:
-    dry_run: true
     username:
       from_secret: docker_username
     password:
