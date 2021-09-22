@@ -86,6 +86,7 @@ steps:
     dockerfile: docker/Dockerfile
     tags:
       - base-${DRONE_TAG}
+      - base
 
 - name: docker_ocean_publish
   image: plugins/docker
@@ -98,6 +99,7 @@ steps:
     dockerfile: docker/Dockerfile_ocean
     tags:
       - ocean-${DRONE_TAG}
+      - ocean
 
 - name: docker_latest_publish
   image: plugins/docker
@@ -110,6 +112,7 @@ steps:
     dockerfile: docker/Dockerfile_latest
     tags:
       - all-${DRONE_TAG}
+      - all
       - latest
       
 trigger:
