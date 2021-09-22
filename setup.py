@@ -5,7 +5,7 @@ with open("README.md") as f:
 
 setup(
     name="holoocean",
-    version="0.4.0",
+    version="0.4.1",
     description="Autonomous Underwater Vehicle Simulator",
     long_description=readme,
     long_description_content_type="text/markdown",
@@ -18,7 +18,7 @@ setup(
     python_requires=">=3.6",
     install_requires=[
         'posix_ipc >= 1.0.0; platform_system == "Linux"',
-        'pywin32 >= 1.0; platform_system == "Windows"',
+        'pywin32 <= 228; platform_system == "Windows"',
         'numpy'
     ],
 )

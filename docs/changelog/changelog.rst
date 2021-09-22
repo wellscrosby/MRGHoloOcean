@@ -11,6 +11,15 @@ Changelog
     merged it at the end in parentheses
   - see https://github.com/BYU-PCCL/holodeck/wiki/Holodeck-Release-Notes-Template
 
+HoloOcean 0.4.1
+----------------
+*9/21/2021*
+
+Bug Fixes
+~~~~~~~~~
+- Required pywin32 <= 228 for easier Windows install.
+
+
 HoloOcean 0.4.0
 ----------------
 *9/17/2021*

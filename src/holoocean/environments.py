@@ -209,7 +209,7 @@ class HoloOceanEnvironment:
                 return win32event.INFINITE
 
         else:
-            return 15
+            return 30
 
     @property
     def action_space(self):

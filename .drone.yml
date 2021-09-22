@@ -85,12 +85,11 @@ steps:
     repo: frostlab/holoocean
     dockerfile: docker/Dockerfile
     tags:
-      - base
+      - base-${DRONE_TAG}
 
 - name: docker_ocean_publish
   image: plugins/docker
   settings:
-    purge: false
     username:
       from_secret: docker_username
     password:
@@ -98,7 +97,7 @@ steps:
     repo: frostlab/holoocean
     dockerfile: docker/Dockerfile_ocean
     tags:
-      - ocean
+      - ocean-${DRONE_TAG}
 
 - name: docker_latest_publish
   image: plugins/docker
@@ -110,7 +109,7 @@ steps:
     repo: frostlab/holoocean
     dockerfile: docker/Dockerfile_latest
     tags:
-      - all
+      - all-${DRONE_TAG}
       - latest
       
 trigger:

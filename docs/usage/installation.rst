@@ -15,7 +15,9 @@ Requirements
 - >= Python 3.6
 - Several gigabytes of storage
 - pip3
-- Linux: OpenGL 3+
+- Linux or Windows 64bit
+- Preferably a competent GPU
+- For Linux: OpenGL 3+
 
 Stable Installation
 =====================
