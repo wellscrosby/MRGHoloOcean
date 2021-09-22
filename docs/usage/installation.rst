@@ -41,6 +41,10 @@ Or as a single console command,
 
    python -c `import holoocean; holoocean.install("Ocean")`
 
+.. note::
+   There is a bug on Windows with the package ``pywin32`` that occurs occasionally. If you see 
+   "ImportError: DLL load failed while importing win32event: The specified module could not be found.",
+   it can be fixed by running ``pip install pywin32==225``
 
 Development Installation
 ==========================
