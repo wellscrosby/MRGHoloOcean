@@ -122,9 +122,13 @@ private:
 	// for adding noise
 	MultivariateNormal<1> addNoise;
 	MultivariateNormal<1> multNoise;
+	MultivariateNormal<1> aziNoise;
+	MultivariateNormal<1> rNoise;
 
 	// use for skipping frames
 	int TickCounter = 0;
+	float density_water = 997;
+	float sos_water = 1480;
 
 	bool inRange(Octree* tree);
 	void leafsInRange(Octree* tree, TArray<Octree*>& leafs, float stopAt);

@@ -31,6 +31,7 @@ FVector Octree::EnvMin;
 FVector Octree::EnvMax;
 FVector Octree::EnvCenter;
 UWorld* Octree::World;
+TMap<FString, FVector2D> Octree::materials;
 
 float sign(float val){
     bool s = signbit(val);
@@ -80,6 +81,23 @@ void Octree::initOctree(UWorld* w){
     }
     OctreeRoot = tempVal;
     UE_LOG(LogHolodeck, Log, TEXT("Octree:: OctreeMin: %f, OctreeMax: %f, OctreeRoot: %f"), OctreeMin, OctreeMax, OctreeRoot);
+
+    // Load material lookup table
+    FString filePath = FPaths::ProjectDir() + "../../materials.csv";
+    TArray<FString> take;
+	FFileHelper::LoadANSITextFileToStrings(*filePath, NULL, take);
+	for (int i = 1; i < take.Num(); i++)
+	{
+        // Split line into elements
+		TArray<FString> stringArray = {};
+		take[i].ParseIntoArray(stringArray, TEXT(","), false);
+
+        // Put elements into lookup table
+        FString key = stringArray[0];
+        // density, speed of sound
+        FVector2D val = FVector2D(FCString::Atof(*stringArray[1]), FCString::Atof(*stringArray[2]));
+        materials.Add(key, val);
+	}
 }
 
 Octree* Octree::makeEnvOctreeRoot(){
@@ -168,6 +186,14 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, float octreeMin, FS
             else if(octreeSize == Octree::OctreeMin){
                 child->normal = hit.Normal;
 
+                // Get physical material (not used very often)
+                FString material = hit.PhysMaterial.Get()->GetFName().ToString();
+                // Get material (there is tons of these!)
+                // int32 section = 5;
+                // UE_LOG(LogHolodeck, Warning, TEXT("FaceIndex: %d"), section);
+                // FString material = hit.GetComponent()->GetMaterialFromCollisionFaceIndex(hit.FaceIndex, section)->GetFName().ToString();
+                child->fillMaterialProperties(material);
+
                 // clean normal
                 if(isnan(child->normal.X)) child->normal.X = sign(child->normal.X); 
                 if(isnan(child->normal.Y)) child->normal.Y = sign(child->normal.Y); 
@@ -246,7 +272,8 @@ void Octree::toJson(gason::JSonBuilder& doc){
                 .addValue(normal[0])
                 .addValue(normal[1])
                 .addValue(normal[2])
-            .endArray();
+            .endArray()
+            .addValue("m", TCHAR_TO_ANSI(*material));
     }
 
     doc.endObject();
@@ -309,6 +336,9 @@ void Octree::loadJson(gason::JsonValue& json, TArray<Octree*>& parent, float siz
             gason::JsonNode* arr = o->value.toNode();
             child->normal = FVector(arr->value.toNumber(), arr->next->value.toNumber(), arr->next->next->value.toNumber());
         }
+        if(o->key[0] == 'm'){
+            child->fillMaterialProperties( FString(o->value.toString()) );
+        }
     }
     child->size = size;
     parent.Add(child);
@@ -327,5 +357,17 @@ void Octree::unload(){
             for(Octree* leaf : leafs) delete leaf;
             leafs.Reset();
         }
+    }
+}
+
+void Octree::fillMaterialProperties(FString mat){
+    material = mat;
+    FVector2D* matProp = materials.Find(material);
+    if(matProp == nullptr){
+        UE_LOG(LogHolodeck, Warning, TEXT("Missing material information for %s"), *this->material);
+    }
+    else{
+        density = matProp->X;
+        sos = matProp->Y;
     }
 }

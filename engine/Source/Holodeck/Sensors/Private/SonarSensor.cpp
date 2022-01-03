@@ -4,7 +4,7 @@
 #include "Benchmarker.h"
 #include "HolodeckBuoyantAgent.h"
 #include "SonarSensor.h"
-// #pragma warning (disable : 4101)
+#pragma warning (disable : 4101)
 
 float ATan2Approx(float y, float x)
 {
@@ -65,6 +65,18 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 		}
 		if (JsonParsed->HasTypedField<EJson::Number>("MultCov")) {
 			multNoise.initCov(JsonParsed->GetNumberField("MultCov"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthSigma")) {
+			aziNoise.initSigma(JsonParsed->GetNumberField("AzimuthSigma"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthCov")) {
+			aziNoise.initCov(JsonParsed->GetNumberField("AzimuthCov"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("RangeSigma")) {
+			rNoise.initSigma(JsonParsed->GetNumberField("RangeSigma")*100);
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("RangeCov")) {
+			rNoise.initCov(JsonParsed->GetNumberField("RangeCov")*100*100);
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("MaxRange")) {
@@ -229,11 +241,11 @@ bool USonarSensor::inRange(Octree* tree){
 	FVector locLocal = SensortoWorld.GetRotation().UnrotateVector(tree->loc-SensortoWorld.GetTranslation());
 
 	// check if it's in range
-	tree->locSpherical.X = locLocal.Size();
+	tree->locSpherical.X = locLocal.Size() + rNoise.sampleFloat();
 	if(MinRange+offset-radius >= tree->locSpherical.X || tree->locSpherical.X >= MaxRange+offset+radius) return false; 
 
 	// check if azimuth is in
-	tree->locSpherical.Y = ATan2Approx(-locLocal.Y, locLocal.X);
+	tree->locSpherical.Y = ATan2Approx(-locLocal.Y, locLocal.X) + aziNoise.sampleFloat();
 	if(minAzimuth >= tree->locSpherical.Y || tree->locSpherical.Y >= maxAzimuth) return false;
 
 	// check if elevation is in
@@ -355,14 +367,24 @@ void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FAc
 
 			// Get the closest cluster in the bin
 			int32 idx;
-			float diff;
+			float diff, cos_i, sin_i, temp, cos_t, z_t, R;
+			float z_i = sos_water * density_water;
 			Octree* jth;
 			for(int j=0;j<binLeafs.Num()-1;j++){
 				jth = binLeafs.GetData()[j];
 				
 				jth->idx.X = (int32)((jth->locSpherical.X - MinRange) / RangeRes);
 				idx = jth->idx.X*BinsAzimuth + jth->idx.Y;
-				result[idx] += jth->val;
+				// cos_i = jth->val;
+				// sin_i = FMath::Sqrt(1 - cos_i*cos_i);
+				// temp = jth->sos*sin_i / sos_water;
+				// cos_t = FMath::Sqrt(1 - temp*temp); // Getting nan's b/c past critical angle...
+				// temp = (z_t*cos_i - z_i*cos_t) / (z_t*cos_i + z_i*cos_t);
+				// UE_LOG(LogHolodeck, Warning, TEXT("sin_i: %f, cos_t: %f, R: %f"), sin_i, cos_t, temp);
+				z_t = jth->sos * jth->density;
+				R = (z_t - z_i) / (z_t + z_i);
+				result[idx] += jth->val * R; // * temp*temp;
+				// result[idx] += jth->val;
 				++count[idx];
 				
 				// diff = FVector::Dist(jth->loc, binLeafs.GetData()[j+1]->loc);

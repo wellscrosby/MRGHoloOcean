@@ -6,6 +6,7 @@
 #include "Engine/World.h"
 #include "Misc/FileHelper.h"
 #include "HAL/FileManagerGeneric.h"
+#include "Containers/Map.h"
 #include "DrawDebugHelpers.h"
 #include "Conversion.h"
 
@@ -28,6 +29,7 @@ class Octree
         static FVector EnvMin;
         static FVector EnvMax;
         static UWorld* World;
+        static TMap<FString,FVector2D> materials;
 
         static FVector EnvCenter;
 
@@ -39,8 +41,12 @@ class Octree
             p.bTraceComplex = false;
             p.TraceTag = "";
             p.bFindInitialOverlaps = true;
+            p.bReturnPhysicalMaterial = true;
+            // p.bReturnFaceIndex = true;
             return p;
         }
+
+        void fillMaterialProperties(FString mat);
 
     public:
         static float OctreeRoot;
@@ -95,6 +101,9 @@ class Octree
 
         // Given to each leaf 
         FVector normal;
+        FString material;
+        float density = 1.0f;
+        float sos = 1.0f; // speed of sound
 
         // Used during computations
         FVector locSpherical;
