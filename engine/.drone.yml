@@ -4,13 +4,13 @@ name: default
 
 steps:
 - name: Build Editor
-  image: adamrehn/ue4-full:4.22.3
+  image: adamrehn/ue4-full:4.27.2
   commands:
   - bash Build/ContinuousIntegration/build_project.sh
   - echo "The commit builds"
 
 - name: Package Project
-  image: adamrehn/ue4-full:4.22.3
+  image: adamrehn/ue4-full:4.27.2
   environment:
     USERNAME:
       from_secret: worlds_username
