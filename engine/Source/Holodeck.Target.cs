@@ -9,13 +9,13 @@ public class HolodeckTarget : TargetRules
     public HolodeckTarget(TargetInfo Target) : base(Target)
     {
 		Type = TargetType.Game;
-		bLegacyPublicIncludePaths = true;
-		DefaultBuildSettings = BuildSettingsVersion.V2;
+		// bLegacyPublicIncludePaths = true;
+		// DefaultBuildSettings = BuildSettingsVersion.V2;
 
 		// LaunchModuleName = "Holodeck";
-		// if (Environment.OSVersion.Platform == PlatformID.Unix) {
-		// 	CppStandard = CppStandardVersion.Cpp17;
-		// }
+		if (Environment.OSVersion.Platform == PlatformID.Unix) {
+			CppStandard = CppStandardVersion.Cpp17;
+		}
         ExtraModuleNames.Add("Holodeck");
     }
 
