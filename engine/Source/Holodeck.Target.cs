@@ -13,10 +13,10 @@ public class HolodeckTarget : TargetRules
 		// DefaultBuildSettings = BuildSettingsVersion.V2;
 
 		// LaunchModuleName = "Holodeck";
-		if (Environment.OSVersion.Platform == PlatformID.Unix) {
-			bOverrideBuildEnvironment = true;
-			CppStandard = CppStandardVersion.Cpp17;
-		}
+		// if (Environment.OSVersion.Platform == PlatformID.Unix) {
+		// 	bOverrideBuildEnvironment = true;
+		// 	CppStandard = CppStandardVersion.Cpp17;
+		// }
         ExtraModuleNames.Add("Holodeck");
     }
 

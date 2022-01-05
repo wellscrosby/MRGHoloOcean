@@ -1,7 +1,7 @@
 // MIT License (c) 2019 BYU PCCL see LICENSE file
 
-#include "Holodeck.h"
 #include "Android.h"
+#include "Holodeck.h"
 
 AAndroid::AAndroid() {
 	PrimaryActorTick.bCanEverTick = true;
