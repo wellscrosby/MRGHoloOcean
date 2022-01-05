@@ -14,7 +14,7 @@ public class HolodeckTarget : TargetRules
 
 		// LaunchModuleName = "Holodeck";
 		if (Environment.OSVersion.Platform == PlatformID.Unix) {
-			BuildEnvironment = TargetBuildEnvironment.Unique;
+			bOverrideBuildEnvironment = true;
 			CppStandard = CppStandardVersion.Cpp17;
 		}
         ExtraModuleNames.Add("Holodeck");
