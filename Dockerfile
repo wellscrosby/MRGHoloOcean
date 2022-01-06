@@ -15,7 +15,6 @@ RUN apt-get update && apt-get install -y python3-dev python3-pip \
 RUN pip3 install setuptools wheel tox
 
 # Setup user
-RUN adduser --disabled-password --gecos "" holodeckuser
-USER holodeckuser
+USER ue4
 
 CMD /bin/bash
