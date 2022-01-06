@@ -1,5 +1,6 @@
-FROM nvidia/cudagl:11.4.1-runtime-ubuntu20.04
+FROM adamrehn/ue4-runtime:20.04-cudagl11.2.0-noaudio
 
+USER root
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl git libglib2.0-dev software-properties-common
