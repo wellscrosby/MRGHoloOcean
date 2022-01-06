@@ -202,6 +202,7 @@ class HoloOceanEnvironment:
 
     @property
     def _timeout(self):
+        # Returns the timeout that should be processed
         # Make a larger timeout when creating octrees at the start
         if (self._num_ticks < 20 and self._loading_sonar) or not self.start_world:
             if os.name == "posix":
@@ -211,7 +212,7 @@ class HoloOceanEnvironment:
                 return win32event.INFINITE
 
         else:
-            return 30
+            return 60
 
     @property
     def action_space(self):
