@@ -41,7 +41,7 @@ class Octree
             p.bTraceComplex = false;
             p.TraceTag = "";
             p.bFindInitialOverlaps = true;
-            p.bReturnPhysicalMaterial = true;
+            // p.bReturnPhysicalMaterial = true;
             // p.bReturnFaceIndex = true;
             return p;
         }
