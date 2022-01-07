@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// MIT License (c) 2021 BYU FRoStLab see LICENSE file
 
 
 #include "Octree.h"
@@ -127,7 +127,7 @@ Octree* Octree::makeEnvOctreeRoot(){
                                         + FString::FromInt((int)tree->loc.Z) + ".json";
         }
         else{
-            for(Octree* l : tree->leafs){
+            for(Octree* l : tree->leaves){
                 fix(l);
             }
         }
@@ -184,7 +184,7 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, float octreeMin, FS
             if(octreeSize > octreeMin){
                 for(FVector off : corners){
                     Octree* l = makeOctree(center+(off*octreeSize/4), octreeSize/2, octreeMin, actorName);
-                    if(l) child->leafs.Add(l);
+                    if(l) child->leaves.Add(l);
                 }
             }
 
@@ -218,14 +218,14 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, float octreeMin, FS
     return nullptr;
 }
 
-int Octree::numLeafs(){
-    if(leafs.Num()==0){
+int Octree::numLeaves(){
+    if(leaves.Num()==0){
         return 1;
     }
     else{
         int num = 1;
-        for(Octree* leaf : leafs){
-            num += leaf->numLeafs();
+        for(Octree* leaf : leaves){
+            num += leaf->numLeaves();
         }
         return num;
     }
@@ -236,7 +236,7 @@ void Octree::toJson(){
     FFileManagerGeneric().MakeDirectory(*FPaths::GetPath(file), true);
 
     // calculate buffer size and make writer
-    int num = numLeafs()*100;
+    int num = numLeaves()*100;
     char* buffer = new char[num]();
     gason::JSonBuilder doc(buffer, num-1);
 
@@ -264,9 +264,9 @@ void Octree::toJson(gason::JSonBuilder& doc){
             .addValue((int)loc[2])
         .endArray();
 
-    if(leafs.Num() != 0){
+    if(leaves.Num() != 0){
         doc.startArray("l");
-        for(Octree* l : leafs){
+        for(Octree* l : leaves){
             l->toJson(doc);
         }
         doc.endArray();
@@ -285,7 +285,7 @@ void Octree::toJson(gason::JSonBuilder& doc){
 
 void Octree::load(){
     // if it's not already loaded
-    if(leafs.Num() == 0){
+    if(leaves.Num() == 0){
         // if it's been saved as a json, load it
         if(FPaths::FileExists(file)){
             // UE_LOG(LogHolodeck, Log, TEXT("Loading Octree %s"), *file);
@@ -301,11 +301,11 @@ void Octree::load(){
             gason::JsonValue json;
             int status = gason::jsonParse(source, &endptr, &json, allocator);
 
-            // load in leafs
+            // load in leaves
             for(gason::JsonNode* o : json){
                 if(o->key[0] == 'l'){
                     for(gason::JsonNode* l : o->value){
-                        loadJson(l->value, leafs, size/2);
+                        loadJson(l->value, leaves, size/2);
                     }
                 }
             }
@@ -316,7 +316,7 @@ void Octree::load(){
             // UE_LOG(LogHolodeck, Log, TEXT("Making Octree %s"), *file);
             for(FVector off : corners){
                 Octree* l = makeOctree(loc+(off*size/4), size/2, makeTill);
-                if(l) leafs.Add(l);
+                if(l) leaves.Add(l);
             }
             toJson();
         }
@@ -333,7 +333,7 @@ void Octree::loadJson(gason::JsonValue& json, TArray<Octree*>& parent, float siz
         }
         if(o->key[0] == 'l'){
             for(gason::JsonNode* l : o->value){
-                loadJson(l->value, child->leafs, size/2);
+                loadJson(l->value, child->leaves, size/2);
             }
         }
         if(o->key[0] == 'n'){
@@ -349,17 +349,17 @@ void Octree::loadJson(gason::JsonValue& json, TArray<Octree*>& parent, float siz
 }
 
 void Octree::unload(){
-    if(!isAgent && leafs.Num() != 0){
+    if(!isAgent && leaves.Num() != 0){
         // if we need to unload children
         if(size > Octree::OctreeMax){
-            for(Octree* leaf : leafs) leaf->unload();
+            for(Octree* leaf : leaves) leaf->unload();
         }
 
         // if we need to unload this one
         else if(size == Octree::OctreeMax){
             // UE_LOG(LogHolodeck, Log, TEXT("Unloading Octree %s"), *file);
-            for(Octree* leaf : leafs) delete leaf;
-            leafs.Reset();
+            for(Octree* leaf : leaves) delete leaf;
+            leaves.Reset();
         }
     }
 }

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// MIT License (c) 2021 BYU FRoStLab see LICENSE file
 
 #pragma once
 
@@ -56,10 +56,10 @@ class Octree
         Octree(){};
 		Octree(FVector loc, float size, FString file="") : size(size), loc(loc), file(file) {};
 		~Octree(){ 
-            for(Octree* leaf : leafs){
+            for(Octree* leaf : leaves){
                 delete leaf;
             }
-            leafs.Reset();
+            leaves.Reset();
         }
 
         // Used to setup octree globals
@@ -83,7 +83,7 @@ class Octree
         }
         static void resetParams(){ params = init_params(); }
 
-        int numLeafs();
+        int numLeaves();
 
         // Used to check if it's a dynamic octree for an agent
         bool isAgent = false;
@@ -97,7 +97,7 @@ class Octree
         float makeTill;
 
         // Given to each non-leaf
-        TArray<Octree*> leafs;
+        TArray<Octree*> leaves;
 
         // Given to each leaf 
         FVector normal;
@@ -106,7 +106,9 @@ class Octree
         float sos = 1.0f; // speed of sound
 
         // Used during computations
+        // Value of Range, Elevation, and Azimuth in that order (in m/degrees/degrees).
         FVector locSpherical;
+        // Index of Range, Elevation, and Azimuth in that order.
         FIntVector idx;
         float val;
 };
