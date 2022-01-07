@@ -4,9 +4,9 @@ import pytest
 
 import numpy as np
 
-@pytest.fixture
-def config():
-    config = {
+@pytest.fixture(scope="module")
+def env():
+    scenario = {
         "name": "test_imu_sensor",
         "world": "Rooms",
         "main_agent": "turtle0",
@@ -35,164 +35,148 @@ def config():
             }
         ]
     }
-    return config
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    with holoocean.environments.HoloOceanEnvironment(scenario=scenario,
+                                                   binary_path=binary_path,
+                                                   show_viewport=False,
+                                                   uuid=str(uuid.uuid4()),
+                                                   ticks_per_sec=30) as env:
+        yield env
 
-
-def test_imu_sensor_acceleration(config):
+def test_imu_sensor_acceleration(env):
     """Make sure when we move forward x is positive, y is close to 0. Make sure when not moving both are close to 0
     """
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    env.reset()
 
-    with holoocean.environments.HoloOceanEnvironment(scenario=config,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
-        #let it land and then start moving forward
-        for _ in range(100):
-            _, _, _  = env.tick()["IMUSensor"][0]
-        env.step([150,0])
+    #let it land and then start moving forward
+    for _ in range(100):
+        _, _, _  = env.tick()["IMUSensor"][0]
+    env.step([150,0])
 
-        #Move forward, making sure y is relatively small, and x is increasing
-        for i in range(50):
-            x_accel, y_accel, z_accel = env.step([150,0])[0]["IMUSensor"][0]
-            assert x_accel >= 0, f"The acceleration wasn't positive at step {i}!"
-            assert y_accel <= .5
-            assert np.isclose(z_accel, 9.81, 1e-2)
-            last_x_accel = x_accel
+    #Move forward, making sure y is relatively small, and x is increasing
+    for i in range(50):
+        x_accel, y_accel, z_accel = env.step([150,0])[0]["IMUSensor"][0]
+        assert x_accel >= 0, f"The acceleration wasn't positive at step {i}!"
+        assert y_accel <= .5
+        assert np.isclose(z_accel, 9.81, 1e-2)
+        last_x_accel = x_accel
 
-        #Let it stop
-        for _ in range(100):
-            env.step([0, 0])
+    #Let it stop
+    for _ in range(100):
+        env.step([0, 0])
 
-        #Move backward, making sure y is relatively small, and x is decreasing
-        for i in range(50):
-            x_accel, y_accel, z_accel = env.step([-150,0])[0]["IMUSensor"][0]
-            assert x_accel <= 1e-3, f"The acceleration wasn't negative at step {i}!"
-            assert y_accel <= .5
-            assert np.isclose(z_accel, 9.81, 1e-2)
+    #Move backward, making sure y is relatively small, and x is decreasing
+    for i in range(50):
+        x_accel, y_accel, z_accel = env.step([-150,0])[0]["IMUSensor"][0]
+        assert x_accel <= 1e-3, f"The acceleration wasn't negative at step {i}!"
+        assert y_accel <= .5
+        assert np.isclose(z_accel, 9.81, 1e-2)
 
-            last_x_accel = x_accel
-        #Let it stop
-        for _ in range(100):
-            env.step([0, 0])
+        last_x_accel = x_accel
+    #Let it stop
+    for _ in range(100):
+        env.step([0, 0])
 
-        #make sure everythign is close to 0
-        x_accel, y_accel, z_accel = env.tick()["IMUSensor"][0]
-        assert x_accel <= 1e-2, "The x accel wasn't close enough to zero!"
-        assert y_accel <= 1e-2, "The y accel wasn't close enough to zero!"
+    #make sure everythign is close to 0
+    x_accel, y_accel, z_accel = env.tick()["IMUSensor"][0]
+    assert x_accel <= 1e-2, "The x accel wasn't close enough to zero!"
+    assert y_accel <= 1e-2, "The y accel wasn't close enough to zero!"
 
-def test_imu_sensor_angular_velocity(config):
+def test_imu_sensor_angular_velocity(env):
     """Make sure when we move forward x is positive, y is close to 0. Make sure when not moving both are close to 0
     """
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    env.reset()
 
-    with holoocean.environments.HoloOceanEnvironment(scenario=config,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
-        #let it land and then start moving forward
-        for _ in range(100):
-            _, _, last_z_angvel = env.tick()["IMUSensor"][1]
-        env.step([0,150])
+    #let it land and then start moving forward
+    for _ in range(100):
+        _, _, last_z_angvel = env.tick()["IMUSensor"][1]
+    env.step([0,150])
 
-        #Move forward, making sure y is relatively small, and x is increasing
-        for i in range(60):
-            x_angvel, y_angvel, new_z_angvel = env.step([0,150])[0]["IMUSensor"][1]
-            assert x_angvel <= .5
-            assert y_angvel <= .5
-            assert new_z_angvel >= last_z_angvel, f"The angvel didn't increase at step {i}!"
-            last_z_angvel = new_z_angvel
+    #Move forward, making sure y is relatively small, and x is increasing
+    for i in range(60):
+        x_angvel, y_angvel, new_z_angvel = env.step([0,150])[0]["IMUSensor"][1]
+        assert x_angvel <= .5
+        assert y_angvel <= .5
+        assert new_z_angvel >= last_z_angvel, f"The angvel didn't increase at step {i}!"
+        last_z_angvel = new_z_angvel
 
-        #Let it stop
-        for _ in range(100):
-            env.step([0, 0])
+    #Let it stop
+    for _ in range(100):
+        env.step([0, 0])
 
-        #Move backward, making sure y is relatively small, and x is decreasing
-        for i in range(60):
-            x_angvel, y_angvel, new_z_angvel = env.step([0,-150])[0]["IMUSensor"][1]
-            assert x_angvel <= .5
-            assert y_angvel <= .5
-            assert new_z_angvel <= last_z_angvel, f"The angvel didn't decrease at step {i}!"
-            last_z_angvel = new_z_angvel
+    #Move backward, making sure y is relatively small, and x is decreasing
+    for i in range(60):
+        x_angvel, y_angvel, new_z_angvel = env.step([0,-150])[0]["IMUSensor"][1]
+        assert x_angvel <= .5
+        assert y_angvel <= .5
+        assert new_z_angvel <= last_z_angvel, f"The angvel didn't decrease at step {i}!"
+        last_z_angvel = new_z_angvel
 
-        #Let it stop
-        for _ in range(100):
-            env.step([0, 0])
+    #Let it stop
+    for _ in range(100):
+        env.step([0, 0])
 
-        #make sure everythign is close to 0
-        x_angvel, y_angvel, z_angvel = env.tick()["IMUSensor"][1]
-        assert x_angvel <= 1e-2, "The x angvel wasn't close enough to zero!"
-        assert y_angvel <= 1e-2, "The y angvel wasn't close enough to zero!"
-        assert z_angvel <= 1e-2, "The z angvel wasn't close enough to zero!"
+    #make sure everythign is close to 0
+    x_angvel, y_angvel, z_angvel = env.tick()["IMUSensor"][1]
+    assert x_angvel <= 1e-2, "The x angvel wasn't close enough to zero!"
+    assert y_angvel <= 1e-2, "The y angvel wasn't close enough to zero!"
+    assert z_angvel <= 1e-2, "The z angvel wasn't close enough to zero!"
 
-def test_imu_noise_accel(config):
+def test_imu_noise_accel(env):
     """Make sure turning on noise actually turns it on"""
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holoocean.environments.HoloOceanEnvironment(scenario=config,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
-        #let it land and then start moving forward
-        for _ in range(100):
-            state = env.tick()
-            assert not np.allclose(state['IMUSensor'][0], state['noise'][0])
+    env.reset()
 
-def test_imu_noise_angvel(config):
+    #let it land and then start moving forward
+    for _ in range(100):
+        state = env.tick()
+        assert not np.allclose(state['IMUSensor'][0], state['noise'][0])
+
+def test_imu_noise_angvel(env):
     """Make sure turning on noise actually turns it on"""
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holoocean.environments.HoloOceanEnvironment(scenario=config,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
-        #let it land and then start moving forward
-        for _ in range(100):
-            state = env.tick()
-            assert not np.allclose(state['IMUSensor'][1], state['noise'][1])
+    env.reset()
 
-def test_imu_noise_returnbias(config):
+    #let it land and then start moving forward
+    for _ in range(100):
+        state = env.tick()
+        assert not np.allclose(state['IMUSensor'][1], state['noise'][1])
+
+def test_imu_noise_returnbias(env):
     """Make sure returning the bias actually works"""
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    with holoocean.environments.HoloOceanEnvironment(scenario=config,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
-        #let it land and then start moving forward
-        for _ in range(10):
-            state = env.tick()
-            assert state['IMUSensor'].shape == (2,3)
-            assert state['noise'].shape == (4,3)
-            assert np.allclose(np.zeros(3), state['noise'][2])
-            assert np.allclose(np.zeros(3), state['noise'][3])
+    env.reset()
 
-def test_imu_noise_bias_accel(config):
+    #let it land and then start moving forward
+    for _ in range(10):
+        state = env.tick()
+        assert state['IMUSensor'].shape == (2,3)
+        assert state['noise'].shape == (4,3)
+        assert np.allclose(np.zeros(3), state['noise'][2])
+        assert np.allclose(np.zeros(3), state['noise'][3])
+
+def test_imu_noise_bias_accel(env):
     """Make sure turning on noise actually turns it on"""
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
-    config['agents'][0]['sensors'][1]['configuration']['AccelBiasSigma'] = 10
 
-    with holoocean.environments.HoloOceanEnvironment(scenario=config,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
-        #let it land and then start moving forward
-        for _ in range(100):
-            state = env.tick()
-            assert not np.allclose(np.zeros(3), state['noise'][2])
+    env._scenario['agents'][0]['sensors'][1]['configuration']['AccelBiasSigma'] = 10
 
-def test_imu_noise_bias_angvel(config):
+    env.reset()
+
+    #let it land and then start moving forward
+    for _ in range(100):
+        state = env.tick()
+        assert not np.allclose(np.zeros(3), state['noise'][2])
+
+def test_imu_noise_bias_angvel(env):
     """Make sure turning on noise actually turns it on"""
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
-    config['agents'][0]['sensors'][1]['configuration']['AngVelBiasSigma'] = 10
 
-    with holoocean.environments.HoloOceanEnvironment(scenario=config,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
-        #let it land and then start moving forward
-        for _ in range(100):
-            state = env.tick()
-            assert not np.allclose(np.zeros(3), state['noise'][3])
+    env._scenario['agents'][0]['sensors'][1]['configuration']['AngVelBiasSigma'] = 10
+
+    env.reset()
+
+    #let it land and then start moving forward
+    for _ in range(100):
+        state = env.tick()
+        assert not np.allclose(np.zeros(3), state['noise'][3])
