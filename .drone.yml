@@ -46,6 +46,11 @@ steps:
   commands:
   - tox -e py39
 
+- name: py310
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  commands:
+  - tox -e py310
+
 volumes:
 - name: docker_sock
   host:
