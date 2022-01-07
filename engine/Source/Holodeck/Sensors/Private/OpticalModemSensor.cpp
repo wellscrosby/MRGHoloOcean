@@ -25,8 +25,10 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
         NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
         NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
 		if (FromSensor) {
-            
-            BoolBuffer[0] = this->CanTransmit();            
+            BoolBuffer[0] = this->CanTransmit();       
+
+            // Reset FromSensor now that the message has been sent
+            FromSensor = NULL;  
 		}
     }
     
