@@ -20,13 +20,17 @@ void UOpticalModemSensor::InitializeSensor() {
 void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	//check if your parent pointer is valid, and if the sensor is on. Then get the buffer before sending the data to it. 
     bool* BoolBuffer = static_cast<bool*>(Buffer);
+    BoolBuffer[0] = false;
+
     if (Parent != nullptr && bOn) {
-		// if someone starting transmitting
         NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
         NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
 		if (FromSensor) {
-            
-            BoolBuffer[0] = this->CanTransmit();            
+            // if someone starting transmitting and we're in range, we'll receive
+            BoolBuffer[0] = this->CanTransmit();       
+
+            // Reset FromSensor now that the message has been sent
+            FromSensor = NULL;  
 		}
     }
     

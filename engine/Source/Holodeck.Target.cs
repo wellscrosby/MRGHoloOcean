@@ -1,14 +1,14 @@
 // MIT License (c) 2019 BYU PCCL see LICENSE file
 
 using UnrealBuildTool;
+using System;
 using System.Collections.Generic;
 
 public class HolodeckTarget : TargetRules
 {
-	public HolodeckTarget(TargetInfo Target) : base(Target)
-	{
+    public HolodeckTarget(TargetInfo Target) : base(Target)
+    {
 		Type = TargetType.Game;
-        // LaunchModuleName = "Holodeck";
         ExtraModuleNames.Add("Holodeck");
     }
 
