@@ -19,7 +19,7 @@ steps:
   commands:
   # git thinks our gitea's SSL certs are suspicious
   - git config --global http.sslverify "false"
-  - git clone https://$USER:$PASSWORD@robots.et.byu.edu/gitea/contagon/HoloOcean-Worlds our_worlds
+  - git clone –depth=1 https://$USER:$PASSWORD@robots.et.byu.edu/gitea/contagon/HoloOcean-Worlds our_worlds
   - bash Build/ContinuousIntegration/package_ue4_project.sh ${DRONE_COMMIT:0:8}
   - echo "The pull request was successfully packaged"
 
