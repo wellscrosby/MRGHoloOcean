@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// MIT License (c) 2021 BYU FRoStLab see LICENSE file
 
 
 #include "Octree.h"
@@ -31,6 +31,7 @@ FVector Octree::EnvMin;
 FVector Octree::EnvMax;
 FVector Octree::EnvCenter;
 UWorld* Octree::World;
+TMap<FString, FVector2D> Octree::materials;
 
 float sign(float val){
     bool s = signbit(val);
@@ -80,6 +81,29 @@ void Octree::initOctree(UWorld* w){
     }
     OctreeRoot = tempVal;
     UE_LOG(LogHolodeck, Log, TEXT("Octree:: OctreeMin: %f, OctreeMax: %f, OctreeRoot: %f"), OctreeMin, OctreeMax, OctreeRoot);
+
+    // Load material lookup table
+    FString filePath = FPaths::ProjectDir() + "../../materials.csv";
+    TArray<FString> lines;
+	FFileHelper::LoadANSITextFileToStrings(*filePath, NULL, lines);
+	for (int i = 1; i < lines.Num(); i++)
+	{
+        // Split line into elements
+		TArray<FString> stringArray = {};
+		lines[i].ParseIntoArray(stringArray, TEXT(","), false);
+
+        // Put elements into lookup table
+        FString key = stringArray[0];
+        if(stringArray.Num() == 3){
+            // density, speed of sound
+            FVector2D val = FVector2D(FCString::Atof(*stringArray[1]), FCString::Atof(*stringArray[2]));
+            materials.Add(key, val);
+        }
+        // if it's blank, assume full reflection
+        else{
+            materials.Add(key, FVector2D(10000, 10000));
+        }
+	}
 }
 
 Octree* Octree::makeEnvOctreeRoot(){
@@ -103,7 +127,7 @@ Octree* Octree::makeEnvOctreeRoot(){
                                         + FString::FromInt((int)tree->loc.Z) + ".json";
         }
         else{
-            for(Octree* l : tree->leafs){
+            for(Octree* l : tree->leaves){
                 fix(l);
             }
         }
@@ -160,13 +184,19 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, float octreeMin, FS
             if(octreeSize > octreeMin){
                 for(FVector off : corners){
                     Octree* l = makeOctree(center+(off*octreeSize/4), octreeSize/2, octreeMin, actorName);
-                    if(l) child->leafs.Add(l);
+                    if(l) child->leaves.Add(l);
                 }
             }
 
             // if it's all the way broken down, save the normal
             else if(octreeSize == Octree::OctreeMin){
                 child->normal = hit.Normal;
+
+                // Get physical material (not used very often)
+                // FString material = hit.PhysMaterial.Get()->GetFName().ToString();
+                // Get material (there is tons of these!)
+                FString mat = hit.GetComponent()->GetMaterial(hit.ElementIndex)->GetFName().ToString();
+                child->fillMaterialProperties(mat);
 
                 // clean normal
                 if(isnan(child->normal.X)) child->normal.X = sign(child->normal.X); 
@@ -188,14 +218,14 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, float octreeMin, FS
     return nullptr;
 }
 
-int Octree::numLeafs(){
-    if(leafs.Num()==0){
+int Octree::numLeaves(){
+    if(leaves.Num()==0){
         return 1;
     }
     else{
         int num = 1;
-        for(Octree* leaf : leafs){
-            num += leaf->numLeafs();
+        for(Octree* leaf : leaves){
+            num += leaf->numLeaves();
         }
         return num;
     }
@@ -206,7 +236,7 @@ void Octree::toJson(){
     FFileManagerGeneric().MakeDirectory(*FPaths::GetPath(file), true);
 
     // calculate buffer size and make writer
-    int num = numLeafs()*100;
+    int num = numLeaves()*100;
     char* buffer = new char[num]();
     gason::JSonBuilder doc(buffer, num-1);
 
@@ -234,9 +264,9 @@ void Octree::toJson(gason::JSonBuilder& doc){
             .addValue((int)loc[2])
         .endArray();
 
-    if(leafs.Num() != 0){
+    if(leaves.Num() != 0){
         doc.startArray("l");
-        for(Octree* l : leafs){
+        for(Octree* l : leaves){
             l->toJson(doc);
         }
         doc.endArray();
@@ -246,7 +276,8 @@ void Octree::toJson(gason::JSonBuilder& doc){
                 .addValue(normal[0])
                 .addValue(normal[1])
                 .addValue(normal[2])
-            .endArray();
+            .endArray()
+            .addValue("m", TCHAR_TO_ANSI(*material));
     }
 
     doc.endObject();
@@ -254,7 +285,7 @@ void Octree::toJson(gason::JSonBuilder& doc){
 
 void Octree::load(){
     // if it's not already loaded
-    if(leafs.Num() == 0){
+    if(leaves.Num() == 0){
         // if it's been saved as a json, load it
         if(FPaths::FileExists(file)){
             // UE_LOG(LogHolodeck, Log, TEXT("Loading Octree %s"), *file);
@@ -270,11 +301,11 @@ void Octree::load(){
             gason::JsonValue json;
             int status = gason::jsonParse(source, &endptr, &json, allocator);
 
-            // load in leafs
+            // load in leaves
             for(gason::JsonNode* o : json){
                 if(o->key[0] == 'l'){
                     for(gason::JsonNode* l : o->value){
-                        loadJson(l->value, leafs, size/2);
+                        loadJson(l->value, leaves, size/2);
                     }
                 }
             }
@@ -285,7 +316,7 @@ void Octree::load(){
             // UE_LOG(LogHolodeck, Log, TEXT("Making Octree %s"), *file);
             for(FVector off : corners){
                 Octree* l = makeOctree(loc+(off*size/4), size/2, makeTill);
-                if(l) leafs.Add(l);
+                if(l) leaves.Add(l);
             }
             toJson();
         }
@@ -302,12 +333,15 @@ void Octree::loadJson(gason::JsonValue& json, TArray<Octree*>& parent, float siz
         }
         if(o->key[0] == 'l'){
             for(gason::JsonNode* l : o->value){
-                loadJson(l->value, child->leafs, size/2);
+                loadJson(l->value, child->leaves, size/2);
             }
         }
         if(o->key[0] == 'n'){
             gason::JsonNode* arr = o->value.toNode();
             child->normal = FVector(arr->value.toNumber(), arr->next->value.toNumber(), arr->next->next->value.toNumber());
+        }
+        if(o->key[0] == 'm'){
+            child->fillMaterialProperties( FString(o->value.toString()) );
         }
     }
     child->size = size;
@@ -315,17 +349,37 @@ void Octree::loadJson(gason::JsonValue& json, TArray<Octree*>& parent, float siz
 }
 
 void Octree::unload(){
-    if(!isAgent && leafs.Num() != 0){
+    if(!isAgent && leaves.Num() != 0){
         // if we need to unload children
         if(size > Octree::OctreeMax){
-            for(Octree* leaf : leafs) leaf->unload();
+            for(Octree* leaf : leaves) leaf->unload();
         }
 
         // if we need to unload this one
         else if(size == Octree::OctreeMax){
             // UE_LOG(LogHolodeck, Log, TEXT("Unloading Octree %s"), *file);
-            for(Octree* leaf : leafs) delete leaf;
-            leafs.Reset();
+            for(Octree* leaf : leaves) delete leaf;
+            leaves.Reset();
         }
+    }
+}
+
+void Octree::fillMaterialProperties(FString mat){
+    material = mat;
+    FVector2D* matProp = materials.Find(material);
+    if(matProp == nullptr){
+        UE_LOG(LogHolodeck, Warning, TEXT("Missing material information for %s, adding in blank row to csv"), *this->material);
+
+        // Add blank line to material file to fill in later
+        FString filePath = FPaths::ProjectDir() + "../../materials.csv";
+        FString line = "\n" + material;
+        FFileHelper::SaveStringToFile(line, *filePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
+
+        // Default to something really high to get full reflection for this time
+        materials.Add(material, FVector2D(10000, 10000));
+    }
+    else{
+        density = matProp->X;
+        sos = matProp->Y;
     }
 }

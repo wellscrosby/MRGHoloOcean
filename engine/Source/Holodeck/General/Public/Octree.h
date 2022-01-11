@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// MIT License (c) 2021 BYU FRoStLab see LICENSE file
 
 #pragma once
 
@@ -6,6 +6,7 @@
 #include "Engine/World.h"
 #include "Misc/FileHelper.h"
 #include "HAL/FileManagerGeneric.h"
+#include "Containers/Map.h"
 #include "DrawDebugHelpers.h"
 #include "Conversion.h"
 
@@ -28,6 +29,7 @@ class Octree
         static FVector EnvMin;
         static FVector EnvMax;
         static UWorld* World;
+        static TMap<FString,FVector2D> materials;
 
         static FVector EnvCenter;
 
@@ -39,8 +41,12 @@ class Octree
             p.bTraceComplex = false;
             p.TraceTag = "";
             p.bFindInitialOverlaps = true;
+            // p.bReturnPhysicalMaterial = true;
+            // p.bReturnFaceIndex = true;
             return p;
         }
+
+        void fillMaterialProperties(FString mat);
 
     public:
         static float OctreeRoot;
@@ -50,10 +56,10 @@ class Octree
         Octree(){};
 		Octree(FVector loc, float size, FString file="") : size(size), loc(loc), file(file) {};
 		~Octree(){ 
-            for(Octree* leaf : leafs){
+            for(Octree* leaf : leaves){
                 delete leaf;
             }
-            leafs.Reset();
+            leaves.Reset();
         }
 
         // Used to setup octree globals
@@ -77,7 +83,7 @@ class Octree
         }
         static void resetParams(){ params = init_params(); }
 
-        int numLeafs();
+        int numLeaves();
 
         // Used to check if it's a dynamic octree for an agent
         bool isAgent = false;
@@ -91,13 +97,18 @@ class Octree
         float makeTill;
 
         // Given to each non-leaf
-        TArray<Octree*> leafs;
+        TArray<Octree*> leaves;
 
         // Given to each leaf 
         FVector normal;
+        FString material;
+        float density = 1.0f;
+        float sos = 1.0f; // speed of sound
 
         // Used during computations
+        // Value of Range, Elevation, and Azimuth in that order (in m/degrees/degrees).
         FVector locSpherical;
+        // Index of Range, Elevation, and Azimuth in that order.
         FIntVector idx;
         float val;
 };
