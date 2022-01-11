@@ -46,7 +46,7 @@ def env():
 
 
 @pytest.mark.parametrize("sensor", ["DVLSensor", "IMUSensor", "GPSSensor",
-                                "SonarSensor", "DepthSensor", "RGBCamera", 
+                                "ImagingSonarSensor", "DepthSensor", "RGBCamera", 
                                 "PoseSensor", "LocationSensor", "RangeFinderSensor", 
                                 "RotationSensor", "OrientationSensor", "VelocitySensor"])
 def test_sensor(env, sensor):

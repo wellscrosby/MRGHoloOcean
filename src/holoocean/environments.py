@@ -299,7 +299,7 @@ class HoloOceanEnvironment:
                                                 tick_every=sensor_config['tick_every'],
                                                 lcm_channel=sensor_config['lcm_channel']))
 
-                if sensor_config['sensor_type'] == "SonarSensor":
+                if sensor_config['sensor_type'] == "ImagingSonarSensor":
                     self._loading_sonar = True
 
                 # Import LCM if needed

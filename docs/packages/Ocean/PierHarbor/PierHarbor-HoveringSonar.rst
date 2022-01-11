@@ -8,7 +8,7 @@ Octree leaf size is 2cm. Unless otherwise specified, all sensors are named the s
     - :class:`~holoocean.sensors.IMUSensor` configured with noise, bias, and returns bias.
     - :class:`~holoocean.sensors.GPSSensor` gets measurements with N(1, 0.25) of the surface, actual measurement also has noise.
     - :class:`~holoocean.sensors.DVLSensor` configured with an elevation of 22.5 degrees, noise, and returns 4 range measurements.
-    - :class:`~holoocean.sensors.SonarSensor` configured with an elevation of 20 degrees, azimuth 130, range 1-70m, and initial octree generation of 100m.
+    - :class:`~holoocean.sensors.ImagingSonarSensor` configured with an elevation of 20 degrees, azimuth 130, range 1-70m, and initial octree generation of 100m.
     - :class:`~holoocean.sensors.DepthSensor` configured with noise.
     - :class:`~holoocean.sensors.PoseSensor` for ground truth.
     - :class:`~holoocean.sensors.VelocitySensor` for ground truth.

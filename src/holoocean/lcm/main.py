@@ -1,5 +1,5 @@
 from holoocean.lcm import DVLSensor, IMUSensor, GPSSensor, \
-                        AcousticBeaconSensor, SonarSensor, DepthSensor, \
+                        AcousticBeaconSensor, ImagingSonarSensor, DepthSensor, \
                         RGBCamera, PoseSensor, LocationSensor, \
                         RangeFinderSensor, RotationSensor, OrientationSensor, \
                         VelocitySensor
@@ -18,7 +18,7 @@ class SensorData:
         "IMUSensor": IMUSensor,
         "GPSSensor": GPSSensor,
         "AcousticBeaconSensor": AcousticBeaconSensor,
-        "SonarSensor": SonarSensor,
+        "ImagingSonarSensor": ImagingSonarSensor,
         "DepthSensor": DepthSensor,
         "RGBCamera": RGBCamera,
         "PoseSensor": PoseSensor,

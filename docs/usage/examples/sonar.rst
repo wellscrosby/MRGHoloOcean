@@ -41,8 +41,8 @@ It can be useful to visualize the output of the sonar sensor during a simulation
             env.act("auv0", command)
             state = env.tick()
 
-            if 'SonarSensor' in state:
-                s = state['SonarSensor']
+            if 'ImagingSonarSensor' in state:
+                s = state['ImagingSonarSensor']
                 plot.set_array(s.ravel())
 
                 fig.canvas.draw()
