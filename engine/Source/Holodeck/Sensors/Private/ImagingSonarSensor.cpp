@@ -3,21 +3,21 @@
 #include "Holodeck.h"
 #include "Benchmarker.h"
 #include "HolodeckBuoyantAgent.h"
-#include "SonarSensor.h"
+#include "ImagingSonarSensor.h"
 // #pragma warning (disable : 4101)
 
-USonarSensor::USonarSensor() {
-	SensorName = "SonarSensor";
+UImagingSonarSensor::UImagingSonarSensor() {
+	SensorName = "ImagingSonarSensor";
 }
 
-void USonarSensor::BeginDestroy() {
+void UImagingSonarSensor::BeginDestroy() {
 	Super::BeginDestroy();
 
 	delete[] count;
 }
 
 // Allows sensor parameters to be set programmatically from client.
-void USonarSensor::ParseSensorParms(FString ParmsJson) {
+void UImagingSonarSensor::ParseSensorParms(FString ParmsJson) {
 	Super::ParseSensorParms(ParmsJson);
 
 	TSharedPtr<FJsonObject> JsonParsed;
@@ -60,7 +60,7 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 
 	}
 	else {
-		UE_LOG(LogHolodeck, Fatal, TEXT("USonarSensor::ParseSensorParms:: Unable to parse json."));
+		UE_LOG(LogHolodeck, Fatal, TEXT("UImagingSonarSensor::ParseSensorParms:: Unable to parse json."));
 	}
 
 	if(BinsElevation == 0){
@@ -68,7 +68,7 @@ void USonarSensor::ParseSensorParms(FString ParmsJson) {
 	}
 }
 
-void USonarSensor::InitializeSensor() {
+void UImagingSonarSensor::InitializeSensor() {
 	Super::InitializeSensor();
 	
 	// Get size of each bin
@@ -93,7 +93,7 @@ FVector spherToEuc(float r, float theta, float phi, FTransform SensortoWorld){
 }
 
 
-void USonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
+void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	Super::TickSensorComponent(DeltaTime, TickType, ThisTickFunction);
 
 	if(TickCounter == 0){

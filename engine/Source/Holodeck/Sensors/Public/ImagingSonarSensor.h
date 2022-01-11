@@ -13,14 +13,14 @@
 
 #include "Json.h"
 
-#include "SonarSensor.generated.h"
+#include "ImagingSonarSensor.generated.h"
 
 #define Pi 3.1415926535897932384626433832795
 /**
- * USonarSensor
+ * UImagingSonarSensor
  */
 UCLASS()
-class HOLODECK_API USonarSensor : public UHolodeckSonarSensor
+class HOLODECK_API UImagingSonarSensor : public UHolodeckSonarSensor
 {
 	GENERATED_BODY()
 	
@@ -28,7 +28,7 @@ public:
 	/*
 	* Default Constructor
 	*/
-	USonarSensor();
+	UImagingSonarSensor();
 
 	/**
 	* InitializeSensor

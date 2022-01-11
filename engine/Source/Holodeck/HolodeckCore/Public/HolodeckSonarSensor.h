@@ -15,7 +15,7 @@
 
 #define Pi 3.1415926535897932384626433832795
 /**
- * USonarSensor
+ * UHolodeckSonarSensor
  */
 UCLASS()
 class HOLODECK_API UHolodeckSonarSensor : public UHolodeckSensor
