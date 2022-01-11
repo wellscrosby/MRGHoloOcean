@@ -647,7 +647,7 @@ class AbuseSensor(HoloOceanSensor):
 ######################## HOLOOCEAN CUSTOM SENSORS ###########################
 #Make sure to also add your new sensor to SensorDefintion below
 
-class SonarSensor(HoloOceanSensor):
+class ImagingSonarSensor(HoloOceanSensor):
     """Simulates an imaging sonar. See :ref:`configure-octree` for more on
     how to configure the octree that is used.
 
@@ -671,9 +671,9 @@ class SonarSensor(HoloOceanSensor):
 
     """
 
-    sensor_type = "SonarSensor"
+    sensor_type = "ImagingSonarSensor"
 
-    def __init__(self, client, agent_name, agent_type, name="SonarSensor", config=None):
+    def __init__(self, client, agent_name, agent_type, name="ImagingSonarSensor", config=None):
 
         self.config = {} if config is None else config
 
@@ -688,7 +688,7 @@ class SonarSensor(HoloOceanSensor):
 
         self.shape = (b_range, b_azimuth)
 
-        super(SonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+        super(ImagingSonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
     @property
     def dtype(self):
@@ -1094,7 +1094,7 @@ class SensorDefinition:
         "AcousticBeaconSensor": AcousticBeaconSensor,
         "DepthSensor": DepthSensor,
         "OpticalModemSensor": OpticalModemSensor,
-        "SonarSensor": SonarSensor,
+        "ImagingSonarSensor": ImagingSonarSensor,
         "GPSSensor": GPSSensor,
     }
 
@@ -1127,7 +1127,7 @@ class SensorDefinition:
         self.rotation = rotation
         self.config = self.type.default_config if config is None else config
         # hacky way to get RGBCamera to capture lined up with python rate
-        if sensor_type in ["RGBCamera", "SonarSensor"]:
+        if sensor_type in ["RGBCamera", "ImagingSonarSensor"]:
             self.config['TicksPerCapture'] = tick_every
         self.existing = existing
 

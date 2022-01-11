@@ -1,5 +1,5 @@
 from holoocean.lcm import DVLSensor, IMUSensor, GPSSensor, \
-                        AcousticBeaconSensor, SonarSensor, DepthSensor, \
+                        AcousticBeaconSensor, ImagingSonarSensor, DepthSensor, \
                         RGBCamera, PoseSensor, LocationSensor, \
                         RangeFinderSensor, RotationSensor, OrientationSensor, \
                         VelocitySensor
@@ -18,7 +18,7 @@ class SensorData:
         "IMUSensor": IMUSensor,
         "GPSSensor": GPSSensor,
         "AcousticBeaconSensor": AcousticBeaconSensor,
-        "SonarSensor": SonarSensor,
+        "ImagingSonarSensor": ImagingSonarSensor,
         "DepthSensor": DepthSensor,
         "RGBCamera": RGBCamera,
         "PoseSensor": PoseSensor,
@@ -68,7 +68,7 @@ class SensorData:
             self.msg.elevation = value[4] if value[0] not in ["OWAY", "MSG_REQ", "MSG_RESP"] else np.NaN
             self.msg.range     = value[5] if value[0] in ["MSG_RESPU", "MSG_RESPX"] else np.NaN
             self.msg.z         = value[-1] if value[0] in ["MSG_REQX", "MSG_RESPX"] else np.NaN
-        elif self.type == "SonarSensor":
+        elif self.type == "ImagingSonarSensor":
             self.msg.bins_range = value.shape[0]
             self.msg.bins_azimuth = value.shape[1]
             self.msg.image = value.tolist()

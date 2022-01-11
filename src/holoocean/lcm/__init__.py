@@ -13,7 +13,7 @@ from .OrientationSensor import OrientationSensor
 from .PoseSensor import PoseSensor
 from .AcousticBeaconSensor import AcousticBeaconSensor
 from .GPSSensor import GPSSensor
-from .SonarSensor import SonarSensor
+from .ImagingSonarSensor import ImagingSonarSensor
 from .DepthSensor import DepthSensor
 from .RGBCamera import RGBCamera
 from .main import SensorData, gen
