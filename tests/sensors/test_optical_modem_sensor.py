@@ -1,66 +1,67 @@
 import holoocean
 import uuid
 import copy
+import pytest
 
 from numpy import equal
+@pytest.fixture(scope="module")
+def env():
+    scenario = {
+        "name": "test",
+        "world": "Rooms",
+        "main_agent": "uav0",
+        "agents": [
+            {
+                "agent_name": "uav0",
+                "agent_type": "UavAgent",
+                "sensors": [
+                    {
+                        "sensor_type": "OpticalModemSensor"
+                    }
+                ],
+                "control_scheme": 1,
+                "location": [-10, 10, .25],
+                "rotation": [0, 0, -90]
+            },
+            {
+                "agent_name": "uav1",
+                "agent_type": "UavAgent",
+                "sensors": [
+                    {
+                        "sensor_type": "OpticalModemSensor"
+                    }
+                ],
+                "control_scheme": 1,
+                "location": [-10, 7, .25],
+                "rotation": [0, 0, 90]
+            }
+        ]
+    }
 
-uav_config_v1 = {
-    "name": "test",
-    "world": "Rooms",
-    "main_agent": "uav0",
-    "agents": [
-        {
-            "agent_name": "uav0",
-            "agent_type": "UavAgent",
-            "sensors": [
-                {
-                    "sensor_type": "OpticalModemSensor"
-                }
-            ],
-            "control_scheme": 1,
-            "location": [-10, 10, .25],
-            "rotation": [0, 0, -90]
-        },
-        {
-            "agent_name": "uav1",
-            "agent_type": "UavAgent",
-            "sensors": [
-                {
-                    "sensor_type": "OpticalModemSensor"
-                }
-            ],
-            "control_scheme": 1,
-            "location": [-10, 7, .25],
-            "rotation": [0, 0, 90]
-        }
-    ]
-}
-
-def test_transmittable():
     binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
-
-    global uav_config_v1
-    cfg = copy.deepcopy(uav_config_v1)
-
-    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
+    with holoocean.environments.HoloOceanEnvironment(scenario=scenario,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
-        env.reset()
+                                                   uuid=str(uuid.uuid4()),
+                                                   ticks_per_sec=30) as env:
+        yield env
 
-        command = [0, 0, 10, 50]
-        for _ in range (20):
-            env.send_optical_message(0, 1, "Message")
-            state, reward, terminal, _ = env.step(command)
+def test_transmittable(env):
+    env.reset()
 
-        assert "OpticalModemSensor" in state["uav1"], "Receiving modem did not receive data when it should have."
-        assert state["uav1"]["OpticalModemSensor"] == "Message", "Wrong message received."
+    command = [0, 0, 10, 50]
+    for _ in range(20):
+        env.send_optical_message(0, 1, "Message")
+        state, reward, terminal, _ = env.step(command)
 
-uav_config_v2 = {
-    "name": "test",
-    "world": "Rooms",
-    "main_agent": "uav0",
-    "agents": [
+    assert "OpticalModemSensor" in state["uav1"], "Receiving modem did not receive data when it should have."
+    assert state["uav1"]["OpticalModemSensor"] == "Message", "Wrong message received."
+
+
+def test_within_max_distance(env):
+    "Tests to make sure that two sensors that are not within max distance do not transmit."
+    
+    env._scenario["agents"] = [
         {
             "agent_name": "uav0",
             "agent_type": "UavAgent",
@@ -92,33 +93,25 @@ uav_config_v2 = {
             "rotation": [0, 0, 90]
         }
     ]
-}
+    print(holoocean.sensors.OpticalModemSensor.instances)
 
-def test_within_max_distance():
+    env.reset()
+    print("HERE")
+    print(holoocean.sensors.OpticalModemSensor.instances)
+    print("AFTER")
+
+    command = [0, 0, 10, 50]
+    state, reward, terminal, _ = env.step(command)
+    for i in range(20):
+        env.send_optical_message(0, 1, "Message")
+        env.tick()
+    assert "OpticalModemSensor" not in state["uav1"], "Receiving modem received data when it should not have done so."
+
+
+def test_not_oriented(env):
     "Tests to make sure that two sensors that are not within max distance do not transmit."
     
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
-    global uav_config_v2
-    cfg = copy.deepcopy(uav_config_v2)
-
-    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
-        env.reset()
-
-        command = [0, 0, 10, 50]
-        state, reward, terminal, _ = env.step(command)
-        for i in range (20):
-            env.send_optical_message(0, 1, "Message")
-            env.tick()
-        assert "OpticalModemSensor" not in state["uav1"], "Receiving modem received data when it should not have done so."
-
-uav_config_v3 = {
-    "name": "test",
-    "world": "Rooms",
-    "main_agent": "uav0",
-    "agents": [
+    env._scenario["agents"] = [
         {
             "agent_name": "uav0",
             "agent_type": "UavAgent",
@@ -144,31 +137,19 @@ uav_config_v3 = {
             "rotation": [0, 0, -180]
         }
     ]
-}
-def test_not_oriented():
-    "Tests to make sure that two sensors that are not within max distance do not transmit."
-    
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
-    global uav_config_v3
-    cfg = copy.deepcopy(uav_config_v3)
 
-    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
-        env.reset()
+    env.reset()
 
-        command = [0, 0, 10, 50]
-        for i in range (20):
-            env.send_optical_message(0, 1, "Message")
-            state, reward, terminal, _ = env.step(command)
-        assert "OpticalModemSensor" not in state["uav1"], "Receiving modem received data when it should not have done so."
+    command = [0, 0, 10, 50]
+    for i in range(20):
+        env.send_optical_message(0, 1, "Message")
+        state, reward, terminal, _ = env.step(command)
+    assert "OpticalModemSensor" not in state["uav1"], "Receiving modem received data when it should not have done so."
 
-uav_config_v4 = {
-    "name": "test",
-    "world": "Rooms",
-    "main_agent": "uav0",
-    "agents": [
+
+def test_obstructed_view(env):
+    """Tests to ensure that modem is unable to transmit when there is an obstruction between modems."""
+    env._scenario["agents"] = [
         {
             "agent_name": "uav0",
             "agent_type": "UavAgent",
@@ -194,32 +175,24 @@ uav_config_v4 = {
             "rotation": [0, 0, -180]
         }
     ]
-}
 
-def test_obstructed_view():
-    """Tests to ensure that modem is unable to transmit when there is an obstruction between modems."""
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
-    global uav_config_v4
-    cfg = copy.deepcopy(uav_config_v4)
+    env.reset()
+    
+    command = [0, 0, 10, 50]
 
-    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
-        env.reset()
-        
-        command = [0, 0, 10, 50]
+    for _ in range(20):
+        env.send_optical_message(0, 1, "Message")
+        state, reward, terminal, _ = env.step(command)
+    assert "OpticalModemSensor" not in state["uav1"], "Receiving modem received data when it should not have done so."
 
-        for _ in range(300):
-            env.send_optical_message(0, 1, "Message")
-            state, reward, terminal, _ = env.step(command)
-        assert "OpticalModemSensor" not in state["uav1"], "Receiving modem received data when it should not have done so."
 
-uav_config_v5 = {
-    "name": "test",
-    "world": "Rooms",
-    "main_agent": "uav0",
-    "agents": [
+def test_distance_noise(env):
+    """Tests to ensure that noise generation for max distance is functional"""
+    num_tests = 50
+    tests_passed = 0
+
+
+    env._scenario["agents"] = [
         {
             "agent_name": "uav0",
             "agent_type": "UavAgent",
@@ -249,38 +222,27 @@ uav_config_v5 = {
             "rotation": [0, 0, 90]
         }
     ]
-}
 
-def test_distance_noise():
+    env.reset()
+
+    command = [0, 0, 10, 50]
+    for _ in range(num_tests):
+        env.send_optical_message(0, 1, "Message")
+        state, reward, terminal, _ = env.step(command)
+        print(state)
+        if "OpticalModemSensor" in state["uav1"] and state["uav1"]["OpticalModemSensor"] == "Message":
+            tests_passed += 1
+
+    assert tests_passed < num_tests, "All messages sent when some should have failed due to noise variation."
+    assert tests_passed > 0, "All messages failed when some should have passed due to noise variation."
+
+
+def test_angle_noise(env):
     """Tests to ensure that noise generation for max distance is functional"""
-    num_tests = 100
+    num_tests = 50
     tests_passed = 0
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
-    global uav_config_v5
-    cfg = copy.deepcopy(uav_config_v5)
-
-    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
-        env.reset()
-
-        command = [0, 0, 10, 50]
-        for _ in range (num_tests):
-            env.send_optical_message(0, 1, "Message")
-            state, reward, terminal, _ = env.step(command)
-            print(state)
-            if "OpticalModemSensor" in state["uav1"] and state["uav1"]["OpticalModemSensor"] == "Message":
-                tests_passed += 1
-
-        assert tests_passed < num_tests, "All messages sent when some should have failed due to noise variation."
-        assert tests_passed > 0, "All messages failed when some should have passed due to noise variation."
-
-uav_config_v6 = {
-    "name": "test",
-    "world": "Rooms",
-    "main_agent": "uav0",
-    "agents": [
+    
+    env._scenario["agents"] = [
         {
             "agent_name": "uav0",
             "agent_type": "UavAgent",
@@ -288,7 +250,7 @@ uav_config_v6 = {
                 {
                     "sensor_type": "OpticalModemSensor",
                     "configuration": {
-                        "MaxDistance": 6,
+                        "MaxDistance": 20,
                         "AngleSigma": 20
                     }
                 }
@@ -304,7 +266,7 @@ uav_config_v6 = {
                 {
                     "sensor_type": "OpticalModemSensor",
                     "configuration": {
-                        "MaxDistance": 6,
+                        "MaxDistance": 20,
                         "AngleSigma": 20
                     }
                 }
@@ -314,29 +276,15 @@ uav_config_v6 = {
             "rotation": [0, 0, 90]
         }
     ]
-}
 
-def test_angle_noise():
-    """Tests to ensure that noise generation for max distance is functional"""
-    num_tests = 100
-    tests_passed = 0
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
-    global uav_config_v5
-    cfg = copy.deepcopy(uav_config_v5)
+    env.reset()
 
-    with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
-        env.reset()
+    command = [0, 0, 10, 50]
+    for _ in range(num_tests):
+        env.send_optical_message(0, 1, "Message")
+        state, reward, terminal, _ = env.step(command)
+        if "OpticalModemSensor" in state["uav1"] and state["uav1"]["OpticalModemSensor"] == "Message":
+            tests_passed += 1
 
-        command = [0, 0, 10, 50]
-        for _ in range (num_tests):
-            env.send_optical_message(0, 1, "Message")
-            state, reward, terminal, _ = env.step(command)
-            print(state)
-            if "OpticalModemSensor" in state["uav1"] and state["uav1"]["OpticalModemSensor"] == "Message":
-                tests_passed += 1
-
-        assert tests_passed < num_tests, "All messages sent when some should have failed due to noise variation."
-        assert tests_passed > 0, "All messages failed when some should have passed due to noise variation."
+    assert tests_passed < num_tests, "All messages sent when some should have failed due to noise variation."
+    assert tests_passed > 0, "All messages failed when some should have passed due to noise variation."

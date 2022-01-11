@@ -158,7 +158,9 @@ class HoloOceanEnvironment:
                 self.__linux_start_process__(binary_path, world_key, gl_version, verbose=verbose,
                                              show_viewport=show_viewport)
             elif os.name == "nt":
-                self.__windows_start_process__(binary_path, world_key, verbose=verbose)
+                self.__windows_start_process__(
+                    binary_path, world_key, verbose=verbose, show_viewport=show_viewport
+                )            
             else:
                 raise HoloOceanException("Unknown platform: " + os.name)
 
@@ -200,6 +202,7 @@ class HoloOceanEnvironment:
 
     @property
     def _timeout(self):
+        # Returns the timeout that should be processed
         # Make a larger timeout when creating octrees at the start
         if (self._num_ticks < 20 and self._loading_sonar) or not self.start_world:
             if os.name == "posix":
@@ -209,7 +212,7 @@ class HoloOceanEnvironment:
                 return win32event.INFINITE
 
         else:
-            return 30
+            return 60
 
     @property
     def action_space(self):
@@ -741,23 +744,33 @@ class HoloOceanEnvironment:
         loading_semaphore = \
             posix_ipc.Semaphore('/HOLODECK_LOADING_SEM' + self._uuid, os.O_CREAT | os.O_EXCL,
                                 initial_value=0)
-        # Copy the environment variables and remove the DISPLAY variable to hide viewport
-        # https://answers.unrealengine.com/questions/815764/in-the-release-notes-it-says-the-engine-can-now-cr.html?sort=oldest
-        environment = dict(os.environ.copy())
-        if not show_viewport and 'DISPLAY' in environment:
-            del environment['DISPLAY']
-        self._world_process = \
-            subprocess.Popen([binary_path, task_key, '-HolodeckOn', '-opengl' + str(gl_version),
-                        '-LOG=HolodeckLog.txt', '-ForceRes', '-ResX=' + str(self._window_size[1]),
-                        '-ResY=' + str(self._window_size[0]), '--HolodeckUUID=' + self._uuid,
-                        '-TicksPerSec=' + str(self._ticks_per_sec),
-                        '-FramesPerSec=' + str(self._frames_per_sec),
-                        '-EnvMinX=' + str(self._env_min[0]), '-EnvMinY=' + str(self._env_min[1]), '-EnvMinZ=' + str(self._env_min[2]),
-                        '-EnvMaxX=' + str(self._env_max[0]), '-EnvMaxY=' + str(self._env_max[1]), '-EnvMaxZ=' + str(self._env_max[2]),
-                        '-OctreeMin=' + str(self._octree_min), '-OctreeMax=' + str(self._octree_max)],
-                        stdout=out_stream,
-                        stderr=out_stream,
-                        env=environment)
+        arguments = [
+            binary_path,
+            task_key,
+            "-HolodeckOn",
+            "-LOG=HolodeckLog.txt",
+            "-ForceRes",
+            "-ResX=" + str(self._window_size[1]),
+            "-ResY=" + str(self._window_size[0]),
+            "--HolodeckUUID=" + self._uuid,
+            "-TicksPerSec=" + str(self._ticks_per_sec),
+            '-FramesPerSec=' + str(self._frames_per_sec),
+            '-EnvMinX=' + str(self._env_min[0]),
+            '-EnvMinY=' + str(self._env_min[1]),
+            '-EnvMinZ=' + str(self._env_min[2]),
+            '-EnvMaxX=' + str(self._env_max[0]),
+            '-EnvMaxY=' + str(self._env_max[1]),
+            '-EnvMaxZ=' + str(self._env_max[2]),
+            '-OctreeMin=' + str(self._octree_min),
+            '-OctreeMax=' + str(self._octree_max)
+        ]
+        
+        if not show_viewport:
+            arguments.append("-RenderOffScreen")
+
+        self._world_process = subprocess.Popen(
+            arguments, stdout=out_stream, stderr=out_stream
+        )
 
         atexit.register(self.__on_exit__)
 
@@ -768,21 +781,41 @@ class HoloOceanEnvironment:
                                     "is not being run with root priveleges.")
         loading_semaphore.unlink()
 
-    def __windows_start_process__(self, binary_path, task_key, verbose):
+    def __windows_start_process__(
+        self, binary_path, task_key, verbose, show_viewport=True
+    ):        
         import win32event
         out_stream = sys.stdout if verbose else open(os.devnull, 'w')
         loading_semaphore = win32event.CreateSemaphore(None, 0, 1,
                                                        'Global\\HOLODECK_LOADING_SEM' + self._uuid)
-        self._world_process = \
-            subprocess.Popen([binary_path, task_key, '-HolodeckOn', '-LOG=HolodeckLog.txt',
-                        '-ForceRes', '-ResX=' + str(self._window_size[1]), '-ResY=' +
-                        str(self._window_size[0]), '-TicksPerSec=' + str(self._ticks_per_sec),
-                        '-FramesPerSec=' + str(self._frames_per_sec),
-                        '--HolodeckUUID=' + self._uuid,
-                        '-EnvMinX=' + str(self._env_min[0]), '-EnvMinY=' + str(self._env_min[1]), '-EnvMinZ=' + str(self._env_min[2]),
-                        '-EnvMaxX=' + str(self._env_max[0]), '-EnvMaxY=' + str(self._env_max[1]), '-EnvMaxZ=' + str(self._env_max[2]),
-                        '-OctreeMin=' + str(self._octree_min), '-OctreeMax=' + str(self._octree_max)],
-                        stdout=out_stream, stderr=out_stream)
+
+        arguments = [
+            binary_path,
+            task_key,
+            "-HolodeckOn",
+            "-LOG=HolodeckLog.txt",
+            "-ForceRes",
+            "-ResX=" + str(self._window_size[1]),
+            "-ResY=" + str(self._window_size[0]),
+            "--HolodeckUUID=" + self._uuid,
+            "-TicksPerSec=" + str(self._ticks_per_sec),
+            '-FramesPerSec=' + str(self._frames_per_sec),
+            '-EnvMinX=' + str(self._env_min[0]),
+            '-EnvMinY=' + str(self._env_min[1]),
+            '-EnvMinZ=' + str(self._env_min[2]),
+            '-EnvMaxX=' + str(self._env_max[0]),
+            '-EnvMaxY=' + str(self._env_max[1]),
+            '-EnvMaxZ=' + str(self._env_max[2]),
+            '-OctreeMin=' + str(self._octree_min),
+            '-OctreeMax=' + str(self._octree_max)
+        ]
+        
+        if not show_viewport:
+            arguments.append("-RenderOffScreen")
+
+        self._world_process = subprocess.Popen(
+            arguments, stdout=out_stream, stderr=out_stream
+        )
 
         atexit.register(self.__on_exit__)
         response = win32event.WaitForSingleObject(loading_semaphore, 100000)  # 100 second timeout
