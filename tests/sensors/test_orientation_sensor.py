@@ -24,7 +24,7 @@ base_cfg = {
     ]
 }
 
-
+# TODO: Test this more rigorously
 def test_orientation_sensor_after_teleport():
     """Make sure that the orientation sensor correctly updates after using a teleport command to 
     rotate the agent
@@ -46,9 +46,9 @@ def test_orientation_sensor_after_teleport():
         sensed_orientation = state["OrientationSensor"]
 
         accurate_or = np.zeros((3, 3))
-        accurate_or[0, 2] = -1
+        accurate_or[0, 2] = 1
         accurate_or[1, 1] = 1
-        accurate_or[2, 0] = 1
+        accurate_or[2, 0] = -1
 
         assert almost_equal(accurate_or, sensed_orientation), \
             "Expected orientation did not match the expected orientation!"
