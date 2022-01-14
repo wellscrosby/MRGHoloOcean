@@ -1,8 +1,6 @@
 import holoocean
-from holoocean.lcm import AcousticBeaconSensor
 import uuid
 import pytest
-import numpy as np
 
 @pytest.fixture(scope="module")
 def env():
