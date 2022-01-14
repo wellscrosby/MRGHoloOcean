@@ -47,6 +47,6 @@ def test_orientation_sensor_after_teleport(env, num):
     state = env.tick()
     sensed_orientation = state["OrientationSensor"]
 
-    assert np.allclose(R, sensed_orientation, rtol=1e-3), \
+    assert np.allclose(R, sensed_orientation, atol=1e-4), \
         "Expected orientation did not match the expected orientation!"
 
