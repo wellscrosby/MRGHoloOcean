@@ -4,7 +4,7 @@
 const bool USE_RHS = true;
 
 FRotator RPYToRotator(float Roll, float Pitch, float Yaw){
-	/* Takes Right-Handed Roll, Pitch, Yaw, and creates left-handed rotation
+	/* Takes right-handed Roll, Pitch, Yaw, and creates left-handed rotation
 		about X, Y, Z in the fixed frame, or Z, Y, X about current frame. 
 		
 	I don't trust UE4 with rotations after I found this:
@@ -19,7 +19,7 @@ FRotator RPYToRotator(float Roll, float Pitch, float Yaw){
 	FMath::SinCos(&SY, &CY, FMath::DegreesToRadians(Yaw));
 	FMath::SinCos(&SR, &CR, FMath::DegreesToRadians(Roll));
 
-	// Row, then column index
+	// Column, then row index
 	// First (X) Column
 	R.M[0][0] = CY*CP;
 	R.M[0][1] = CP*SY;
@@ -42,6 +42,54 @@ FRotator RPYToRotator(float Roll, float Pitch, float Yaw){
 	R.M[1][2] *= -1;
 	
 	return R.Rotator();
+}
+
+FVector RotatorToRPY(FRotator Rot){
+	/* Takes left-handed rotation about X, Y, Z in the fixed frame, 
+		or Z, Y, X about current frame and creates a right-handed Roll, Pitch, Yaw.
+		
+		Taken from here: http://eecs.qmul.ac.uk/~gslabaugh/publications/euler.pdf
+	*/
+	FMatrix R = FRotationMatrix::Make(Rot);
+
+	// Flip y-axes in and out to make it right-handed
+	R.M[0][1] *= -1;
+	R.M[1][0] *= -1;
+	R.M[2][1] *= -1;
+	R.M[1][2] *= -1;
+
+	float R31 = R.M[0][2];
+	float R12 = R.M[1][0];
+	float R13 = R.M[2][0];
+	float theta, phi, psi;
+	// If we're in a singularity, assume phi = 0
+	if(FMath::IsNearlyEqual(R31, -1.0f)){
+		phi = 0;
+		theta = 90;
+		psi = phi + UKismetMathLibrary::DegAtan2(R12, R13);
+	}
+	else if(FMath::IsNearlyEqual(R31, 1.0f)){
+		phi = 0;
+		theta = -90;
+		psi = phi + UKismetMathLibrary::DegAtan2(-R12, -R13);
+	}
+	// Otherwise do normal calculations
+	else{
+		float R11 = R.M[0][0];
+		float R21 = R.M[0][1];
+		float R32 = R.M[1][2];
+		float R33 = R.M[2][2];
+
+		theta = -UKismetMathLibrary::DegAsin(R31);
+		float ct = UKismetMathLibrary::DegCos(theta);
+
+		psi = UKismetMathLibrary::DegAtan2(R32/ct, R33/ct);
+		phi = UKismetMathLibrary::DegAtan2(R21/ct, R11/ct);
+	}
+	// roll, pitch, yaw
+	FVector temp(psi, theta, phi);
+	UE_LOG(LogHolodeck, Warning, TEXT("Euler: %s"), *temp.ToString());
+	return FVector(psi, theta, phi);
 }
 
 FVector ConvertLinearVector(FVector Vector, ConvertType Type) {
