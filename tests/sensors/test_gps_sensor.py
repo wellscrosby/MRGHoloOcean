@@ -1,10 +1,8 @@
 import holoocean
 import uuid
-from copy import deepcopy
 import pytest
 import numpy as np
 
-from tests.utils.equality import almost_equal
 
 @pytest.fixture(scope="module")
 def env():

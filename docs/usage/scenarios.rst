@@ -143,8 +143,8 @@ random amount between the negative and the positive values of the
 provided randomization values as sampled from a uniform distribution.
 
 The location value is measured in meters, in the format ``[dx, dy, dz]``
-and the rotation is ``[roll, pitch, yaw]``, rotated about the current axis.
-Future versions will include an option to enter a rotation matrix as well.
+and the rotation is ``[roll, pitch, yaw]``, rotated about XYZ fixed axes,
+ie R_z R_y R_x.
 
 Agent Types
 ***********
@@ -203,8 +203,8 @@ Sensors have a couple options for placement.
 2. **Provide a socket and a location/rotation**
 
    The sensor will be placed offset to the socket by the location and rotation. 
-   The rotation is ``[roll, pitch, yaw]``, rotated about the current axis.
-   Future versions will include an option to enter a rotation matrix as well.
+   The rotation is ``[roll, pitch, yaw]``, rotated about XYZ fixed axes,
+   ie R_z R_y R_x.
 
 
    .. code-block:: json

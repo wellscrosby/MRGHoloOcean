@@ -33,8 +33,8 @@ Rotations
 
 Rotations are specified in ``[roll, pitch, yaw]`` / ``[x, y, z]`` format, in in degrees (usually). This means
 
-- **Roll**: Rotation around the forward (``x``) axis
-- **Pitch**: Rotation around the right (``y``) axis
-- **Yaw**: Rotation around the up (``z``) axis
+- **Roll**: Rotation around the fixed forward (``x``) axis
+- **Pitch**: Rotation around the fixed right (``y``) axis
+- **Yaw**: Rotation around the fixed up (``z``) axis
 
-(`source <https://api.unrealengine.com/INT/API/Runtime/Core/Math/FRotator/index.html>`_)
+In that order.
