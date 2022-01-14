@@ -645,7 +645,40 @@ class AbuseSensor(HoloOceanSensor):
         return [1]
 
 ######################## HOLOOCEAN CUSTOM SENSORS ###########################
-#Make sure to also add your new sensor to SensorDefintion below
+#Make sure to also add your new sensor to SensorDefinition below
+
+class SidescanSonarSensor(HoloOceanSensor):
+    """Simulates a sidescan sonar
+    
+    TODO - Fill in the rest as the sensor becomes more fully developed
+    """
+    sensor_type = "SidescanSonarSensor"
+
+    def __init__(self, client, agent_name, agent_type, name="SidescanSonarSensor", config=None):
+
+        self.config = {} if config is None else config
+
+        b_range   = 500 # centimeters
+        b_azimuth = 120 # degrees
+
+        if "BinsRange" in self.config:
+            b_range = self.config["BinsRange"]
+
+        if "BinsAzimuth" in self.config:
+            b_azimuth = self.config["BinsAzimuth"]
+
+        self.shape = (b_range, b_azimuth)
+
+        super(SidescanSonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+
+    @property
+    def dtype(self):
+        return np.float32
+
+    @property
+    def data_shape(self):
+        return self.shape
+
 
 class ImagingSonarSensor(HoloOceanSensor):
     """Simulates an imaging sonar. See :ref:`configure-octree` for more on
