@@ -24,7 +24,6 @@ class Octree
         static TArray<FVector> corners;
         static TArray<FVector> sides;
         static FCollisionQueryParams params;
-        static FVector offset;
         static float cornerSize;
         static FVector EnvMin;
         static FVector EnvMax;
@@ -40,7 +39,7 @@ class Octree
             FCollisionQueryParams p;
             p.bTraceComplex = false;
             p.TraceTag = "";
-            p.bFindInitialOverlaps = true;
+            // p.bFindInitialOverlaps = true;
             // p.bReturnPhysicalMaterial = true;
             // p.bReturnFaceIndex = true;
             return p;
