@@ -1128,6 +1128,7 @@ class SensorDefinition:
         "DepthSensor": DepthSensor,
         "OpticalModemSensor": OpticalModemSensor,
         "ImagingSonarSensor": ImagingSonarSensor,
+        "SidescanSonarSensor": SidescanSonarSensor,
         "GPSSensor": GPSSensor,
     }
 
