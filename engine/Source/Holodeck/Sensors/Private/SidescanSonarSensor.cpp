@@ -86,7 +86,7 @@ void USidescanSonarSensor::InitializeSensor() {
 }
 
 // Conversion from Spherical coordinates to Euclidian
-FVector spherToEuc(float r, float theta, float phi, FTransform SensortoWorld){
+FVector spherToEucSS(float r, float theta, float phi, FTransform SensortoWorld){
 	float x = r*UKismetMathLibrary::DegSin(phi)*UKismetMathLibrary::DegCos(theta);
 	float y = r*UKismetMathLibrary::DegSin(phi)*UKismetMathLibrary::DegSin(theta);
 	float z = r*UKismetMathLibrary::DegCos(phi);
@@ -163,13 +163,14 @@ void USidescanSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickT
 		
 		// MOVE THEM INTO BUFFER
 		for (int i = 0; i < BinsRange*BinsAzimuth; i++) {
-			if(count[i] != 0){
-				result[i] *= (1 + multNoise.sampleFloat())/count[i];
-				result[i] += addNoise.sampleRayleigh();
-			}
-			else{
-				result[i] = addNoise.sampleRayleigh();
-			}
+			// if(count[i] != 0){
+			// 	result[i] *= (1 + multNoise.sampleFloat())/count[i];
+			// 	result[i] += addNoise.sampleRayleigh();
+			// }
+			// else{
+			// 	result[i] = addNoise.sampleRayleigh();
+			// }
+			result[i] = 5;
 		}
 
 
@@ -189,22 +190,22 @@ void USidescanSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickT
 			float debugThickness = 3.0f;
 			
 			// range lines
-			DrawDebugLine(GetWorld(), spherToEuc(MinRange, minAzimuth, minElev, tran), spherToEuc(MaxRange, minAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(MinRange, minAzimuth, maxElev, tran), spherToEuc(MaxRange, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(MinRange, maxAzimuth, minElev, tran), spherToEuc(MaxRange, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(MinRange, maxAzimuth, maxElev, tran), spherToEuc(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, minAzimuth, minElev, tran), spherToEucSS(MaxRange, minAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, minAzimuth, maxElev, tran), spherToEucSS(MaxRange, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, maxAzimuth, minElev, tran), spherToEucSS(MaxRange, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, maxAzimuth, maxElev, tran), spherToEucSS(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
 
 			// azimuth lines (should be arcs, we're being lazy)
-			DrawDebugLine(GetWorld(), spherToEuc(MinRange, minAzimuth, minElev, tran), spherToEuc(MinRange, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(MinRange, minAzimuth, maxElev, tran), spherToEuc(MinRange, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(MaxRange, minAzimuth, minElev, tran), spherToEuc(MaxRange, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(MaxRange, minAzimuth, maxElev, tran), spherToEuc(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, minAzimuth, minElev, tran), spherToEucSS(MinRange, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, minAzimuth, maxElev, tran), spherToEucSS(MinRange, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(MaxRange, minAzimuth, minElev, tran), spherToEucSS(MaxRange, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(MaxRange, minAzimuth, maxElev, tran), spherToEucSS(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
 
 			// elevation lines (should be arcs, we're being lazy)
-			DrawDebugLine(GetWorld(), spherToEuc(MinRange, minAzimuth, minElev, tran), spherToEuc(MinRange, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(MinRange, maxAzimuth, minElev, tran), spherToEuc(MinRange, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(MaxRange, minAzimuth, minElev, tran), spherToEuc(MaxRange, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(MaxRange, maxAzimuth, minElev, tran), spherToEuc(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, minAzimuth, minElev, tran), spherToEucSS(MinRange, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, maxAzimuth, minElev, tran), spherToEucSS(MinRange, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(MaxRange, minAzimuth, minElev, tran), spherToEucSS(MaxRange, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(MaxRange, maxAzimuth, minElev, tran), spherToEucSS(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
 		}		
 	}
 }
