@@ -48,6 +48,7 @@ void UAddSensorCommand::Execute() {
 										{ "PoseSensor", UPoseSensor::StaticClass() },
 										{ "AcousticBeaconSensor", UAcousticBeaconSensor::StaticClass() },
 										{ "ImagingSonarSensor", UImagingSonarSensor::StaticClass() },
+										{ "SidescanSonarSensor", USidescanSonarSensor::StaticClass() },
 										{ "GPSSensor", UGPSSensor::StaticClass() },
 										{ "DepthSensor", UDepthSensor::StaticClass() },
 										{ "OpticalModemSensor", UOpticalModemSensor::StaticClass() }, };
