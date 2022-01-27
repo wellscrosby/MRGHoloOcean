@@ -48,7 +48,8 @@ public:
 
 protected:
 	//See HolodeckSensor for the documentation of these overridden functions.
-	int GetNumItems() override { return BinsRange*BinsAzimuth; };
+	// int GetNumItems() override { return BinsRange*BinsAzimuth; }; // Returns 2D array for Buffer for Imaging Sonar
+	int GetNumItems() override { return BinsRange; }; // Returns 1D array for buffer for Sidescan Sonar
 	int GetItemSize() override { return sizeof(float); };
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -58,6 +59,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 	int32 BinsAzimuth = 128;
 
+	// Elevation bins are used for shadowing, but ultimately no elevation information is retained in the output
 	UPROPERTY(EditAnywhere)
 	int32 BinsElevation = 0;
 

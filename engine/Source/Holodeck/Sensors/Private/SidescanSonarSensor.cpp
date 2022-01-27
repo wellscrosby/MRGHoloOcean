@@ -18,6 +18,14 @@ void USidescanSonarSensor::BeginDestroy() {
 
 // Allows sensor parameters to be set programmatically from client.
 void USidescanSonarSensor::ParseSensorParms(FString ParmsJson) {
+
+	// Override the Parent Class defaults for some key parameters
+	MaxRange = 10 * 100; 	// 10 m (in cm)
+	MinRange = 0.1 * 100; 	// 0.1 m (in cm)
+	Azimuth = 130; 			// degrees
+	Elevation = 1;			// degrees
+
+	// Parse any parent class parameters that were provided in the configuration
 	Super::ParseSensorParms(ParmsJson);
 
 	TSharedPtr<FJsonObject> JsonParsed;
@@ -77,7 +85,8 @@ void USidescanSonarSensor::InitializeSensor() {
 	ElevRes = Elevation / BinsElevation;
 	
 	// setup count of each bin
-	count = new int32[BinsRange*BinsAzimuth]();
+	// count = new int32[BinsRange*BinsAzimuth](); // Method for imaging sonar
+	count = new int32[BinsRange](); // Sidescan Sonar (1d array)
 
 	for(int i=0;i<BinsAzimuth*BinsElevation;i++){
 		sortedLeaves.Add(TArray<Octree*>());
@@ -100,8 +109,10 @@ void USidescanSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickT
 	if(TickCounter == 0){
 		// reset things and get ready
 		float* result = static_cast<float*>(Buffer);
-		std::fill(result, result+BinsRange*BinsAzimuth, 0);
-		std::fill(count, count+BinsRange*BinsAzimuth, 0);
+		// std::fill(result, result+BinsRange*BinsAzimuth, 0);
+		// std::fill(count, count+BinsRange*BinsAzimuth, 0);
+		std::fill(result, result+BinsRange, 0);
+		std::fill(count, count+BinsRange, 0);
 		
 		for(auto& sl: sortedLeaves){
 			sl.Reset();
@@ -120,6 +131,8 @@ void USidescanSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickT
 				l->idx.Z = (int32)((l->locSpherical.Z - minElev)/ ElevRes);
 				// Sometimes we get float->int rounding errors
 				if(l->idx.Y == BinsAzimuth) --l->idx.Y;
+
+				// UE_LOG(LogTemp, Warning, TEXT("Index Y: %d"), l->idx.Y);
 
 				idx = l->idx.Z*BinsAzimuth + l->idx.Y;
 				sortedLeaves[idx].Emplace(l);
@@ -146,7 +159,16 @@ void USidescanSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickT
 				jth = binLeafs.GetData()[j];
 				
 				jth->idx.X = (int32)((jth->locSpherical.X - MinRange) / RangeRes);
-				idx = jth->idx.X*BinsAzimuth + jth->idx.Y;
+				if (jth->idx.Y > (BinsAzimuth / 2))
+				// if (jth->locSpherical.Y > 0)
+				{
+					idx = BinsRange / 2 - jth->idx.X / 2 - 1;
+				}
+				else
+				{
+					idx = BinsRange / 2 + jth->idx.X / 2;
+				}
+				// idx = jth->idx.X*BinsAzimuth + jth->idx.Y;
 				z_t = jth->sos * jth->density;
 				R = (z_t - z_i) / (z_t + z_i);
 
@@ -162,15 +184,15 @@ void USidescanSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickT
 
 		
 		// MOVE THEM INTO BUFFER
-		for (int i = 0; i < BinsRange*BinsAzimuth; i++) {
-			// if(count[i] != 0){
-			// 	result[i] *= (1 + multNoise.sampleFloat())/count[i];
-			// 	result[i] += addNoise.sampleRayleigh();
-			// }
-			// else{
-			// 	result[i] = addNoise.sampleRayleigh();
-			// }
-			result[i] = 5;
+		// for (int i = 0; i < BinsRange*BinsAzimuth; i++) {
+		for (int i = 0; i < BinsRange; i++) {
+			if(count[i] != 0){
+				result[i] *= (1 + multNoise.sampleFloat())/count[i];
+				result[i] += addNoise.sampleRayleigh();
+			}
+			else{
+				result[i] = addNoise.sampleRayleigh();
+			}
 		}
 
 
