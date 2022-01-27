@@ -658,8 +658,8 @@ class SidescanSonarSensor(HoloOceanSensor):
 
         self.config = {} if config is None else config
 
-        b_range   = 500 # centimeters
-        b_azimuth = 120 # degrees
+        b_range   = 300 # centimeters
+        b_azimuth = 1 # degrees
 
         if "BinsRange" in self.config:
             b_range = self.config["BinsRange"]
