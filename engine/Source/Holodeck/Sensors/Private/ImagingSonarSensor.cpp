@@ -113,10 +113,10 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 
 
 		// Finds leaves in range and puts them in foundLeaves
+		Benchmarker b, c;
 		findLeaves();		
+		UE_LOG(LogHolodeck, Warning, TEXT("FIND LEAVES : %f"), c.CalcMs());
 
-		Benchmarker b;
-		b.Start();
 		// SORT THEM INTO AZIMUTH/ELEVATION BINS
 		int32 idx;
 		for(TArray<Octree*>& bin : foundLeaves){
@@ -131,6 +131,7 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				sortedLeaves[idx].Emplace(l);
 			}
 		}
+		UE_LOG(LogHolodeck, Warning, TEXT("BINS SORTING : %f"), c.CalcMs());
 
 		// HANDLE SHADOWING
 		float eps = RangeRes;
@@ -165,21 +166,23 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 
 		});
 
+		UE_LOG(LogHolodeck, Warning, TEXT("SHADOWING : %f"), c.CalcMs());
+
 		// ADD IN ALL CONTRIBUTIONS
 		int extraContr = 2;
-		// for(TArray<Octree*>& bin : sortedLeaves){
-		// 	for(Octree* l : bin){
-		// 		for(int i=FGenericPlatformMath::Max(0,l->idx.X-extraContr); i<FGenericPlatformMath::Min(BinsRange,l->idx.X+extraContr+1); i++){
-		// 			for(int j=FGenericPlatformMath::Max(0,l->idx.Y-extraContr); j<FGenericPlatformMath::Min(BinsAzimuth,l->idx.Y+extraContr+1); j++){
-		// 				idx = i*BinsAzimuth + j;
-		// 				result[idx] += l->val;
-		// 				++count[idx];
-		// 			}
-		// 		}
-		// 	}
-		// }
+		for(TArray<Octree*>& bin : sortedLeaves){
+			for(Octree* l : bin){
+				for(int i=FGenericPlatformMath::Max(0,l->idx.X-extraContr); i<FGenericPlatformMath::Min(BinsRange,l->idx.X+extraContr+1); i++){
+					for(int j=FGenericPlatformMath::Max(0,l->idx.Y-extraContr); j<FGenericPlatformMath::Min(BinsAzimuth,l->idx.Y+extraContr+1); j++){
+						idx = i*BinsAzimuth + j;
+						result[idx] += l->val;
+						++count[idx];
+					}
+				}
+			}
+		}
 
-
+		UE_LOG(LogHolodeck, Warning, TEXT("ADDING IN REGULAR : %f"), c.CalcMs());
 
 		// PUT INTO MAP FOR CLUSTER
 		// TODO: Make a copy to search through, or add to 2 maps now?
@@ -197,29 +200,31 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				}
 			}
 		}
+		UE_LOG(LogHolodeck, Warning, TEXT("MAKE MAP : %f"), c.CalcMs());
 
 		// PUT THEM INTO CLUSTERS
 		mapSearch = TMap<FIntVector,Octree*>(mapLeaves);
-		int extra = 10;
+		int extra = 0;
 		while(mapSearch.Num() > 0){
 			// Get start of cluster
 			Octree* l = mapSearch.begin()->Value;
 			mapSearch.Remove(l->idx);
 			cluster.Add({l});
 
-			// Get anything that may be nearby
+			Get anything that may be nearby
 			for(int i=FGenericPlatformMath::Max(0,l->idx.X-extra); i<FGenericPlatformMath::Min(BinsRange,l->idx.X+extra+1); i++){
 				for(int j=FGenericPlatformMath::Max(0,l->idx.Y-extra); j<FGenericPlatformMath::Min(BinsAzimuth,l->idx.Y+extra+1); j++){
 					for(int k=FGenericPlatformMath::Max(0,l->idx.Z-extra); k<FGenericPlatformMath::Min(BinsElevation,l->idx.Z+extra+1); k++){
 						Octree** close = mapSearch.Find(FIntVector(i,j,k));
 						if(close != nullptr && FVector::DotProduct(l->normal, (*close)->normal) > 0.965){
-							cluster.Last().Add(*close);
+							cluster.Top().Add(*close);
 							mapSearch.Remove((*close)->idx);
 						}
 					}
 				}
 			}
 		}
+		UE_LOG(LogHolodeck, Warning, TEXT("CLUSTER THEM : %f"), c.CalcMs());
 
 		// MULTIPATH CONTRIBUTIONS
 		int step_size = RangeRes;
@@ -236,7 +241,7 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			FVector reflection = reflect(l->normal, l->normalImpact);
 			Octree stepper(l->loc, l->size);
 			Octree** hit = nullptr; 
-			FVector offset = reflection*10;
+			FVector offset = reflection*step_size*30;
 
 			// TODO: Replace this with real raytracing?
 			for(int j=0;j<iterations;j++){
@@ -244,8 +249,16 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				offset += reflection*step_size;
 				stepper.loc = l->loc + offset;
 
-				// make sure it's still in range
-				if(!inRange(&stepper)) break;
+				// make sure it's still in range (& compute spherical coordinates)
+				if(!inRange(&stepper)){
+					thisCluster.Empty();
+					return;
+				}
+
+				// Set the index values
+				stepper.idx.X = (int32)((stepper.locSpherical.X - MinRange) / RangeRes);
+				stepper.idx.Y = (int32)((stepper.locSpherical.Y - minAzimuth)/ AzimuthRes);
+				stepper.idx.Z = (int32)((stepper.locSpherical.Z - minElev)/ ElevRes);
 
 				// If there's something in that bin
 				hit = mapLeaves.Find(stepper.idx);
@@ -254,45 +267,47 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 					// make sure it's in the right direction
 					if(FVector::DotProduct(returnImpact, (*hit)->normalImpact) > 0) break;
 					else {
-						hit = nullptr;
-						break;
+						thisCluster.Empty();
+						return;
 					}
 				}
 			} 
 
+			if(hit == nullptr){
+				thisCluster.Empty();
+				return;
+			}
+
 			// If we did hit something, ray trace the rest of everything in the cluster
 			float t;
 			FVector locBounce, returnRay;
-			if(hit != nullptr){
-				for(Octree* m : thisCluster){
-					// find 2nd impact location
-					reflection = reflect(m->normalImpact, m->normal);
-					t = FVector::DotProduct((*hit)->loc - m->loc, (*hit)->normal) / (FVector::DotProduct(reflection, (*hit)->normal));
-					locBounce = m->loc + reflection*t;
+			for(Octree* m : thisCluster){
+				// find 2nd impact location
+				reflection = reflect(m->normal, m->normalImpact);
+				t = FVector::DotProduct((*hit)->loc - m->loc, (*hit)->normal) / (FVector::DotProduct(reflection, (*hit)->normal));
+				locBounce = m->loc + reflection*t;
 
-					// find return vector
-					// TODO: See if any change in accuracy in just using the hit version, should be pretty close angles
+				// find return vector
+				// TODO: See if any change in accuracy in just using the hit version, should be pretty close angles
 
-					// find ray return
-					returnRay = reflect((*hit)->normal, -reflection);
+				// find ray return
+				returnRay = reflect((*hit)->normal, -reflection);
 
-					// find spherical location
-					Octree bounce(locBounce, m->size);
-					inRange(&bounce);
-					bounce.locSpherical.X += m->locSpherical.X + FVector::Dist(bounce.loc, m->loc);
-					bounce.locSpherical.X /= 2;
+				// find spherical location
+				Octree bounce(locBounce, m->size);
+				inRange(&bounce);
+				bounce.locSpherical.X += m->locSpherical.X + FVector::Dist(bounce.loc, m->loc);
+				bounce.locSpherical.X /= 2;
 
-					// Convert to contribution index
-					m->idx.X = (int32)((bounce.locSpherical.X - MinRange) / RangeRes);
-					m->idx.Y = (int32)((bounce.locSpherical.Y - minAzimuth)/ AzimuthRes);
-					m->val = FVector::DotProduct(returnRay, (*hit)->normalImpact);
-				}
+				// Convert to contribution index
+				m->idx.X = (int32)((bounce.locSpherical.X - MinRange) / RangeRes);
+				m->idx.Y = (int32)((bounce.locSpherical.Y - minAzimuth)/ AzimuthRes);
+				m->val = FVector::DotProduct(returnRay, (*hit)->normalImpact);
+				// DrawDebugPoint(GetWorld(), m->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
+				// DrawDebugPoint(GetWorld(), bounce.loc, 5, FColor::Blue, false, DeltaTime*TicksPerCapture);
 			}
-			else{
-				thisCluster.Empty();
-			}
-
-		});
+		}, false);
+		UE_LOG(LogHolodeck, Warning, TEXT("MULTIPATH : %f"), c.CalcMs());
 
 		// ADD IN MULTIPATH CONTRIBUTIONS
 		for(TArray<Octree*>& bin : cluster){
@@ -307,7 +322,8 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			}
 		}
 
-
+		UE_LOG(LogHolodeck, Warning, TEXT("ADD IN MP CONTRI : %f"), c.CalcMs());
+		UE_LOG(LogHolodeck, Warning, TEXT("TOTAL : %f"), b.CalcMs());
 
 
 		// MOVE THEM INTO BUFFER
@@ -321,8 +337,6 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			}
 		}
 
-		b.End();
-		UE_LOG(LogHolodeck, Warning, TEXT("Took %f ms"), b.CalcMs());
 
 
 		// draw points inside our region
