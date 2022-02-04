@@ -214,11 +214,11 @@ void UHolodeckSonarSensor::leavesInRange(Octree* tree, TArray<Octree*>& rLeaves,
 			if(stopAt == Octree::OctreeMin){
 				// Compute contribution while we're parallelized
 				// If no contribution, we don't have to add it in
-				FVector normalImpact = GetComponentLocation() - tree->loc; 
-				normalImpact.Normalize();
+				tree->normalImpact = GetComponentLocation() - tree->loc; 
+				tree->normalImpact.Normalize();
 
 				// compute contribution
-				float val = FVector::DotProduct(tree->normal, normalImpact);
+				float val = FVector::DotProduct(tree->normal, tree->normalImpact);
 				if(val > 0){
 					tree->val = val;
 					rLeaves.Add(tree);

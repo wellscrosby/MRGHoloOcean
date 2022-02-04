@@ -81,6 +81,9 @@ private:
 
 	// Used to hold leafs when parallelized sorting/binning happens
 	TArray<TArray<Octree*>> sortedLeaves;
+	TMap<FIntVector,Octree*> mapLeaves;
+	TMap<FIntVector,Octree*> mapSearch;
+	TArray<TArray<Octree*>> cluster;
 	int32* count;
 	
 	// for adding noise

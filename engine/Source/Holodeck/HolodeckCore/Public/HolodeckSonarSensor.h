@@ -81,6 +81,9 @@ protected:
 	float minElev;
 	float maxElev;
 
+	bool inRange(Octree* tree);
+	void leavesInRange(Octree* tree, TArray<Octree*>& leafs, float stopAt);
+	
 private:
 	/*
 	 * Parent
@@ -106,6 +109,4 @@ private:
 	float sqrt2;
 	float sinOffset;
 
-	bool inRange(Octree* tree);
-	void leavesInRange(Octree* tree, TArray<Octree*>& leafs, float stopAt);
 };

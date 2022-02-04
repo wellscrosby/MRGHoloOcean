@@ -105,8 +105,9 @@ class Octree
         float sos = 1.0f; // speed of sound
 
         // Used during computations
-        // Value of Range, Elevation, and Azimuth in that order (in m/degrees/degrees).
+        // Value of Range, Elevation, and Azimuth in that order (in cm/degrees/degrees).
         FVector locSpherical;
+        FVector normalImpact;
         // Index of Range, Elevation, and Azimuth in that order.
         FIntVector idx;
         float val;
