@@ -204,14 +204,14 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 
 		// PUT THEM INTO CLUSTERS
 		mapSearch = TMap<FIntVector,Octree*>(mapLeaves);
-		int extra = 0;
+		int extra = 10;
 		while(mapSearch.Num() > 0){
 			// Get start of cluster
 			Octree* l = mapSearch.begin()->Value;
 			mapSearch.Remove(l->idx);
 			cluster.Add({l});
 
-			Get anything that may be nearby
+			// Get anything that may be nearby
 			for(int i=FGenericPlatformMath::Max(0,l->idx.X-extra); i<FGenericPlatformMath::Min(BinsRange,l->idx.X+extra+1); i++){
 				for(int j=FGenericPlatformMath::Max(0,l->idx.Y-extra); j<FGenericPlatformMath::Min(BinsAzimuth,l->idx.Y+extra+1); j++){
 					for(int k=FGenericPlatformMath::Max(0,l->idx.Z-extra); k<FGenericPlatformMath::Min(BinsElevation,l->idx.Z+extra+1); k++){
