@@ -103,7 +103,7 @@ private:
 	MultivariateNormal<1> rNoise;
 
 	// various computations we want to cache
-	float sqrt2;
+	float sqrt3_2;
 	float sinOffset;
 
 	bool inRange(Octree* tree);
