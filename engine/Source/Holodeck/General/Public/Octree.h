@@ -28,7 +28,7 @@ class Octree
         static FVector EnvMin;
         static FVector EnvMax;
         static UWorld* World;
-        static TMap<FString,FVector2D> materials;
+        static TMap<FString,float> materials;
 
         static FVector EnvCenter;
 
@@ -101,8 +101,8 @@ class Octree
         // Given to each leaf 
         FVector normal;
         FString material;
-        float density = 1.0f;
-        float sos = 1.0f; // speed of sound
+        // impedance
+        float z = 1.0f;
 
         // Used during computations
         // Value of Range, Elevation, and Azimuth in that order (in cm/degrees/degrees).

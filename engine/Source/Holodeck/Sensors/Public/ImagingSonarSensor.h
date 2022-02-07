@@ -92,4 +92,5 @@ private:
 
 	float density_water = 997;
 	float sos_water = 1480;
+	float z_water;
 };

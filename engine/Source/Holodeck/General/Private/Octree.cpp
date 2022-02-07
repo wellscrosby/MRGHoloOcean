@@ -30,7 +30,7 @@ FVector Octree::EnvMin;
 FVector Octree::EnvMax;
 FVector Octree::EnvCenter;
 UWorld* Octree::World;
-TMap<FString, FVector2D> Octree::materials;
+TMap<FString, float> Octree::materials;
 
 float sign(float val){
     bool s = signbit(val);
@@ -95,12 +95,12 @@ void Octree::initOctree(UWorld* w){
         FString key = stringArray[0];
         if(stringArray.Num() == 3){
             // density, speed of sound
-            FVector2D val = FVector2D(FCString::Atof(*stringArray[1]), FCString::Atof(*stringArray[2]));
-            materials.Add(key, val);
+            float z = FCString::Atof(*stringArray[1]) * FCString::Atof(*stringArray[2]);
+            materials.Add(key, z);
         }
         // if it's blank, assume full reflection
         else{
-            materials.Add(key, FVector2D(10000, 10000));
+            materials.Add(key, 1000000);
         }
 	}
 }
@@ -358,7 +358,7 @@ void Octree::unload(){
 
 void Octree::fillMaterialProperties(FString mat){
     material = mat;
-    FVector2D* matProp = materials.Find(material);
+    float* matProp = materials.Find(material);
     if(matProp == nullptr){
         UE_LOG(LogHolodeck, Warning, TEXT("Missing material information for %s, adding in blank row to csv"), *this->material);
 
@@ -368,10 +368,9 @@ void Octree::fillMaterialProperties(FString mat){
         FFileHelper::SaveStringToFile(line, *filePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
 
         // Default to something really high to get full reflection for this time
-        materials.Add(material, FVector2D(10000, 10000));
+        materials.Add(material, 10000000);
     }
     else{
-        density = matProp->X;
-        sos = matProp->Y;
+        z = *matProp;
     }
 }

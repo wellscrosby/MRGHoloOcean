@@ -70,6 +70,9 @@ void UImagingSonarSensor::ParseSensorParms(FString ParmsJson) {
 
 void UImagingSonarSensor::InitializeSensor() {
 	Super::InitializeSensor();
+
+	// Setup densities
+	z_water = density_water * sos_water;
 	
 	// Get size of each bin
 	RangeRes = (MaxRange - MinRange) / BinsRange;
@@ -144,18 +147,14 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			});
 
 			// Get the closest cluster in the bin
-			float diff, z_t, R;
-			float z_i = sos_water * density_water;
+			float diff;
 			Octree* jth;
 			FIntVector last_idx = FIntVector(0,0,0);
 			for(int j=0;j<binLeafs.Num()-1;j++){
 				jth = binLeafs.GetData()[j];
 				
 				jth->idx.X = (int32)((jth->locSpherical.X - MinRange) / RangeRes);
-				z_t = jth->sos * jth->density;
-				R = (z_t - z_i) / (z_t + z_i);
-
-				jth->val *= R;
+				jth->val *= (jth->z - z_water) / (jth->z + z_water);
 
 				// diff = FVector::Dist(jth->loc, binLeafs.GetData()[j+1]->loc);
 				diff = FMath::Abs(jth->locSpherical.X - binLeafs.GetData()[j+1]->locSpherical.X);
@@ -169,7 +168,7 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 		UE_LOG(LogHolodeck, Warning, TEXT("SHADOWING : %f"), c.CalcMs());
 
 		// ADD IN ALL CONTRIBUTIONS
-		int extraContr = 2;
+		int extraContr = 1;
 		for(TArray<Octree*>& bin : sortedLeaves){
 			for(Octree* l : bin){
 				for(int i=FGenericPlatformMath::Max(0,l->idx.X-extraContr); i<FGenericPlatformMath::Min(BinsRange,l->idx.X+extraContr+1); i++){
@@ -303,6 +302,9 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				m->idx.X = (int32)((bounce.locSpherical.X - MinRange) / RangeRes);
 				m->idx.Y = (int32)((bounce.locSpherical.Y - minAzimuth)/ AzimuthRes);
 				m->val = FVector::DotProduct(returnRay, (*hit)->normalImpact);
+				m->val *= (m->z - z_water) / (m->z + z_water);
+				m->val *= ((*hit)->z - z_water) / ((*hit)->z + z_water);
+
 				// DrawDebugPoint(GetWorld(), m->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
 				// DrawDebugPoint(GetWorld(), bounce.loc, 5, FColor::Blue, false, DeltaTime*TicksPerCapture);
 			}
