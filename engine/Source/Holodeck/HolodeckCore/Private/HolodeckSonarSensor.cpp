@@ -90,7 +90,7 @@ void UHolodeckSonarSensor::ParseSensorParms(FString ParmsJson) {
 	minElev = 90 - Elevation/2;
 	maxElev = 90 + Elevation/2;
 
-	sqrt2 = UKismetMathLibrary::Sqrt(2);
+	sqrt3_2 = UKismetMathLibrary::Sqrt(3) / 2;
 	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(Azimuth, Elevation)/2);
 }
 
@@ -182,7 +182,7 @@ bool UHolodeckSonarSensor::inRange(Octree* tree){
 	float offset = 0;
 	float radius = 0;
 	if(tree->size != Octree::OctreeMin){
-		radius = tree->size/sqrt2;
+		radius = tree->size*sqrt3_2;
 		offset = radius/sinOffset;
 		SensortoWorld.AddToTranslation( -this->GetForwardVector()*offset );
 	}
