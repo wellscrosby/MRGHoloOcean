@@ -150,16 +150,19 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			float diff;
 			Octree* jth;
 			FIntVector last_idx = FIntVector(0,0,0);
-			for(int j=0;j<binLeafs.Num()-1;j++){
+			for(int j=0;j<binLeafs.Num();j++){
 				jth = binLeafs.GetData()[j];
 				
 				jth->idx.X = (int32)((jth->locSpherical.X - MinRange) / RangeRes);
 				jth->val *= (jth->z - z_water) / (jth->z + z_water);
 
 				// diff = FVector::Dist(jth->loc, binLeafs.GetData()[j+1]->loc);
-				diff = FMath::Abs(jth->locSpherical.X - binLeafs.GetData()[j+1]->locSpherical.X);
-				if(diff > eps){
-					binLeafs.RemoveAt(j+1,binLeafs.Num()-j-1);
+				if(j != binLeafs.Num()-1){
+					diff = FMath::Abs(jth->locSpherical.X - binLeafs.GetData()[j+1]->locSpherical.X);
+					if(diff > eps){
+						binLeafs.RemoveAt(j+1,binLeafs.Num()-j-1);
+						break;
+					}
 				}
 			}
 
