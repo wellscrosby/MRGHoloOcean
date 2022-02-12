@@ -67,6 +67,12 @@ protected:
 	UPROPERTY(EditAnywhere)
 	int ViewOctree = -10;
 
+	UPROPERTY(EditAnywhere)
+	bool MultiPath = true;
+
+	UPROPERTY(EditAnywhere)
+	int32 ClusterSize = 5;
+
 private:
 	/*
 	 * Parent
@@ -75,6 +81,7 @@ private:
 	AActor* Parent;
 
 	// various computations we want to cache
+	int32 AzimuthBinScale = 1;
 	float RangeRes;
 	float AzimuthRes;
 	float ElevRes;
