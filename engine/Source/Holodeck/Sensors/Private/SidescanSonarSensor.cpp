@@ -20,10 +20,10 @@ void USidescanSonarSensor::BeginDestroy() {
 void USidescanSonarSensor::ParseSensorParms(FString ParmsJson) {
 
 	// Override the Parent Class defaults for some key parameters
-	MaxRange = 10 * 100; 	// 10 m (in cm)
+	MaxRange = 35 * 100; 	// 20 m (in cm)
 	MinRange = 0.1 * 100; 	// 0.1 m (in cm)
-	Azimuth = 130; 			// degrees
-	Elevation = 1;			// degrees
+	Azimuth = 160; 			// degrees
+	Elevation = 0.25;			// degrees
 
 	// Parse any parent class parameters that were provided in the configuration
 	Super::ParseSensorParms(ParmsJson);
@@ -72,7 +72,7 @@ void USidescanSonarSensor::ParseSensorParms(FString ParmsJson) {
 	}
 
 	if(BinsElevation == 0){
-		BinsElevation = Elevation*10;
+		BinsElevation = 10;
 	}
 }
 

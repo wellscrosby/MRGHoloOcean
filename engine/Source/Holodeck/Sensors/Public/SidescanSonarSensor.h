@@ -57,7 +57,7 @@ protected:
 	int32 BinsRange = 300;
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsAzimuth = 128;
+	int32 BinsAzimuth = 600;
 
 	// Elevation bins are used for shadowing, but ultimately no elevation information is retained in the output
 	UPROPERTY(EditAnywhere)
