@@ -67,6 +67,10 @@ void UImagingSonarSensor::ParseSensorParms(FString ParmsJson) {
 			ClusterSize = JsonParsed->GetIntegerField("ClusterSize");
 		}
 
+		if (JsonParsed->HasTypedField<EJson::Boolean>("SeperateMultiPath")) {
+			SeperateMultiPath = JsonParsed->GetBoolField("SeperateMultiPath");
+		}
+
 	}
 	else {
 		UE_LOG(LogHolodeck, Fatal, TEXT("UImagingSonarSensor::ParseSensorParms:: Unable to parse json."));
@@ -98,7 +102,7 @@ void UImagingSonarSensor::InitializeSensor() {
 	}
 
 	// setup count of each bin
-	count = new int32[BinsRange*BinsAzimuth]();
+	count = new int32[GetNumItems()]();
 
 	for(int i=0;i<BinsElevation*BinsAzimuth/AzimuthBinScale;i++){
 		sortedLeaves.Add(TArray<Octree*>());
@@ -122,8 +126,8 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 	if(TickCounter == 0){
 		// reset things and get ready
 		float* result = static_cast<float*>(Buffer);
-		std::fill(result, result+BinsRange*BinsAzimuth, 0);
-		std::fill(count, count+BinsRange*BinsAzimuth, 0);
+		std::fill(result, result+GetNumItems(), 0);
+		std::fill(count, count+GetNumItems(), 0);
 		
 		for(auto& sl: sortedLeaves){
 			sl.Reset();
@@ -168,7 +172,7 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			float diff;
 			float R;
 			Octree* jth;
-			for(int j=0;j<binLeafs.Num();j++){
+			for(int32 j=0;j<binLeafs.Num();j++){
 				jth = binLeafs.GetData()[j];
 				
 				jth->idx.X = (int32)((jth->locSpherical.X + rNoise.sampleFloat() - MinRange) / RangeRes);
@@ -196,6 +200,7 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				for(int i=FGenericPlatformMath::Max(0,l->idx.X-extraContr); i<FGenericPlatformMath::Min(BinsRange,l->idx.X+extraContr+1); i++){
 					for(int j=FGenericPlatformMath::Max(0,l->idx.Y-extraContr); j<FGenericPlatformMath::Min(BinsAzimuth,l->idx.Y+extraContr+1); j++){
 						idx = i*BinsAzimuth + j;
+						if(SeperateMultiPath) idx = idx*2;
 						result[idx] += l->val;
 						++count[idx];
 					}
@@ -248,8 +253,8 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			UE_LOG(LogHolodeck, Warning, TEXT("CLUSTER THEM : %f"), c.CalcMs());
 
 			// MULTIPATH CONTRIBUTIONS
-			float step_size = RangeRes;
-			int iterations = BinsRange;
+			float step_size = Octree::OctreeMin;
+			int iterations = MaxRange / Octree::OctreeMin;
 			FTransform SensortoWorld = this->GetComponentTransform();
 			std::function<FVector(FVector,FVector)> reflect;
 			reflect = [](FVector normal, FVector impact){
@@ -265,7 +270,7 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				FVector offset = reflection*step_size*30;
 
 				// TODO: Replace this with real raytracing?
-				for(int j=0;j<iterations;j++){
+				for(int32 j=0;j<iterations;j++){
 					// step
 					offset += reflection*step_size;
 					stepper.loc = l->loc + offset;
@@ -342,10 +347,10 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 					for(int i=FGenericPlatformMath::Max(0,l->idx.X-extraContr); i<FGenericPlatformMath::Min(BinsRange,l->idx.X+extraContr+1); i++){
 						for(int j=FGenericPlatformMath::Max(0,l->idx.Y-extraContr); j<FGenericPlatformMath::Min(BinsAzimuth,l->idx.Y+extraContr+1); j++){
 							idx = i*BinsAzimuth + j;
-							// if(result[idx] == 0){
-							// 	result[idx] = 2; //l->val;
-							// 	count[idx] = 1;
-							// }
+							if(SeperateMultiPath){ 
+								idx *= 2;
+								idx += 1;
+							}
 							result[idx] += l->val;
 							++count[idx];
 						}
@@ -359,18 +364,37 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 
 
 		// MOVE THEM INTO BUFFER
-		float scale;
+		float scale_range, scale_total, azimuth;
+		float std = Azimuth/32;
 		for (int i=0; i<BinsRange; i++) {
-			scale = i*RangeRes/MaxRange;
-			scale = scale*scale;
+			// Scale along range to recreate intensity dropoff
+			scale_range = i*RangeRes/MaxRange;
+			scale_range = scale_range*scale_range;
 			for(int j=0; j<BinsAzimuth; j++){
+				// Scale along azimuth to recreat lobe shape
+				azimuth = j*AzimuthRes - Azimuth/2;
+				scale_total = scale_range*(1 + FMath::Exp(-azimuth*azimuth/std)*0.75);
+
 				idx = i*BinsAzimuth + j;
+
+				// Only perturb the original image, not multipath if they're seperated
+				if(SeperateMultiPath) idx *=2;
+
+				// Normalize & perturb
 				if(count[idx] != 0){
 					result[idx] *= (0.75 + multNoise.sampleFloat())/count[idx];
-					result[idx] += addNoise.sampleRayleigh()*scale;
+					result[idx] += addNoise.sampleRayleigh()*scale_total;
 				}
 				else{
-					result[idx] = addNoise.sampleRayleigh()*scale;
+					result[idx] = addNoise.sampleRayleigh()*scale_total;
+				}
+
+				// Also normalize multipath image
+				if(SeperateMultiPath){
+					idx += 1;
+					if(count[idx] != 0){
+						result[idx] /= count[idx];
+					}
 				}
 			}
 		}

@@ -192,7 +192,7 @@ bool UHolodeckSonarSensor::inRange(Octree* tree){
 	FVector locLocal = SensortoWorld.GetRotation().UnrotateVector(tree->loc-SensortoWorld.GetTranslation());
 
 	// check if it's in range
-	tree->locSpherical.X = locLocal.Size() + rNoise.sampleFloat();
+	tree->locSpherical.X = locLocal.Size();
 	if(MinRange+offset-radius >= tree->locSpherical.X || tree->locSpherical.X >= MaxRange+offset+radius) return false; 
 
 	// check if azimuth is in

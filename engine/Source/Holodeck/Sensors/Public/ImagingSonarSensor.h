@@ -48,7 +48,7 @@ public:
 
 protected:
 	//See HolodeckSensor for the documentation of these overridden functions.
-	int GetNumItems() override { return BinsRange*BinsAzimuth; };
+	int GetNumItems() override { return SeperateMultiPath ? 2*BinsRange*BinsAzimuth : BinsRange*BinsAzimuth; };
 	int GetItemSize() override { return sizeof(float); };
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -72,6 +72,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	int32 ClusterSize = 5;
+
+	UPROPERTY(EditAnywhere)
+	bool SeperateMultiPath = false;
 
 private:
 	/*

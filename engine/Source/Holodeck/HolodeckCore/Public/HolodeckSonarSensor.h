@@ -84,6 +84,10 @@ protected:
 	bool inRange(Octree* tree);
 	void leavesInRange(Octree* tree, TArray<Octree*>& leafs, float stopAt);
 	
+	// for adding noise
+	MultivariateNormal<1> aziNoise;
+	MultivariateNormal<1> rNoise;
+	
 private:
 	/*
 	 * Parent
@@ -101,9 +105,6 @@ private:
 	// initialize + reserve vectors once
 	TArray<Octree*> bigLeaves;
 
-	// for adding noise
-	MultivariateNormal<1> aziNoise;
-	MultivariateNormal<1> rNoise;
 
 	// various computations we want to cache
 	float sqrt3_2;
