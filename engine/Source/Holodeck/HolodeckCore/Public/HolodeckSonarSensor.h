@@ -75,6 +75,14 @@ protected:
 	// use for skipping frames
 	int TickCounter = 0;
 
+	// holds our implementation of Octrees
+	Octree* octree = nullptr;
+	TArray<Octree*> agents;
+	void viewLeaves(Octree* tree);
+	
+	// initialize + reserve vectors once
+	TArray<Octree*> bigLeaves;
+
 	// various computations we want to cache
 	float minAzimuth;
 	float maxAzimuth;
@@ -88,15 +96,15 @@ private:
 	 */
 	AActor* Parent;
 
-	// holds our implementation of Octrees
-	Octree* octree = nullptr;
-	TArray<Octree*> agents;
-	void viewLeaves(Octree* tree);
+	// // holds our implementation of Octrees
+	// Octree* octree = nullptr;
+	// TArray<Octree*> agents;
+	// void viewLeaves(Octree* tree);
 
 	// What octrees we initally make
 	TArray<Octree*> toMake;
-	// initialize + reserve vectors once
-	TArray<Octree*> bigLeaves;
+	// // initialize + reserve vectors once
+	// TArray<Octree*> bigLeaves;
 
 	// for adding noise
 	MultivariateNormal<1> aziNoise;
