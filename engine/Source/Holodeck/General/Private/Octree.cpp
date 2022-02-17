@@ -187,6 +187,7 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, float octreeMin, FS
                 // Get physical material (not used very often)
                 // FString material = hit.PhysMaterial.Get()->GetFName().ToString();
                 // Get material (there is tons of these!)
+                // TODO: This breaks when trying to get a landscape material
                 FString mat = hit.GetComponent()->GetMaterial(hit.ElementIndex)->GetFName().ToString();
                 child->fillMaterialProperties(mat);
 

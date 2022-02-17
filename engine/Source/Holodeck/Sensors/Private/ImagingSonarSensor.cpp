@@ -38,6 +38,17 @@ void UImagingSonarSensor::ParseSensorParms(FString ParmsJson) {
 			multNoise.initCov(JsonParsed->GetNumberField("MultCov"));
 		}
 
+		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthSigma")) {
+			aziNoise.initSigma(JsonParsed->GetNumberField("AzimuthSigma"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthCov")) {
+			aziNoise.initCov(JsonParsed->GetNumberField("AzimuthCov"));
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("RangeSigma")) {
+			rNoise.initBounds(JsonParsed->GetNumberField("RangeSigma")*100);
+		}
+
+
 		if (JsonParsed->HasTypedField<EJson::Number>("BinsRange")) {
 			BinsRange = JsonParsed->GetIntegerField("BinsRange");
 		}
@@ -169,15 +180,16 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			});
 
 			// Get the closest cluster in the bin
-			float diff;
-			float R;
+			float diff, R, noise, pdf;
 			Octree* jth;
 			for(int32 j=0;j<binLeafs.Num();j++){
 				jth = binLeafs.GetData()[j];
 				
-				jth->idx.X = (int32)((jth->locSpherical.X + rNoise.sampleFloat() - MinRange) / RangeRes);
+				noise = rNoise.sampleExponential();
+				pdf = rNoise.exponentialScaledPDF(noise);
+				jth->idx.X = (int32)((jth->locSpherical.X + noise - MinRange) / RangeRes);
 				R = (jth->z - z_water) / (jth->z + z_water);
-				jth->val *= R*R;
+				jth->val *= R*R*pdf;
 
 				// diff = FVector::Dist(jth->loc, binLeafs.GetData()[j+1]->loc);
 				if(j != binLeafs.Num()-1){
@@ -215,9 +227,12 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			// TODO: Make a copy to search through, or add to 2 maps now?
 			for(TArray<Octree*>& binLeafs : sortedLeaves){
 				if(binLeafs.Num() > 0){
+					// Get first element in this azimuth, elevation bin (ie idx.Y and idx.Z are the same for all of these)
 					Octree* jth = binLeafs.GetData()[0];
 					mapLeaves.Add(jth->idx, jth);
 					int idxR = jth->idx.X;
+					// Iterate through only taking ones with different range idx (idx.X)
+					// Note that the bin is sorted from shadowing above.
 					for(int i=1;i<binLeafs.Num();i++){
 						jth = binLeafs.GetData()[i];
 						if(jth->idx.X != idxR){
@@ -305,7 +320,7 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				}
 
 				// If we did hit something, ray trace the rest of everything in the cluster
-				float t;
+				float t, noise, pdf;
 				FVector locBounce, returnRay;
 				for(Octree* m : thisCluster){
 					// find 2nd impact location
@@ -327,9 +342,11 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 					bounce.locSpherical.X /= 2;
 
 					// Convert to contribution index
-					m->idx.X = (int32)((bounce.locSpherical.X - MinRange) / RangeRes);
+					noise = rNoise.sampleExponential();
+					pdf = rNoise.exponentialScaledPDF(noise);
+					m->idx.X = (int32)((bounce.locSpherical.X + noise - MinRange) / RangeRes);
 					m->idx.Y = (int32)((bounce.locSpherical.Y - minAzimuth)/ AzimuthRes);
-					m->val = FVector::DotProduct(returnRay, (*hit)->normalImpact);
+					m->val = FVector::DotProduct(returnRay, (*hit)->normalImpact) * pdf;
 					m->val *= (m->z - z_water) / (m->z + z_water);
 					m->val *= (m->z - z_water) / (m->z + z_water);
 					m->val *= ((*hit)->z - z_water) / ((*hit)->z + z_water);
@@ -365,7 +382,7 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 
 		// MOVE THEM INTO BUFFER
 		float scale_range, scale_total, azimuth;
-		float std = Azimuth/32;
+		float std = Azimuth/64;
 		for (int i=0; i<BinsRange; i++) {
 			// Scale along range to recreate intensity dropoff
 			scale_range = i*RangeRes/MaxRange;
@@ -373,7 +390,7 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			for(int j=0; j<BinsAzimuth; j++){
 				// Scale along azimuth to recreat lobe shape
 				azimuth = j*AzimuthRes - Azimuth/2;
-				scale_total = scale_range*(1 + FMath::Exp(-azimuth*azimuth/std)*0.75);
+				scale_total = scale_range*(1 + FMath::Exp(-azimuth*azimuth/std)*0.5);
 
 				idx = i*BinsAzimuth + j;
 
@@ -382,7 +399,7 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 
 				// Normalize & perturb
 				if(count[idx] != 0){
-					result[idx] *= (0.75 + multNoise.sampleFloat())/count[idx];
+					result[idx] *= (0.5 + multNoise.sampleFloat())/count[idx];
 					result[idx] += addNoise.sampleRayleigh()*scale_total;
 				}
 				else{

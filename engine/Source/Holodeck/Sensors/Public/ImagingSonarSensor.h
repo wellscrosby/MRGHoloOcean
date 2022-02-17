@@ -10,6 +10,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Async/ParallelFor.h"
 #include "MultivariateNormal.h"
+#include "MultivariateUniform.h"
 
 #include "Json.h"
 
@@ -99,6 +100,8 @@ private:
 	// for adding noise
 	MultivariateNormal<1> addNoise;
 	MultivariateNormal<1> multNoise;
+	MultivariateNormal<1> aziNoise;
+	MultivariateUniform<1> rNoise;
 
 	float density_water = 997;
 	float sos_water = 1480;

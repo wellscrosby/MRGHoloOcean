@@ -39,20 +39,6 @@ void UHolodeckSonarSensor::ParseSensorParms(FString ParmsJson) {
 	TSharedPtr<FJsonObject> JsonParsed;
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ParmsJson);
 	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
-		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthSigma")) {
-			aziNoise.initSigma(JsonParsed->GetNumberField("AzimuthSigma"));
-		}
-		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthCov")) {
-			aziNoise.initCov(JsonParsed->GetNumberField("AzimuthCov"));
-		}
-		if (JsonParsed->HasTypedField<EJson::Number>("RangeSigma")) {
-			rNoise.initSigma(JsonParsed->GetNumberField("RangeSigma")*100);
-		}
-		if (JsonParsed->HasTypedField<EJson::Number>("RangeCov")) {
-			rNoise.initCov(JsonParsed->GetNumberField("RangeCov")*100*100);
-		}
-
-
 		if (JsonParsed->HasTypedField<EJson::Number>("MaxRange")) {
 			MaxRange = JsonParsed->GetNumberField("MaxRange")*100;
 		}
@@ -196,7 +182,7 @@ bool UHolodeckSonarSensor::inRange(Octree* tree){
 	if(MinRange+offset-radius >= tree->locSpherical.X || tree->locSpherical.X >= MaxRange+offset+radius) return false; 
 
 	// check if azimuth is in
-	tree->locSpherical.Y = ATan2Approx(-locLocal.Y, locLocal.X) + aziNoise.sampleFloat();
+	tree->locSpherical.Y = ATan2Approx(-locLocal.Y, locLocal.X);
 	if(minAzimuth >= tree->locSpherical.Y || tree->locSpherical.Y >= maxAzimuth) return false;
 
 	// check if elevation is in

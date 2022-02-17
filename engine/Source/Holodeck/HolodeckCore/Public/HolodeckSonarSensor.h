@@ -9,7 +9,6 @@
 #include "Octree.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Async/ParallelFor.h"
-#include "MultivariateNormal.h"
 
 #include "HolodeckSonarSensor.generated.h"
 
@@ -83,10 +82,6 @@ protected:
 
 	bool inRange(Octree* tree);
 	void leavesInRange(Octree* tree, TArray<Octree*>& leafs, float stopAt);
-	
-	// for adding noise
-	MultivariateNormal<1> aziNoise;
-	MultivariateNormal<1> rNoise;
 	
 private:
 	/*
