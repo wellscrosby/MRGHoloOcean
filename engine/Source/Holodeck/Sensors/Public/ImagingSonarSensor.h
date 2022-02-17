@@ -12,6 +12,7 @@
 #include "MultivariateNormal.h"
 #include "MultivariateUniform.h"
 
+#include <numeric>
 #include "Json.h"
 
 #include "ImagingSonarSensor.generated.h"
@@ -89,6 +90,7 @@ private:
 	float RangeRes;
 	float AzimuthRes;
 	float ElevRes;
+	float perfectCos;
 
 	// Used to hold leafs when parallelized sorting/binning happens
 	TArray<TArray<Octree*>> sortedLeaves;
@@ -96,6 +98,7 @@ private:
 	TMap<FIntVector,Octree*> mapSearch;
 	TArray<TArray<Octree*>> cluster;
 	int32* count;
+	int32* hasPerfectNormal;
 	
 	// for adding noise
 	MultivariateNormal<1> addNoise;

@@ -14,6 +14,7 @@ void UImagingSonarSensor::BeginDestroy() {
 	Super::BeginDestroy();
 
 	delete[] count;
+	delete[] hasPerfectNormal;
 }
 
 // Allows sensor parameters to be set programmatically from client.
@@ -114,7 +115,10 @@ void UImagingSonarSensor::InitializeSensor() {
 
 	// setup count of each bin
 	count = new int32[GetNumItems()]();
+	hasPerfectNormal = new int32[BinsAzimuth*BinsRange]();
 
+	// Define a perfect reflection
+	perfectCos = UKismetMathLibrary::DegCos(8);
 	for(int i=0;i<BinsElevation*BinsAzimuth/AzimuthBinScale;i++){
 		sortedLeaves.Add(TArray<Octree*>());
 		sortedLeaves[i].Reserve(10000);
@@ -139,6 +143,7 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 		float* result = static_cast<float*>(Buffer);
 		std::fill(result, result+GetNumItems(), 0);
 		std::fill(count, count+GetNumItems(), 0);
+		std::fill(hasPerfectNormal, hasPerfectNormal+GetNumItems(), 0);
 		
 		for(auto& sl: sortedLeaves){
 			sl.Reset();
@@ -189,7 +194,8 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				pdf = rNoise.exponentialScaledPDF(noise);
 				jth->idx.X = (int32)((jth->locSpherical.X + noise - MinRange) / RangeRes);
 				R = (jth->z - z_water) / (jth->z + z_water);
-				jth->val *= R*R*pdf;
+				jth->val = R*R*pdf*jth->cos;
+
 
 				// diff = FVector::Dist(jth->loc, binLeafs.GetData()[j+1]->loc);
 				if(j != binLeafs.Num()-1){
@@ -212,7 +218,11 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				for(int i=FGenericPlatformMath::Max(0,l->idx.X-extraContr); i<FGenericPlatformMath::Min(BinsRange,l->idx.X+extraContr+1); i++){
 					for(int j=FGenericPlatformMath::Max(0,l->idx.Y-extraContr); j<FGenericPlatformMath::Min(BinsAzimuth,l->idx.Y+extraContr+1); j++){
 						idx = i*BinsAzimuth + j;
+						if(l->cos > perfectCos) hasPerfectNormal[idx] += 1;
+
+						// offset as needed for seperate images
 						if(SeperateMultiPath) idx = idx*2;
+
 						result[idx] += l->val;
 						++count[idx];
 					}
@@ -320,7 +330,7 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				}
 
 				// If we did hit something, ray trace the rest of everything in the cluster
-				float t, noise, pdf;
+				float t, noise, pdf, R1, R2;
 				FVector locBounce, returnRay;
 				for(Octree* m : thisCluster){
 					// find 2nd impact location
@@ -346,11 +356,10 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 					pdf = rNoise.exponentialScaledPDF(noise);
 					m->idx.X = (int32)((bounce.locSpherical.X + noise - MinRange) / RangeRes);
 					m->idx.Y = (int32)((bounce.locSpherical.Y - minAzimuth)/ AzimuthRes);
-					m->val = FVector::DotProduct(returnRay, (*hit)->normalImpact) * pdf;
-					m->val *= (m->z - z_water) / (m->z + z_water);
-					m->val *= (m->z - z_water) / (m->z + z_water);
-					m->val *= ((*hit)->z - z_water) / ((*hit)->z + z_water);
-					m->val *= ((*hit)->z - z_water) / ((*hit)->z + z_water);
+					m->cos = FVector::DotProduct(returnRay, (*hit)->normalImpact);
+					R1 = (m->z - z_water) / (m->z + z_water);
+					R2 = ((*hit)->z - z_water) / ((*hit)->z + z_water);
+					m->val = R1*R1*R2*R2*m->cos*pdf;
 
 					// DrawDebugPoint(GetWorld(), m->loc, 3, FColor::Red, false, DeltaTime*TicksPerCapture);
 					// DrawDebugPoint(GetWorld(), bounce.loc, 3, FColor::Blue, false, DeltaTime*TicksPerCapture);
@@ -377,7 +386,6 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			UE_LOG(LogHolodeck, Warning, TEXT("ADD IN MP CONTRI : %f"), c.CalcMs());
 		}
 		UE_LOG(LogHolodeck, Warning, TEXT("TOTAL : %f"), b.CalcMs());
-		UE_LOG(LogHolodeck, Warning, TEXT("RangeRes : %f"), RangeRes);
 
 
 		// MOVE THEM INTO BUFFER
@@ -416,14 +424,31 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			}
 		}
 
+		// CHECK IF ROWS HAVE BANDING ISSUES
+		int numToBand = 200;
+		int sumPerfect;
+		for(int i=0; i<BinsRange; i++){
+			// Count how many in that row have dead on normals
+			sumPerfect = std::accumulate(hasPerfectNormal+i*BinsAzimuth, hasPerfectNormal+(i+1)*BinsAzimuth, 0);
+			UE_LOG(LogHolodeck, Warning, TEXT("Sum Perfect %d %d"), i, sumPerfect);
+			// If there's enough, give them to us
+			if(sumPerfect >= numToBand){
+				for(int j=0; j<BinsAzimuth; j++){
+					idx = i*BinsAzimuth + j;
+					result[idx] = result[idx]*result[idx];
+				}
+			}
+		}
+
 
 
 		// draw points inside our region
 		if(ViewOctree >= -1){
 			for( TArray<Octree*> bins : sortedLeaves){
 				for( Octree* l : bins){
-					if(ViewOctree == -1 || ViewOctree == l->idx.Y)
+					if(ViewOctree == -1 || ViewOctree == l->idx.Y){
 						DrawDebugPoint(GetWorld(), l->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
+					}
 				}
 			}
 		}

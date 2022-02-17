@@ -204,9 +204,9 @@ void UHolodeckSonarSensor::leavesInRange(Octree* tree, TArray<Octree*>& rLeaves,
 				tree->normalImpact.Normalize();
 
 				// compute contribution
-				float val = FVector::DotProduct(tree->normal, tree->normalImpact);
-				if(val > 0){
-					tree->val = val;
+				float cos = FVector::DotProduct(tree->normal, tree->normalImpact);
+				if(cos > 0){
+					tree->cos = cos;
 					rLeaves.Add(tree);
 				} 
 			}

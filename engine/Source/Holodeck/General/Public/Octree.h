@@ -110,5 +110,7 @@ class Octree
         FVector normalImpact;
         // Index of Range, Elevation, and Azimuth in that order.
         FIntVector idx;
+        // Holds cos of angle, and value to put in
+        float cos;
         float val;
 };
