@@ -39,7 +39,7 @@ public:
         uncertain = true;
     }
     void initBounds(TArray<TSharedPtr<FJsonValue>> max_){
-        verifyf(max_.Num() == N, TEXT("Sigma has size %d and should be %d"), sigma.Num(), N);
+        verifyf(max_.Num() == N, TEXT("Sigma has size %d and should be %d"), max_.Num(), N);
         
         for(int i=0;i<N;i++){
             max[i] = max_[i]->AsNumber();
