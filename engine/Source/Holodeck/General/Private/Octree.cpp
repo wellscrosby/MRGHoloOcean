@@ -142,7 +142,7 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, float octreeMin, FS
     FHitResult hit = FHitResult();
     bool occup;
     if(octreeSize == Octree::OctreeMin || actorName != ""){
-        occup = World->SweepSingleByChannel(hit, center, center, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, FCollisionShape::MakeBox(FVector(octreeSize/2)), params);
+        occup = World->SweepSingleByChannel(hit, center, center+FVector(0.01, 0.01, 0.01), FQuat::Identity, ECollisionChannel::ECC_WorldStatic, FCollisionShape::MakeBox(FVector(octreeSize/2)), params);
     }
     else{
         occup = World->OverlapBlockingTestByChannel(center, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, FCollisionShape::MakeBox(FVector(octreeSize/2)), params);
@@ -187,8 +187,8 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, float octreeMin, FS
                 // Get physical material (not used very often)
                 // FString material = hit.PhysMaterial.Get()->GetFName().ToString();
                 // Get material (there is tons of these!)
-                FString mat = hit.GetComponent()->GetMaterial(hit.ElementIndex)->GetFName().ToString();
-                child->fillMaterialProperties(mat);
+                // FString mat = hit.GetComponent()->GetMaterial(hit.ElementIndex)->GetFName().ToString();
+                child->fillMaterialProperties("test");
 
                 // clean normal
                 if(isnan(child->normal.X)) child->normal.X = sign(child->normal.X); 

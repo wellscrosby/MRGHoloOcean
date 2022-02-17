@@ -71,9 +71,17 @@ void USidescanSonarSensor::ParseSensorParms(FString ParmsJson) {
 		UE_LOG(LogHolodeck, Fatal, TEXT("USidescanSonarSensor::ParseSensorParms:: Unable to parse json."));
 	}
 
-	if(BinsElevation == 0){
-		BinsElevation = 10;
+	float dist = (MaxRange - MinRange) / 8 + MinRange;
+	BinsElevation = (dist * Elevation * Pi / 180) / Octree::OctreeMin;
+
+	if (BinsElevation < 1)
+	{
+		BinsElevation = 1;
 	}
+	// ElevRes = Elevation / BinsElevation
+	// if(BinsElevation == 0){
+	// 	BinsElevation = 10;
+	// }
 }
 
 void USidescanSonarSensor::InitializeSensor() {
