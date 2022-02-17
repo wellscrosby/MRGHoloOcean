@@ -70,13 +70,16 @@ protected:
 	int ViewOctree = -10;
 
 	UPROPERTY(EditAnywhere)
-	bool MultiPath = true;
+	bool MultiPath = false;
 
 	UPROPERTY(EditAnywhere)
 	int32 ClusterSize = 5;
 
 	UPROPERTY(EditAnywhere)
 	bool SeperateMultiPath = false;
+
+	UPROPERTY(EditAnywhere)
+	int32 AzimuthStreaks = 0;
 
 private:
 	/*

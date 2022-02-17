@@ -83,6 +83,10 @@ void UImagingSonarSensor::ParseSensorParms(FString ParmsJson) {
 			SeperateMultiPath = JsonParsed->GetBoolField("SeperateMultiPath");
 		}
 
+		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthStreaks")) {
+			AzimuthStreaks = JsonParsed->GetIntegerField("AzimuthStreaks");
+		}
+
 	}
 	else {
 		UE_LOG(LogHolodeck, Fatal, TEXT("UImagingSonarSensor::ParseSensorParms:: Unable to parse json."));
@@ -212,21 +216,16 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 		UE_LOG(LogHolodeck, Warning, TEXT("SHADOWING : %f"), c.CalcMs());
 
 		// ADD IN ALL CONTRIBUTIONS
-		int extraContr = 0;
 		for(TArray<Octree*>& bin : sortedLeaves){
 			for(Octree* l : bin){
-				for(int i=FGenericPlatformMath::Max(0,l->idx.X-extraContr); i<FGenericPlatformMath::Min(BinsRange,l->idx.X+extraContr+1); i++){
-					for(int j=FGenericPlatformMath::Max(0,l->idx.Y-extraContr); j<FGenericPlatformMath::Min(BinsAzimuth,l->idx.Y+extraContr+1); j++){
-						idx = i*BinsAzimuth + j;
-						if(l->cos > perfectCos) hasPerfectNormal[idx] += 1;
+				idx = l->idx.X*BinsAzimuth + l->idx.Y;
+				if(l->cos > perfectCos) hasPerfectNormal[idx] += 1;
 
-						// offset as needed for seperate images
-						if(SeperateMultiPath) idx = idx*2;
+				// offset as needed for seperate images
+				if(SeperateMultiPath) idx = idx*2;
 
-						result[idx] += l->val;
-						++count[idx];
-					}
-				}
+				result[idx] += l->val;
+				++count[idx];
 			}
 		}
 
@@ -361,6 +360,12 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 					R2 = ((*hit)->z - z_water) / ((*hit)->z + z_water);
 					m->val = R1*R1*R2*R2*m->cos*pdf;
 
+					// TODO: There's a bug this is working around, find it and fix it
+					if(m->idx.X < 0) m->idx.X = 0;
+					if(m->idx.X > BinsRange) m->idx.X = BinsRange-1;
+					if(m->idx.Y < 0) m->idx.Y = 0;
+					if(m->idx.Y > BinsAzimuth) m->idx.Y = BinsAzimuth-1;
+
 					// DrawDebugPoint(GetWorld(), m->loc, 3, FColor::Red, false, DeltaTime*TicksPerCapture);
 					// DrawDebugPoint(GetWorld(), bounce.loc, 3, FColor::Blue, false, DeltaTime*TicksPerCapture);
 				}
@@ -370,17 +375,13 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			// ADD IN MULTIPATH CONTRIBUTIONS
 			for(TArray<Octree*>& bin : cluster){
 				for(Octree* l : bin){
-					for(int i=FGenericPlatformMath::Max(0,l->idx.X-extraContr); i<FGenericPlatformMath::Min(BinsRange,l->idx.X+extraContr+1); i++){
-						for(int j=FGenericPlatformMath::Max(0,l->idx.Y-extraContr); j<FGenericPlatformMath::Min(BinsAzimuth,l->idx.Y+extraContr+1); j++){
-							idx = i*BinsAzimuth + j;
-							if(SeperateMultiPath){ 
-								idx *= 2;
-								idx += 1;
-							}
-							result[idx] += l->val;
-							++count[idx];
-						}
+					idx = l->idx.X*BinsAzimuth + l->idx.Y;
+					if(SeperateMultiPath){ 
+						idx *= 2;
+						idx += 1;
 					}
+					result[idx] += l->val;
+					++count[idx];
 				}
 			}
 			UE_LOG(LogHolodeck, Warning, TEXT("ADD IN MP CONTRI : %f"), c.CalcMs());
@@ -424,18 +425,31 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			}
 		}
 
-		// CHECK IF ROWS HAVE BANDING ISSUES
-		int numToBand = 200;
-		int sumPerfect;
-		for(int i=0; i<BinsRange; i++){
-			// Count how many in that row have dead on normals
-			sumPerfect = std::accumulate(hasPerfectNormal+i*BinsAzimuth, hasPerfectNormal+(i+1)*BinsAzimuth, 0);
-			UE_LOG(LogHolodeck, Warning, TEXT("Sum Perfect %d %d"), i, sumPerfect);
-			// If there's enough, give them to us
-			if(sumPerfect >= numToBand){
-				for(int j=0; j<BinsAzimuth; j++){
-					idx = i*BinsAzimuth + j;
-					result[idx] = result[idx]*result[idx];
+		// CHECK IF ROWS HAVE STREAKING ISSUES
+		if(AzimuthStreaks == -1 || AzimuthStreaks == 1){
+			float percToBand = 0.08;
+			float avgPerfect;
+			int numPerfect, numTotal;
+			for(int i=0; i<BinsRange; i++){
+				// Count how many in that row have dead on normals
+				numPerfect = std::accumulate(hasPerfectNormal+i*BinsAzimuth, hasPerfectNormal+(i+1)*BinsAzimuth, 0);
+				numTotal = std::accumulate(count+i*BinsAzimuth, count+(i+1)*BinsAzimuth, 0);
+				avgPerfect = numTotal == 0 ? 0 : (float)numPerfect / (float)numTotal;  
+				UE_LOG(LogHolodeck, Warning, TEXT("Avg Perfect %d, %d, %d, %f"), i, numPerfect, numTotal, avgPerfect);
+
+				// If there's enough, shallow out those bounds
+				if(avgPerfect >= percToBand){
+					for(int j=0; j<BinsAzimuth; j++){
+						idx = i*BinsAzimuth + j;
+						// Attempts to remove streak
+						if(AzimuthStreaks == -1){
+							result[idx] = result[idx]*result[idx];
+						}
+						// Adding in streak
+						else if(AzimuthStreaks == 1){
+							result[idx] = 1 - (1- result[idx])*(1- result[idx]);
+						}
+					}
 				}
 			}
 		}
