@@ -79,8 +79,8 @@ void UImagingSonarSensor::ParseSensorParms(FString ParmsJson) {
 			ClusterSize = JsonParsed->GetIntegerField("ClusterSize");
 		}
 
-		if (JsonParsed->HasTypedField<EJson::Boolean>("SeperateNoise")) {
-			SeperateNoise = JsonParsed->GetBoolField("SeperateNoise");
+		if (JsonParsed->HasTypedField<EJson::Boolean>("ScaleNoise")) {
+			ScaleNoise = JsonParsed->GetBoolField("ScaleNoise");
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthStreaks")) {
@@ -197,9 +197,12 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				noise = rNoise.sampleExponential();
 				pdf = rNoise.exponentialScaledPDF(noise);
 				jth->idx.X = (int32)((jth->locSpherical.X + noise - MinRange) / RangeRes);
+
+				// In case our noise has pushed us out of range
+				if(jth->idx.X >= BinsRange) jth->idx.X = BinsRange-1;
+
 				R = (jth->z - z_water) / (jth->z + z_water);
 				jth->val = R*R*pdf*jth->cos;
-
 
 				// diff = FVector::Dist(jth->loc, binLeafs.GetData()[j+1]->loc);
 				if(j != binLeafs.Num()-1){
@@ -221,22 +224,8 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				idx = l->idx.X*BinsAzimuth + l->idx.Y;
 				if(l->cos > perfectCos) hasPerfectNormal[idx] += 1;
 
-				// offset as needed for seperate images
-				if(SeperateNoise){
-					idx = idx*2;
-					result[idx] += l->val;
-					++count[idx];
-					// These will be in both images
-					idx += 1;
-					result[idx] += l->val;
-					++count[idx];
-				} 
-				else{
-					result[idx] += l->val;
-					++count[idx];
-				}
-
-				
+				result[idx] += l->val;
+				++count[idx];
 			}
 		}
 
@@ -387,7 +376,6 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			for(TArray<Octree*>& bin : cluster){
 				for(Octree* l : bin){
 					idx = l->idx.X*BinsAzimuth + l->idx.Y;
-					if(SeperateNoise) idx *= 2;
 
 					result[idx] += l->val;
 					++count[idx];
@@ -410,10 +398,9 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				azimuth = j*AzimuthRes - Azimuth/2;
 				scale_total = scale_range*(1 + FMath::Exp(-azimuth*azimuth/std)*0.5);
 
-				idx = i*BinsAzimuth + j;
+				if(!ScaleNoise) scale_total = 1;
 
-				// Only perturb the first image, not the clean one if they're seperated
-				if(SeperateNoise) idx *=2;
+				idx = i*BinsAzimuth + j;
 
 				// Normalize & perturb
 				if(count[idx] != 0){
@@ -422,14 +409,6 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				}
 				else{
 					result[idx] = addNoise.sampleRayleigh()*scale_total;
-				}
-
-				// Also normalize clean image
-				if(SeperateNoise){
-					idx += 1;
-					if(count[idx] != 0){
-						result[idx] /= count[idx];
-					}
 				}
 			}
 		}
@@ -450,7 +429,6 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				if(avgPerfect >= percToBand){
 					for(int j=0; j<BinsAzimuth; j++){
 						idx = i*BinsAzimuth + j;
-						if(SeperateNoise) idx *=2;
 
 						// Attempts to remove streak
 						if(AzimuthStreaks == -1){
