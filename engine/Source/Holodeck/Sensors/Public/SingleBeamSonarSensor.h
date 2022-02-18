@@ -48,7 +48,7 @@ public:
 
 protected:
 	//See HolodeckSensor for the documentation of these overridden functions.
-	int GetNumItems() override { return BinsRange*BinsAzimuth; };
+	int GetNumItems() override { return BinsRange; };
 	int GetItemSize() override { return sizeof(float); };
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -59,10 +59,10 @@ protected:
 	int32 BinsRange = 300;
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsAzimuth = 1; 
+	int32 BinsAzimuth = 3; 
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsElevation = 1; 
+	int32 BinsElevation = 3; 
 
 	UPROPERTY(EditAnywhere)
 	bool ViewRegion = false;
