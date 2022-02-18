@@ -79,8 +79,8 @@ void UImagingSonarSensor::ParseSensorParms(FString ParmsJson) {
 			ClusterSize = JsonParsed->GetIntegerField("ClusterSize");
 		}
 
-		if (JsonParsed->HasTypedField<EJson::Boolean>("SeperateMultiPath")) {
-			SeperateMultiPath = JsonParsed->GetBoolField("SeperateMultiPath");
+		if (JsonParsed->HasTypedField<EJson::Boolean>("SeperateNoise")) {
+			SeperateNoise = JsonParsed->GetBoolField("SeperateNoise");
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthStreaks")) {
@@ -147,7 +147,7 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 		float* result = static_cast<float*>(Buffer);
 		std::fill(result, result+GetNumItems(), 0);
 		std::fill(count, count+GetNumItems(), 0);
-		std::fill(hasPerfectNormal, hasPerfectNormal+GetNumItems(), 0);
+		std::fill(hasPerfectNormal, hasPerfectNormal+BinsAzimuth*BinsRange, 0);
 		
 		for(auto& sl: sortedLeaves){
 			sl.Reset();
@@ -222,10 +222,21 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				if(l->cos > perfectCos) hasPerfectNormal[idx] += 1;
 
 				// offset as needed for seperate images
-				if(SeperateMultiPath) idx = idx*2;
+				if(SeperateNoise){
+					idx = idx*2;
+					result[idx] += l->val;
+					++count[idx];
+					// These will be in both images
+					idx += 1;
+					result[idx] += l->val;
+					++count[idx];
+				} 
+				else{
+					result[idx] += l->val;
+					++count[idx];
+				}
 
-				result[idx] += l->val;
-				++count[idx];
+				
 			}
 		}
 
@@ -376,10 +387,8 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			for(TArray<Octree*>& bin : cluster){
 				for(Octree* l : bin){
 					idx = l->idx.X*BinsAzimuth + l->idx.Y;
-					if(SeperateMultiPath){ 
-						idx *= 2;
-						idx += 1;
-					}
+					if(SeperateNoise) idx *= 2;
+
 					result[idx] += l->val;
 					++count[idx];
 				}
@@ -403,8 +412,8 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 
 				idx = i*BinsAzimuth + j;
 
-				// Only perturb the original image, not multipath if they're seperated
-				if(SeperateMultiPath) idx *=2;
+				// Only perturb the first image, not the clean one if they're seperated
+				if(SeperateNoise) idx *=2;
 
 				// Normalize & perturb
 				if(count[idx] != 0){
@@ -415,8 +424,8 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 					result[idx] = addNoise.sampleRayleigh()*scale_total;
 				}
 
-				// Also normalize multipath image
-				if(SeperateMultiPath){
+				// Also normalize clean image
+				if(SeperateNoise){
 					idx += 1;
 					if(count[idx] != 0){
 						result[idx] /= count[idx];
@@ -435,12 +444,14 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				numPerfect = std::accumulate(hasPerfectNormal+i*BinsAzimuth, hasPerfectNormal+(i+1)*BinsAzimuth, 0);
 				numTotal = std::accumulate(count+i*BinsAzimuth, count+(i+1)*BinsAzimuth, 0);
 				avgPerfect = numTotal == 0 ? 0 : (float)numPerfect / (float)numTotal;  
-				UE_LOG(LogHolodeck, Warning, TEXT("Avg Perfect %d, %d, %d, %f"), i, numPerfect, numTotal, avgPerfect);
+				// UE_LOG(LogHolodeck, Warning, TEXT("Avg Perfect %d, %d, %d, %f"), i, numPerfect, numTotal, avgPerfect);
 
 				// If there's enough, shallow out those bounds
 				if(avgPerfect >= percToBand){
 					for(int j=0; j<BinsAzimuth; j++){
 						idx = i*BinsAzimuth + j;
+						if(SeperateNoise) idx *=2;
+
 						// Attempts to remove streak
 						if(AzimuthStreaks == -1){
 							result[idx] = result[idx]*result[idx];
