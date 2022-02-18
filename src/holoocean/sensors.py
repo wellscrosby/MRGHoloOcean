@@ -706,15 +706,11 @@ class SingleBeamSonarSensor(HoloOceanSensor):
         self.config = {} if config is None else config
 
         b_range   = 300
-        b_azimuth = 6
 
         if "BinsRange" in self.config:
             b_range = self.config["BinsRange"]
 
-        if "BinsAzimuth" in self.config:
-            b_azimuth = self.config["BinsAzimuth"]
-
-        self.shape = (b_range, b_azimuth)
+        self.shape = [b_range]
 
         super(SingleBeamSonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
