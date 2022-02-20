@@ -59,10 +59,10 @@ protected:
 	int32 BinsRange = 300;
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsAzimuth = 3; 
+	int32 BinsAzimuth = 12; 
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsElevation = 3; 
+	int32 BinsElevation = 5; 
 
 	UPROPERTY(EditAnywhere)
 	bool ViewRegion = false;

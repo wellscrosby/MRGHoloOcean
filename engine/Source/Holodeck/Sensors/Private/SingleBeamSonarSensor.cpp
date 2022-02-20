@@ -27,7 +27,15 @@ void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 	MaxRange = 20;
 
 	Elevation = 5;
-	BinsRange = 300;
+	BinsRange = 100;
+
+	Azimuth = 360;
+	Elevation =30;
+	BinsAzimuth = 2;
+	BinsElevation = 2;
+
+	minAzimuth = -180;
+	maxAzimuth = 180;
 
 	Super::ParseSensorParms(ParmsJson);
 
@@ -48,19 +56,30 @@ void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 		if (JsonParsed->HasTypedField<EJson::Number>("MultCov")) {
 			multNoise.initCov(JsonParsed->GetNumberField("MultCov"));
 		}
-
 		if (JsonParsed->HasTypedField<EJson::Number>("BinsRange")) {
 			BinsRange = JsonParsed->GetIntegerField("BinsRange");
+		} 	
+		if (JsonParsed->HasTypedField<EJson::Number>("BinsElevation")) {
+			BinsElevation = JsonParsed->GetIntegerField("BinsElevation");
 		}
-
+		if (JsonParsed->HasTypedField<EJson::Number>("BinsAzimuth")) {
+			BinsAzimuth = JsonParsed->GetIntegerField("BinsAzimuth");
+		}
 		if (JsonParsed->HasTypedField<EJson::Boolean>("ViewRegion")) {
 			ViewRegion = JsonParsed->GetBoolField("ViewRegion");
 		}
-
 		if (JsonParsed->HasTypedField<EJson::Number>("ViewOctree")) {
 			ViewOctree = JsonParsed->GetIntegerField("ViewOctree");
 		}
-
+		if (JsonParsed->HasTypedField<EJson::Number>("Elevation")) {
+			ViewOctree = JsonParsed->GetIntegerField("Elevation");
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("MaxRange")) {
+			ViewOctree = JsonParsed->GetIntegerField("MaxRange");
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("MinRange")) {
+			ViewOctree = JsonParsed->GetIntegerField("MinRange");
+		}
 	}
 	else {
 		UE_LOG(LogHolodeck, Fatal, TEXT("USingleBeamSonarSensor::ParseSensorParms:: Unable to parse json."));
@@ -76,13 +95,6 @@ void USingleBeamSonarSensor::InitializeSensor() {
 	
 	// Setup bins
 	// TODO: Make these according to octree size
-	BinsAzimuth = 3;
-	BinsElevation = 3;
-
-	// Setup azimuth (going around x-axis)
-	Azimuth = 360;
-	minAzimuth = -180;
-	maxAzimuth = 180;
 
 	minElev = 0;
 	maxElev = Elevation/2;
@@ -163,43 +175,13 @@ bool USingleBeamSonarSensor::inRange(Octree* tree){
 	// check if azimuth is in
 	// Azimuth goes around the x-axis
 	tree->locSpherical.Y = ATan2ApproxSingleBeam(locLocal.Z, locLocal.Y);
-	// tree->locSpherical.Y = ATan2ApproxSingleBeam(-locLocal.Y, locLocal.X) + aziNoise.sampleFloat();
-	// if(minAzimuth >= tree->locSpherical.Y || tree->locSpherical.Y >= maxAzimuth) return false;
+
 
 	// check if "elevation" is in
 	// Elevation is angle off of x-axis
-	// tree->locSpherical.Z = ATan2ApproxSingleBeam(locLocal.Size2D(), locLocal.Z);
 	tree->locSpherical.Z = ATan2ApproxSingleBeam(UKismetMathLibrary::Sqrt(UKismetMathLibrary::Square(locLocal.Y)+UKismetMathLibrary::Square(locLocal.Z)), locLocal.X); //elevation of leaf we are inspecting
 	if(minElev >= tree->locSpherical.Z || tree->locSpherical.Z >= maxElev) return false;
 
-	// // check if it's in range. 
-	// tree->locSpherical.X = locLocal.Size() + rNoise.sampleFloat();   // range of leaf we are inspecting
-	// if(MinRange+offset-radius >= tree->locSpherical.X || tree->locSpherical.X >= MaxRange+offset+radius) return false; 
-
-	// //check if radius is in
-	// tree->locSpherical.Z = ATan2ApproxSingleBeam(UKismetMathLibrary::Sqrt(UKismetMathLibrary::Square(locLocal.Y)+UKismetMathLibrary::Square(locLocal.Z)), locLocal.X); //elevation of leaf we are inspecting
-	// float distance = tree->locSpherical.X*UKismetMathLibrary::DegCos(tree->locSpherical.Z);
-	// float radius_leaf = tree->locSpherical.X*UKismetMathLibrary::DegSin(tree->locSpherical.Z);
-	// float radius_max = distance*UKismetMathLibrary::DegTan(Elevation/2);
-	// if(radius_leaf > radius_max) return false;
-
-	// // get "azimuth"
-	// tree->locSpherical.Y = ATan2ApproxSingleBeam(locLocal.Z, locLocal.Y) + aziNoise.sampleFloat();
-	// if(tree->locSpherical.Y < -180.0 || tree->locSpherical.Y > 0) return false;
-
-	// test azimuth bounds
-
-
-	// if(minAzimuth >= tree->locSpherical.Y || tree->locSpherical.Y >= maxAzimuth) return false;
-
-	// // // check if azimuth is in
-	// tree->locSpherical.Y = ATan2ApproxSingleBeam(-locLocal.Y, locLocal.X) + aziNoise.sampleFloat();
-	// if(minAzimuth >= tree->locSpherical.Y || tree->locSpherical.Y >= maxAzimuth) return false;
-
-	// check if "elevation" is in circle radius
-	// tree->locSpherical.Z = ATan2ApproxSingleBeam(locLocal.Size2D(), locLocal.Z);
-	// if(minElev >= tree->locSpherical.Z || tree->locSpherical.Z >= maxElev) return false;
-	
 	// otherwise it's in!
 	return true;
 }	
@@ -293,15 +275,13 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 
 
 		// HANDLE SHADOWING
-		float eps = 16;
+		float eps = 24;
 		ParallelFor(BinsAzimuth*BinsElevation, [&](int32 i){
 			TArray<Octree*>& binLeafs = sortedLeaves.GetData()[i]; 
 
 			// sort from closest to farthest
 			binLeafs.Sort([](const Octree& a, const Octree& b){
 				// range
-				// locSpherical: xrange, azimuth, elevation
-				//                x         y        z
 				return a.locSpherical.X < b.locSpherical.X;
 			});
 
@@ -327,21 +307,12 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 				// Light up some bins to visualize things. 
 				// Make sure you change the bool at end of ParallelFor to true to turn off running in parallel, since 
 				// this can't be done in parallel
-				// if(i == 1){
-				// 	DrawDebugPoint(GetWorld(), jth->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
-				// }
-				// if(i == 2){
-				// 	DrawDebugPoint(GetWorld(), jth->loc, 5, FColor::Green, false, DeltaTime*TicksPerCapture);
-				// }
-				// if(i == 3){
-				// 	DrawDebugPoint(GetWorld(), jth->loc, 5, FColor::Blue, false, DeltaTime*TicksPerCapture);
-				// }
+				DrawDebugPoint(GetWorld(), jth->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
 
-				// diff = FVector::Dist(jth->loc, binLeafs.GetData()[j+1]->loc);
 				diff = FMath::Abs(jth->locSpherical.X - binLeafs.GetData()[j+1]->locSpherical.X);
 				if(diff > eps) break;
 			}
-		}, false);
+		}, true);
 
 		
 		// MOVE THEM INTO BUFFER
@@ -373,8 +344,7 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 			float debugThickness = 3.0f;
 			float DebugNumSides = 6; //change later?
 			float length = (MaxRange - MinRange)*100; //length of cone in cm
-			// FVector direction = UKismetMathLibrary::GetDirectionUnitVector(spherToEucSingleBeamSingleBeam(MinRange, -Azimuth/2, 90 - Elevation/2, tran), spherToEucSingleBeamSingleBeam(MaxRange, Azimuth/2, 90 + Elevation/2, tran));
-			// spherToEucSingleBeamSingleBeam(MinRange, -Azimuth/2, 90 - Elevation/2, tran)
+
 			DrawDebugCone(GetWorld(), GetComponentLocation(), GetForwardVector(), length, (Elevation/2)*Pi/180, (Elevation/2)*Pi/180, DebugNumSides, FColor::Green, false, .00, ECC_WorldStatic, debugThickness);
 		}		
 	}
