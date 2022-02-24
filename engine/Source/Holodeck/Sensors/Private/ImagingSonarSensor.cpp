@@ -255,6 +255,9 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 
 			// PUT THEM INTO CLUSTERS
 			mapSearch = TMap<FIntVector,Octree*>(mapLeaves);
+			mapSearch.Compact();
+			int i_start, j_start, k_start, i_end, j_end, k_end;
+			Octree** close = nullptr;
 			while(mapSearch.Num() > 0){
 				// Get start of cluster
 				Octree* l = mapSearch.begin()->Value;
@@ -262,10 +265,16 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				cluster.Add({l});
 
 				// Get anything that may be nearby
-				for(int i=FGenericPlatformMath::Max(0,l->idx.X-ClusterSize); i<FGenericPlatformMath::Min(BinsRange,l->idx.X+ClusterSize+1); i++){
-					for(int j=FGenericPlatformMath::Max(0,l->idx.Y-ClusterSize); j<FGenericPlatformMath::Min(BinsAzimuth,l->idx.Y+ClusterSize+1); j++){
-						for(int k=FGenericPlatformMath::Max(0,l->idx.Z-ClusterSize); k<FGenericPlatformMath::Min(BinsElevation,l->idx.Z+ClusterSize+1); k++){
-							Octree** close = mapSearch.Find(FIntVector(i,j,k));
+				i_start = FGenericPlatformMath::Max(0,l->idx.X-ClusterSize);
+				j_start = FGenericPlatformMath::Max(0,l->idx.Y-ClusterSize);
+				k_start = FGenericPlatformMath::Max(0,l->idx.Z-ClusterSize);
+				i_end = FGenericPlatformMath::Min(BinsRange,l->idx.X+ClusterSize+1);
+				j_end = FGenericPlatformMath::Min(BinsAzimuth,l->idx.Y+ClusterSize+1);
+				k_end = FGenericPlatformMath::Min(BinsElevation,l->idx.Z+ClusterSize+1);
+				for(int i=i_start; i<i_end; i++){
+					for(int j=j_start; j<j_end; j++){
+						for(int k=k_start; k<k_end; k++){
+							close = mapSearch.Find(FIntVector(i,j,k));
 							if(close != nullptr && FVector::DotProduct(l->normal, (*close)->normal) > 0.965){
 								cluster.Top().Add(*close);
 								mapSearch.Remove((*close)->idx);
