@@ -10,6 +10,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Async/ParallelFor.h"
 #include "MultivariateNormal.h"
+#include "MultivariateUniform.h"
+
 
 #include "Json.h"
 
@@ -84,7 +86,7 @@ private:
 	
 	// for adding noise
 	MultivariateNormal<1> aziNoise;
-	MultivariateNormal<1> rNoise;
+	MultivariateUniform<1> rNoise;
 
 	// various computations we want to cache
 	float sqrt2;

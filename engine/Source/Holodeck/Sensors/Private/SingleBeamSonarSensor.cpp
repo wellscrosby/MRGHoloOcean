@@ -6,9 +6,6 @@
 #include "SingleBeamSonarSensor.h"
 // #pragma warning (disable : 4101)
 
-
-
-
 USingleBeamSonarSensor::USingleBeamSonarSensor() {
 	SensorName = "SingleBeamSonarSensor";
 }
@@ -23,19 +20,14 @@ void USingleBeamSonarSensor::BeginDestroy() {
 void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 
 	// default values, user can override through ParmsJson
-	MinRange = 1;
-	MaxRange = 20;
-
-	Elevation = 5;
-	BinsRange = 100;
-
-	Azimuth = 360;
-	Elevation =30;
+	Elevation = 30;
+	
+	BinsRange = 10;
 	BinsAzimuth = 2;
 	BinsElevation = 2;
 
-	minAzimuth = -180;
-	maxAzimuth = 180;
+	MinRange = 1;
+	MaxRange = 10;
 
 	Super::ParseSensorParms(ParmsJson);
 
@@ -55,6 +47,10 @@ void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 		}
 		if (JsonParsed->HasTypedField<EJson::Number>("MultCov")) {
 			multNoise.initCov(JsonParsed->GetNumberField("MultCov"));
+		}
+		// the range noise will be in cm
+		if (JsonParsed->HasTypedField<EJson::Number>("MultUniform")) {
+			rNoise.initBounds(JsonParsed->GetNumberField("MultUniform"));
 		}
 		if (JsonParsed->HasTypedField<EJson::Number>("BinsRange")) {
 			BinsRange = JsonParsed->GetIntegerField("BinsRange");
@@ -95,7 +91,10 @@ void USingleBeamSonarSensor::InitializeSensor() {
 	
 	// Setup bins
 	// TODO: Make these according to octree size
+	Azimuth = 360;
 
+	minAzimuth = -180;
+	maxAzimuth = 180;
 	minElev = 0;
 	maxElev = Elevation/2;
 
@@ -153,11 +152,11 @@ bool USingleBeamSonarSensor::inRange(Octree* tree){
 	float offset = 0;
 	float radius = 0;
 
-	sqrt2 = UKismetMathLibrary::Sqrt(2);
+	sqrt2 = UKismetMathLibrary::Sqrt(3)/2;
 	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(Azimuth, Elevation)/2);
 
 	if(tree->size != Octree::OctreeMin){
-		radius = tree->size/sqrt2;
+		radius = tree->size*sqrt2;
 		offset = radius/sinOffset;
 		SensortoWorld.AddToTranslation( -this->GetForwardVector()*offset );
 	}
@@ -165,28 +164,24 @@ bool USingleBeamSonarSensor::inRange(Octree* tree){
 	// --------------------------------------------------------]
 
 	// transform location to sensor frame instead of global (x y z)
-	// FVector locLocal = SensortoWorld.InverseTransformPositionNoScale(tree->loc); 
 	FVector locLocal = SensortoWorld.GetRotation().UnrotateVector(tree->loc-SensortoWorld.GetTranslation());
 
 	// check if it's in range
 	tree->locSpherical.X = locLocal.Size();
 	if(MinRange+offset-radius >= tree->locSpherical.X || tree->locSpherical.X >= MaxRange+offset+radius) return false; 
 
-	// check if azimuth is in
-	// Azimuth goes around the x-axis
-	tree->locSpherical.Y = ATan2ApproxSingleBeam(locLocal.Z, locLocal.Y);
-
-
-	// check if "elevation" is in
-	// Elevation is angle off of x-axis
+	// check if "elevation" is in range. elevation is angle off of x-axis
 	tree->locSpherical.Z = ATan2ApproxSingleBeam(UKismetMathLibrary::Sqrt(UKismetMathLibrary::Square(locLocal.Y)+UKismetMathLibrary::Square(locLocal.Z)), locLocal.X); //elevation of leaf we are inspecting
 	if(minElev >= tree->locSpherical.Z || tree->locSpherical.Z >= maxElev) return false;
+
+	// save azimuth for shadowing later. azimuth goes around the x-axis
+	tree->locSpherical.Y = ATan2ApproxSingleBeam(locLocal.Z, locLocal.Y);
 
 	// otherwise it's in!
 	return true;
 }	
 
-// leavesInRange recursively check if each tree and then children etc are in range. will probs need to call my own inRange func
+// leavesInRange recursively check if each tree and then children etc are in range
 void USingleBeamSonarSensor::leavesInRange(Octree* tree, TArray<Octree*>& rLeaves, float stopAt){
 	bool in = inRange(tree);
 	if(in){
@@ -256,7 +251,6 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 		// Finds leaves in range and puts them in foundLeaves
 		findLeaves();		// does not return anything, saves to foundLeaves
 
-
 		// SORT THEM INTO AZIMUTH/ELEVATION BINS
 		int32 idx;
 		for(TArray<Octree*>& bin : foundLeaves){
@@ -273,9 +267,8 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 			}
 		}
 
-
 		// HANDLE SHADOWING
-		float eps = 24;
+		float eps = 100;
 		ParallelFor(BinsAzimuth*BinsElevation, [&](int32 i){
 			TArray<Octree*>& binLeafs = sortedLeaves.GetData()[i]; 
 
@@ -293,14 +286,15 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 			Octree* jth;
 			for(int j=0;j<binLeafs.Num()-1;j++){
 				jth = binLeafs.GetData()[j];
-				
-				jth->idx.X = (int32)((jth->locSpherical.X - MinRange) / RangeRes);
+				// add noise to range measurements
+				double range_noise = rNoise.sampleExponential();
+				jth->idx.X = (int32)((jth->locSpherical.X - MinRange + range_noise) / RangeRes); //+ rNoise.sampleExponential()
 				idx = jth->idx.X;
 				z_t = jth->sos * jth->density;
 				R = (z_t - z_i) / (z_t + z_i);
 
 				// calculate intesity and add them up
-				result[idx] += jth->val * R;
+				result[idx] += jth->val * R; 
 				// number of 
 				++count[idx];
 				
