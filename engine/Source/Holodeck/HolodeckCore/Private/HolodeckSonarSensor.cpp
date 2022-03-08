@@ -39,41 +39,48 @@ void UHolodeckSonarSensor::ParseSensorParms(FString ParmsJson) {
 	TSharedPtr<FJsonObject> JsonParsed;
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ParmsJson);
 	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
-		if (JsonParsed->HasTypedField<EJson::Number>("InitOctreeRange")) {
-			InitOctreeRange = JsonParsed->GetNumberField("InitOctreeRange")*100;
-		}
-
+		// Geometry Parameters
 		if (JsonParsed->HasTypedField<EJson::Number>("RangeMax")) {
 			RangeMax = JsonParsed->GetNumberField("RangeMax")*100;
 		}
-
 		if (JsonParsed->HasTypedField<EJson::Number>("RangeMin")) {
 			RangeMin = JsonParsed->GetNumberField("RangeMin")*100;
 		}
-
 		if (JsonParsed->HasTypedField<EJson::Number>("Azimuth")) {
 			Azimuth = JsonParsed->GetNumberField("Azimuth");
 		}
-
 		if (JsonParsed->HasTypedField<EJson::Number>("Elevation")) {
 			Elevation = JsonParsed->GetNumberField("Elevation");
 		}
 
+		// Misc Parameters
+		if (JsonParsed->HasTypedField<EJson::Number>("InitOctreeRange")) {
+			InitOctreeRange = JsonParsed->GetNumberField("InitOctreeRange")*100;
+		}
 		if (JsonParsed->HasTypedField<EJson::Number>("TicksPerCapture")) {
 			TicksPerCapture = JsonParsed->GetIntegerField("TicksPerCapture");
 		}
 
+		// Visualization Parameters
 		if (JsonParsed->HasTypedField<EJson::Boolean>("ViewRegion")) {
 			ViewRegion = JsonParsed->GetBoolField("ViewRegion");
 		}
-
 		if (JsonParsed->HasTypedField<EJson::Number>("ViewOctree")) {
 			ViewOctree = JsonParsed->GetIntegerField("ViewOctree");
 		}
 
+		// Performance Parameters
 		if (JsonParsed->HasTypedField<EJson::Number>("ShadowEpsilon")) {
 			ShadowEpsilon = JsonParsed->GetIntegerField("ShadowEpsilon");
 		}
+		if (JsonParsed->HasTypedField<EJson::Number>("WaterDensity")) {
+			WaterDensity = JsonParsed->GetIntegerField("WaterDensity");
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("WaterSpeedSound")) {
+			WaterSpeedSound = JsonParsed->GetIntegerField("WaterSpeedSound");
+		}
+
+
 	}
 	else {
 		UE_LOG(LogHolodeck, Fatal, TEXT("UHolodeckSonarSensor::ParseSensorParms:: Unable to parse json."));
@@ -92,7 +99,7 @@ void UHolodeckSonarSensor::ParseSensorParms(FString ParmsJson) {
 	minElev = 90 - Elevation/2;
 	maxElev = 90 + Elevation/2;
 
-	z_water = density_water * sos_water;
+	WaterImpedance = WaterDensity * WaterSpeedSound;
 
 	sqrt3_2 = UKismetMathLibrary::Sqrt(3) / 2;
 	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(Azimuth, Elevation)/2);
@@ -277,7 +284,7 @@ void UHolodeckSonarSensor::shadowLeaves(){
 		for(int32 j=0;j<binLeafs.Num();j++){
 			jth = binLeafs.GetData()[j];
 			
-			R = (jth->z - z_water) / (jth->z + z_water);
+			R = (jth->z - WaterImpedance) / (jth->z + WaterImpedance);
 			jth->val = R*R*jth->cos;
 
 			// diff = FVector::Dist(jth->loc, binLeafs.GetData()[j+1]->loc);

@@ -24,7 +24,6 @@ void UImagingSonarSensor::ParseSensorParms(FString ParmsJson) {
 	TSharedPtr<FJsonObject> JsonParsed;
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ParmsJson);
 	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
-
 		// For handling noise
 		if (JsonParsed->HasTypedField<EJson::Number>("AddSigma")) {
 			addNoise.initSigma(JsonParsed->GetNumberField("AddSigma"));
@@ -41,25 +40,22 @@ void UImagingSonarSensor::ParseSensorParms(FString ParmsJson) {
 		if (JsonParsed->HasTypedField<EJson::Number>("RangeSigma")) {
 			rNoise.initBounds(JsonParsed->GetNumberField("RangeSigma")*100);
 		}
-
-		
-		if (JsonParsed->HasTypedField<EJson::Boolean>("MultiPath")) {
-			MultiPath = JsonParsed->GetBoolField("MultiPath");
-		}
-
-		if (JsonParsed->HasTypedField<EJson::Number>("ClusterSize")) {
-			ClusterSize = JsonParsed->GetIntegerField("ClusterSize");
-		}
-
 		if (JsonParsed->HasTypedField<EJson::Boolean>("ScaleNoise")) {
 			ScaleNoise = JsonParsed->GetBoolField("ScaleNoise");
 		}
-
 		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthStreaks")) {
 			AzimuthStreaks = JsonParsed->GetIntegerField("AzimuthStreaks");
 		}
 
+		// Multipath Settings
+		if (JsonParsed->HasTypedField<EJson::Boolean>("MultiPath")) {
+			MultiPath = JsonParsed->GetBoolField("MultiPath");
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("ClusterSize")) {
+			ClusterSize = JsonParsed->GetIntegerField("ClusterSize");
+		}
 
+		// Size of our binning
 		if (JsonParsed->HasTypedField<EJson::Number>("RangeBins")) {
 			RangeBins = JsonParsed->GetIntegerField("RangeBins");
 		}
@@ -342,8 +338,8 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 					m->idx.X = (int32)((bounce.locSpherical.X + noise - RangeMin) / RangeRes);
 					m->idx.Y = (int32)((bounce.locSpherical.Y - minAzimuth)/ AzimuthRes);
 					m->cos = FVector::DotProduct(returnRay, (*hit)->normalImpact);
-					R1 = (m->z - z_water) / (m->z + z_water);
-					R2 = ((*hit)->z - z_water) / ((*hit)->z + z_water);
+					R1 = (m->z - WaterImpedance) / (m->z + WaterImpedance);
+					R2 = ((*hit)->z - WaterImpedance) / ((*hit)->z + WaterImpedance);
 					m->val = R1*R1*R2*R2*m->cos*pdf;
 
 					// TODO: There's a bug this is working around, find it and fix it

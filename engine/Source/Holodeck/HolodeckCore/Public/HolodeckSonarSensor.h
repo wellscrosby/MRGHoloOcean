@@ -41,16 +41,16 @@ protected:
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere)
-	float RangeMax = 3000;
+	float RangeMax = 1000;
 
 	UPROPERTY(EditAnywhere)
 	float InitOctreeRange = 0;
 
 	UPROPERTY(EditAnywhere)
-	float RangeMin = 300;
+	float RangeMin = 10;
 
 	UPROPERTY(EditAnywhere)
-	float Azimuth = 130;
+	float Azimuth = 120;
 
 	UPROPERTY(EditAnywhere)
 	float Elevation = 20;
@@ -67,6 +67,12 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float ShadowEpsilon = 0;
 
+	UPROPERTY(EditAnywhere)
+	float WaterDensity = 997.0;
+
+	UPROPERTY(EditAnywhere)
+	float WaterSpeedSound = 1480.0;
+
 	// Call at the beginning of every tick, loads octree
 	void initOctree();
 
@@ -78,7 +84,7 @@ protected:
 
 	// Visualizer helpers
 	void showBeam(float DeltaTime);
-	void showRegion(float DeltaTime);
+	virtual void showRegion(float DeltaTime);
 
 	// Used to hold leafs when parallelized filtering happens
 	TArray<TArray<Octree*>> foundLeaves;
@@ -87,9 +93,7 @@ protected:
 	TArray<TArray<Octree*>> sortedLeaves;
 
 	// Water information (Change to parameter?)
-	float density_water = 997;
-	float sos_water = 1480;
-	float z_water;
+	float WaterImpedance;
 
 	// use for skipping frames
 	int TickCounter = 0;
@@ -101,7 +105,7 @@ protected:
 	float minElev;
 	float maxElev;
 
-	bool inRange(Octree* tree);
+	virtual bool inRange(Octree* tree);
 	void leavesInRange(Octree* tree, TArray<Octree*>& leafs, float stopAt);
 	FVector spherToEuc(float r, float theta, float phi, FTransform SensortoWorld);
 	
