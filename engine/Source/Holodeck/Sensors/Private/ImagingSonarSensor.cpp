@@ -78,14 +78,6 @@ void UImagingSonarSensor::ParseSensorParms(FString ParmsJson) {
 		if (JsonParsed->HasTypedField<EJson::Number>("ElevationRes")) {
 			ElevationRes = JsonParsed->GetIntegerField("ElevationRes");
 		}
-
-		if (JsonParsed->HasTypedField<EJson::Boolean>("ViewRegion")) {
-			ViewRegion = JsonParsed->GetBoolField("ViewRegion");
-		}
-
-		if (JsonParsed->HasTypedField<EJson::Number>("ViewOctree")) {
-			ViewOctree = JsonParsed->GetIntegerField("ViewOctree");
-		}
 	}
 	else {
 		UE_LOG(LogHolodeck, Fatal, TEXT("UImagingSonarSensor::ParseSensorParms:: Unable to parse json."));
@@ -133,9 +125,6 @@ void UImagingSonarSensor::ParseSensorParms(FString ParmsJson) {
 
 void UImagingSonarSensor::InitializeSensor() {
 	Super::InitializeSensor();
-
-	// Setup densities
-	z_water = density_water * sos_water;
 	
 	// Check if we should shadow with less Azimuth bins 
 	float dist = (RangeMax - RangeMin) / 8 + RangeMin;
@@ -159,19 +148,11 @@ void UImagingSonarSensor::InitializeSensor() {
 	mapLeaves.Reserve(100000);
 }
 
-FVector spherToEuc(float r, float theta, float phi, FTransform SensortoWorld){
-	float x = r*UKismetMathLibrary::DegSin(phi)*UKismetMathLibrary::DegCos(theta);
-	float y = r*UKismetMathLibrary::DegSin(phi)*UKismetMathLibrary::DegSin(theta);
-	float z = r*UKismetMathLibrary::DegCos(phi);
-	return UKismetMathLibrary::TransformLocation(SensortoWorld, FVector(x, y, z));
-}
-
 
 void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	Super::TickSensorComponent(DeltaTime, TickType, ThisTickFunction);
 
 	if(TickCounter == 0){
-		UE_LOG(LogHolodeck, Warning, TEXT("AzimuthBins: %d, RangeBins: %d"), AzimuthBins, RangeBins);
 		// reset things and get ready
 		float* result = static_cast<float*>(Buffer);
 		std::fill(result, result+RangeBins*AzimuthBins, 0);
@@ -187,9 +168,7 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 
 
 		// Finds leaves in range and puts them in foundLeaves
-		Benchmarker b, c;
 		findLeaves();		
-		UE_LOG(LogHolodeck, Warning, TEXT("FIND LEAVES : %f"), c.CalcMs());
 
 		// SORT THEM INTO AZIMUTH/ELEVATION BINS
 		int32 idx;
@@ -205,51 +184,24 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				sortedLeaves[idx].Emplace(l);
 			}
 		}
-		UE_LOG(LogHolodeck, Warning, TEXT("BINS SORTING : %f"), c.CalcMs());
 
 		// HANDLE SHADOWING
-		float eps = 4*Octree::OctreeMin;
-		ParallelFor(ElevationBins*AzimuthBins/AzimuthBinScale, [&](int32 i){
-			TArray<Octree*>& binLeafs = sortedLeaves.GetData()[i]; 
-
-			// sort from closest to farthest
-			binLeafs.Sort([](const Octree& a, const Octree& b){
-				return a.locSpherical.X < b.locSpherical.X;
-			});
-
-			// Get the closest cluster in the bin
-			float diff, R, noise, pdf;
-			Octree* jth;
-			for(int32 j=0;j<binLeafs.Num();j++){
-				jth = binLeafs.GetData()[j];
-				
-				noise = rNoise.sampleExponential();
-				pdf = rNoise.exponentialScaledPDF(noise);
-				jth->idx.X = (int32)((jth->locSpherical.X + noise - RangeMin) / RangeRes);
-
-				// In case our noise has pushed us out of range
-				if(jth->idx.X >= RangeBins) jth->idx.X = RangeBins-1;
-
-				R = (jth->z - z_water) / (jth->z + z_water);
-				jth->val = R*R*pdf*jth->cos;
-
-				// diff = FVector::Dist(jth->loc, binLeafs.GetData()[j+1]->loc);
-				if(j != binLeafs.Num()-1){
-					diff = FMath::Abs(jth->locSpherical.X - binLeafs.GetData()[j+1]->locSpherical.X);
-					if(diff > eps){
-						binLeafs.RemoveAt(j+1,binLeafs.Num()-j-1);
-						break;
-					}
-				}
-			}
-
-		});
-
-		UE_LOG(LogHolodeck, Warning, TEXT("SHADOWING : %f"), c.CalcMs());
+		shadowLeaves();
 
 		// ADD IN ALL CONTRIBUTIONS
+		float noise, pdf;
 		for(TArray<Octree*>& bin : sortedLeaves){
 			for(Octree* l : bin){
+				// Add noise to each of them
+				noise = rNoise.sampleExponential();
+				pdf = rNoise.exponentialScaledPDF(noise);
+				l->idx.X = (int32)((l->locSpherical.X + noise - RangeMin) / RangeRes);
+				l->val *= pdf;
+
+				// In case our noise has pushed us out of range
+				if(l->idx.X >= RangeBins) l->idx.X = RangeBins-1;
+
+				// Add to their appropriate bin
 				idx = l->idx.X*AzimuthBins + l->idx.Y;
 				if(l->cos > perfectCos) hasPerfectNormal[idx] += 1;
 
@@ -258,11 +210,8 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 			}
 		}
 
-		UE_LOG(LogHolodeck, Warning, TEXT("ADDING IN REGULAR : %f"), c.CalcMs());
-
 		if(MultiPath){
 			// PUT INTO MAP FOR CLUSTER
-			// TODO: Make a copy to search through, or add to 2 maps now?
 			for(TArray<Octree*>& binLeafs : sortedLeaves){
 				if(binLeafs.Num() > 0){
 					// Get first element in this azimuth, elevation bin (ie idx.Y and idx.Z are the same for all of these)
@@ -280,7 +229,6 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 					}
 				}
 			}
-			UE_LOG(LogHolodeck, Warning, TEXT("MAKE MAP : %f"), c.CalcMs());
 
 			// PUT THEM INTO CLUSTERS
 			mapSearch = TMap<FIntVector,Octree*>(mapLeaves);
@@ -312,7 +260,7 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 					}
 				}
 			}
-			UE_LOG(LogHolodeck, Warning, TEXT("CLUSTER THEM : %f"), c.CalcMs());
+
 
 			// MULTIPATH CONTRIBUTIONS
 			float step_size = Octree::OctreeMin;
@@ -408,7 +356,6 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 					// DrawDebugPoint(GetWorld(), bounce.loc, 3, FColor::Blue, false, DeltaTime*TicksPerCapture);
 				}
 			}, false);
-			UE_LOG(LogHolodeck, Warning, TEXT("MULTIPATH : %f"), c.CalcMs());
 
 			// ADD IN MULTIPATH CONTRIBUTIONS
 			for(TArray<Octree*>& bin : cluster){
@@ -419,12 +366,10 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 					++count[idx];
 				}
 			}
-			UE_LOG(LogHolodeck, Warning, TEXT("ADD IN MP CONTRI : %f"), c.CalcMs());
 		}
-		UE_LOG(LogHolodeck, Warning, TEXT("TOTAL : %f"), b.CalcMs());
 
 
-		// MOVE THEM INTO BUFFER
+		// NORMALIZE & PERTURB RESULTS
 		float scale_range, scale_total, azimuth;
 		float std = Azimuth/64;
 		for (int i=0; i<RangeBins; i++) {
@@ -480,42 +425,5 @@ void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 				}
 			}
 		}
-
-
-
-		// draw points inside our region
-		if(ViewOctree >= -1){
-			for( TArray<Octree*> bins : sortedLeaves){
-				for( Octree* l : bins){
-					if(ViewOctree == -1 || ViewOctree == l->idx.Y){
-						DrawDebugPoint(GetWorld(), l->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
-					}
-				}
-			}
-		}
-
-		// draw outlines of our region
-		if(ViewRegion){
-			FTransform tran = this->GetComponentTransform();
-			float debugThickness = 3.0f;
-			
-			// range lines
-			DrawDebugLine(GetWorld(), spherToEuc(RangeMin, minAzimuth, minElev, tran), spherToEuc(RangeMax, minAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(RangeMin, minAzimuth, maxElev, tran), spherToEuc(RangeMax, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(RangeMin, maxAzimuth, minElev, tran), spherToEuc(RangeMax, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(RangeMin, maxAzimuth, maxElev, tran), spherToEuc(RangeMax, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-
-			// azimuth lines (should be arcs, we're being lazy)
-			DrawDebugLine(GetWorld(), spherToEuc(RangeMin, minAzimuth, minElev, tran), spherToEuc(RangeMin, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(RangeMin, minAzimuth, maxElev, tran), spherToEuc(RangeMin, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(RangeMax, minAzimuth, minElev, tran), spherToEuc(RangeMax, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(RangeMax, minAzimuth, maxElev, tran), spherToEuc(RangeMax, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-
-			// elevation lines (should be arcs, we're being lazy)
-			DrawDebugLine(GetWorld(), spherToEuc(RangeMin, minAzimuth, minElev, tran), spherToEuc(RangeMin, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(RangeMin, maxAzimuth, minElev, tran), spherToEuc(RangeMin, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(RangeMax, minAzimuth, minElev, tran), spherToEuc(RangeMax, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEuc(RangeMax, maxAzimuth, minElev, tran), spherToEuc(RangeMax, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-		}		
 	}
 }

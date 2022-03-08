@@ -73,12 +73,6 @@ protected:
 	float ElevationRes = 0;
 
 	UPROPERTY(EditAnywhere)
-	bool ViewRegion = false;
-
-	UPROPERTY(EditAnywhere)
-	int ViewOctree = -10;
-
-	UPROPERTY(EditAnywhere)
 	bool MultiPath = false;
 
 	UPROPERTY(EditAnywhere)
@@ -101,8 +95,7 @@ private:
 	int32 AzimuthBinScale = 1;
 	float perfectCos;
 
-	// Used to hold leafs when parallelized sorting/binning happens
-	TArray<TArray<Octree*>> sortedLeaves;
+	// Used to hold leaves for multipath
 	TMap<FIntVector,Octree*> mapLeaves;
 	TMap<FIntVector,Octree*> mapSearch;
 	TArray<TArray<Octree*>> cluster;
@@ -113,8 +106,4 @@ private:
 	MultivariateNormal<1> addNoise;
 	MultivariateNormal<1> multNoise;
 	MultivariateUniform<1> rNoise;
-
-	float density_water = 997;
-	float sos_water = 1480;
-	float z_water;
 };

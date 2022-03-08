@@ -58,18 +58,38 @@ protected:
 	UPROPERTY(EditAnywhere)
 	int TicksPerCapture = 1;
 
+	UPROPERTY(EditAnywhere)
+	bool ViewRegion = false;
+
+	UPROPERTY(EditAnywhere)
+	int ViewOctree = -10;
+
+	UPROPERTY(EditAnywhere)
+	float ShadowEpsilon = 0;
+
 	// Call at the beginning of every tick, loads octree
 	void initOctree();
 
 	// Finds all the leaves in range
 	void findLeaves();
 
+	// Shadow leaves that have been sorted
+	void shadowLeaves();
+
+	// Visualizer helpers
+	void showBeam(float DeltaTime);
+	void showRegion(float DeltaTime);
+
 	// Used to hold leafs when parallelized filtering happens
 	TArray<TArray<Octree*>> foundLeaves;
+
+	// Used to hold leafs when parallelized sorting/binning happens
+	TArray<TArray<Octree*>> sortedLeaves;
 
 	// Water information (Change to parameter?)
 	float density_water = 997;
 	float sos_water = 1480;
+	float z_water;
 
 	// use for skipping frames
 	int TickCounter = 0;
@@ -83,6 +103,7 @@ protected:
 
 	bool inRange(Octree* tree);
 	void leavesInRange(Octree* tree, TArray<Octree*>& leafs, float stopAt);
+	FVector spherToEuc(float r, float theta, float phi, FTransform SensortoWorld);
 	
 private:
 	/*

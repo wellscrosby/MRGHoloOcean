@@ -62,6 +62,18 @@ void UHolodeckSonarSensor::ParseSensorParms(FString ParmsJson) {
 		if (JsonParsed->HasTypedField<EJson::Number>("TicksPerCapture")) {
 			TicksPerCapture = JsonParsed->GetIntegerField("TicksPerCapture");
 		}
+
+		if (JsonParsed->HasTypedField<EJson::Boolean>("ViewRegion")) {
+			ViewRegion = JsonParsed->GetBoolField("ViewRegion");
+		}
+
+		if (JsonParsed->HasTypedField<EJson::Number>("ViewOctree")) {
+			ViewOctree = JsonParsed->GetIntegerField("ViewOctree");
+		}
+
+		if (JsonParsed->HasTypedField<EJson::Number>("ShadowEpsilon")) {
+			ShadowEpsilon = JsonParsed->GetIntegerField("ShadowEpsilon");
+		}
 	}
 	else {
 		UE_LOG(LogHolodeck, Fatal, TEXT("UHolodeckSonarSensor::ParseSensorParms:: Unable to parse json."));
@@ -71,10 +83,16 @@ void UHolodeckSonarSensor::ParseSensorParms(FString ParmsJson) {
 		InitOctreeRange = RangeMax;
 	}
 
+	if(ShadowEpsilon == 0){
+		ShadowEpsilon = 4*Octree::OctreeMin;
+	}
+
 	minAzimuth = -Azimuth/2;
 	maxAzimuth = Azimuth/2;
 	minElev = 90 - Elevation/2;
 	maxElev = 90 + Elevation/2;
+
+	z_water = density_water * sos_water;
 
 	sqrt3_2 = UKismetMathLibrary::Sqrt(3) / 2;
 	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(Azimuth, Elevation)/2);
@@ -244,11 +262,95 @@ void UHolodeckSonarSensor::findLeaves(){
 	});
 }
 
+void UHolodeckSonarSensor::shadowLeaves(){
+	ParallelFor(sortedLeaves.Num(), [&](int32 i){
+		TArray<Octree*>& binLeafs = sortedLeaves.GetData()[i]; 
+
+		// sort from closest to farthest
+		binLeafs.Sort([](const Octree& a, const Octree& b){
+			return a.locSpherical.X < b.locSpherical.X;
+		});
+
+		// Get the closest cluster in the bin
+		float diff, R;
+		Octree* jth;
+		for(int32 j=0;j<binLeafs.Num();j++){
+			jth = binLeafs.GetData()[j];
+			
+			R = (jth->z - z_water) / (jth->z + z_water);
+			jth->val = R*R*jth->cos;
+
+			// diff = FVector::Dist(jth->loc, binLeafs.GetData()[j+1]->loc);
+			if(j != binLeafs.Num()-1){
+				diff = FMath::Abs(jth->locSpherical.X - binLeafs.GetData()[j+1]->locSpherical.X);
+				if(diff > ShadowEpsilon){
+					binLeafs.RemoveAt(j+1,binLeafs.Num()-j-1);
+					break;
+				}
+			}
+		}
+
+	});
+}
+
+void UHolodeckSonarSensor::showBeam(float DeltaTime){
+	// draw points inside our region
+	if(ViewOctree >= -1){
+		for( TArray<Octree*> bins : sortedLeaves){
+			for( Octree* l : bins){
+				if(ViewOctree == -1 || ViewOctree == l->idx.Y){
+					DrawDebugPoint(GetWorld(), l->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
+				}
+			}
+		}
+	}
+}
+
+void UHolodeckSonarSensor::showRegion(float DeltaTime){
+	// draw outlines of our region
+	if(ViewRegion){
+		FTransform tran = this->GetComponentTransform();
+		float debugThickness = 3.0f;
+		
+		// range lines
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, minAzimuth, minElev, tran), spherToEuc(RangeMax, minAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, minAzimuth, maxElev, tran), spherToEuc(RangeMax, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, maxAzimuth, minElev, tran), spherToEuc(RangeMax, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, maxAzimuth, maxElev, tran), spherToEuc(RangeMax, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+
+		// azimuth lines (should be arcs, we're being lazy)
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, minAzimuth, minElev, tran), spherToEuc(RangeMin, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, minAzimuth, maxElev, tran), spherToEuc(RangeMin, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMax, minAzimuth, minElev, tran), spherToEuc(RangeMax, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMax, minAzimuth, maxElev, tran), spherToEuc(RangeMax, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+
+		// elevation lines (should be arcs, we're being lazy)
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, minAzimuth, minElev, tran), spherToEuc(RangeMin, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, maxAzimuth, minElev, tran), spherToEuc(RangeMin, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMax, minAzimuth, minElev, tran), spherToEuc(RangeMax, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMax, maxAzimuth, minElev, tran), spherToEuc(RangeMax, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+	}		
+}
+
+FVector UHolodeckSonarSensor::spherToEuc(float r, float theta, float phi, FTransform SensortoWorld){
+	float x = r*UKismetMathLibrary::DegSin(phi)*UKismetMathLibrary::DegCos(theta);
+	float y = r*UKismetMathLibrary::DegSin(phi)*UKismetMathLibrary::DegSin(theta);
+	float z = r*UKismetMathLibrary::DegCos(phi);
+	return UKismetMathLibrary::TransformLocation(SensortoWorld, FVector(x, y, z));
+}
+
 void UHolodeckSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	// We initialize this here to make sure all agents are loaded
 	// This does nothing if it's already been loaded
 	initOctree();
 
+	// If the sonar ran last timestep, show off what it saw
+	if(TickCounter == 0){
+		showBeam(DeltaTime);
+		showRegion(DeltaTime);
+	}
+
+	// Count till next sonar timestep
 	TickCounter++;
 	if(TickCounter == TicksPerCapture){
 		TickCounter = 0;
