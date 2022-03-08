@@ -50,18 +50,27 @@ public:
 
 protected:
 	//See HolodeckSensor for the documentation of these overridden functions.
-	int GetNumItems() override { return BinsRange*BinsAzimuth; };
+	int GetNumItems() override { return RangeBins*AzimuthBins; };
 	int GetItemSize() override { return sizeof(float); };
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsRange = 300;
+	int32 RangeBins = 0;
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsAzimuth = 128;
+	float RangeRes = 0;
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsElevation = 0;
+	int32 AzimuthBins = 0;
+
+	UPROPERTY(EditAnywhere)
+	float AzimuthRes = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 ElevationBins = 0;
+
+	UPROPERTY(EditAnywhere)
+	float ElevationRes = 0;
 
 	UPROPERTY(EditAnywhere)
 	bool ViewRegion = false;
@@ -90,9 +99,6 @@ private:
 
 	// various computations we want to cache
 	int32 AzimuthBinScale = 1;
-	float RangeRes;
-	float AzimuthRes;
-	float ElevRes;
 	float perfectCos;
 
 	// Used to hold leafs when parallelized sorting/binning happens
@@ -106,7 +112,6 @@ private:
 	// for adding noise
 	MultivariateNormal<1> addNoise;
 	MultivariateNormal<1> multNoise;
-	MultivariateNormal<1> aziNoise;
 	MultivariateUniform<1> rNoise;
 
 	float density_water = 997;

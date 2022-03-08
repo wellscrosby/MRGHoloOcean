@@ -5,7 +5,7 @@
 #include "HolodeckBuoyantAgent.h"
 #include "HolodeckSonarSensor.h"
 
-float ATan2Approx(float y, float x){
+float UHolodeckSonarSensor::ATan2Approx(float y, float x){
     //http://pubs.opengroup.org/onlinepubs/009695399/functions/atan2.html
     //Volkan SALMA
 
@@ -39,16 +39,16 @@ void UHolodeckSonarSensor::ParseSensorParms(FString ParmsJson) {
 	TSharedPtr<FJsonObject> JsonParsed;
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ParmsJson);
 	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
-		if (JsonParsed->HasTypedField<EJson::Number>("MaxRange")) {
-			MaxRange = JsonParsed->GetNumberField("MaxRange")*100;
-		}
-
 		if (JsonParsed->HasTypedField<EJson::Number>("InitOctreeRange")) {
 			InitOctreeRange = JsonParsed->GetNumberField("InitOctreeRange")*100;
 		}
 
-		if (JsonParsed->HasTypedField<EJson::Number>("MinRange")) {
-			MinRange = JsonParsed->GetNumberField("MinRange")*100;
+		if (JsonParsed->HasTypedField<EJson::Number>("RangeMax")) {
+			RangeMax = JsonParsed->GetNumberField("RangeMax")*100;
+		}
+
+		if (JsonParsed->HasTypedField<EJson::Number>("RangeMin")) {
+			RangeMin = JsonParsed->GetNumberField("RangeMin")*100;
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("Azimuth")) {
@@ -68,7 +68,7 @@ void UHolodeckSonarSensor::ParseSensorParms(FString ParmsJson) {
 	}
 
 	if(InitOctreeRange == 0){
-		InitOctreeRange = MaxRange;
+		InitOctreeRange = RangeMax;
 	}
 
 	minAzimuth = -Azimuth/2;
@@ -88,7 +88,7 @@ void UHolodeckSonarSensor::BeginDestroy() {
 
 void UHolodeckSonarSensor::initOctree(){
 	// We delay making trees till the message has been printed to the screen
-	if(toMake.Num() != 0 && TickCounter > 2){
+	if(toMake.Num() != 0 && TickCounter > 4){
 		UE_LOG(LogHolodeck, Log, TEXT("SonarSensor::Initial building num: %d"), toMake.Num());
 		ParallelFor(toMake.Num(), [&](int32 i){
 			toMake.GetData()[i]->load();
@@ -179,7 +179,7 @@ bool UHolodeckSonarSensor::inRange(Octree* tree){
 
 	// check if it's in range
 	tree->locSpherical.X = locLocal.Size();
-	if(MinRange+offset-radius >= tree->locSpherical.X || tree->locSpherical.X >= MaxRange+offset+radius) return false; 
+	if(RangeMin+offset-radius >= tree->locSpherical.X || tree->locSpherical.X >= RangeMax+offset+radius) return false; 
 
 	// check if azimuth is in
 	tree->locSpherical.Y = ATan2Approx(-locLocal.Y, locLocal.X);

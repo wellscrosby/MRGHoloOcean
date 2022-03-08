@@ -41,13 +41,13 @@ protected:
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere)
-	float MaxRange = 3000;
+	float RangeMax = 3000;
 
 	UPROPERTY(EditAnywhere)
 	float InitOctreeRange = 0;
 
 	UPROPERTY(EditAnywhere)
-	float MinRange = 300;
+	float RangeMin = 300;
 
 	UPROPERTY(EditAnywhere)
 	float Azimuth = 130;
@@ -75,6 +75,7 @@ protected:
 	int TickCounter = 0;
 
 	// various computations we want to cache
+	float ATan2Approx(float y, float x);
 	float minAzimuth;
 	float maxAzimuth;
 	float minElev;
@@ -100,9 +101,7 @@ private:
 	// initialize + reserve vectors once
 	TArray<Octree*> bigLeaves;
 
-
 	// various computations we want to cache
 	float sqrt3_2;
 	float sinOffset;
-
 };
