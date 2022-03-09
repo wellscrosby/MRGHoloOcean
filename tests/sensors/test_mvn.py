@@ -50,6 +50,7 @@ def test_sigma_scalar(env, num):
     sigma = np.random.rand()*10
     cov = np.diag([sigma, sigma, sigma])**2
 
+    env._scenario['agents'][0]['sensors'][0]['configuration'].pop("Cov", None)
     env._scenario['agents'][0]['sensors'][0]['configuration']['Sigma'] = sigma
 
     env.reset()
@@ -68,6 +69,7 @@ def test_sigma_vector(env, num):
     sigma = np.random.rand(3)*10
     cov = np.diag(sigma**2)
 
+    env._scenario['agents'][0]['sensors'][0]['configuration'].pop("Cov", None)
     env._scenario['agents'][0]['sensors'][0]['configuration']['Sigma'] = list(sigma)
 
     env.reset()
@@ -86,6 +88,7 @@ def test_cov_num(env, num):
     cov_num = np.random.rand()*10
     cov = np.diag([cov_num, cov_num, cov_num])
 
+    env._scenario['agents'][0]['sensors'][0]['configuration'].pop("Sigma", None)
     env._scenario['agents'][0]['sensors'][0]['configuration']['Cov'] = cov_num
 
     env.reset()
@@ -104,6 +107,7 @@ def test_cov_vector(env, num):
     cov_array = np.random.rand(3)*10
     cov = np.diag(cov_array)
 
+    env._scenario['agents'][0]['sensors'][0]['configuration'].pop("Sigma", None)
     env._scenario['agents'][0]['sensors'][0]['configuration']['Cov'] = list(cov_array)
 
     env.reset()
@@ -122,6 +126,7 @@ def test_cov_matrix(env, num):
     cov = np.random.rand(3,3)*10
     cov = cov@cov.T
 
+    env._scenario['agents'][0]['sensors'][0]['configuration'].pop("Sigma", None)
     env._scenario['agents'][0]['sensors'][0]['configuration']['Cov'] = cov.tolist()
 
     env.reset()

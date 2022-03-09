@@ -346,15 +346,17 @@ class IMUSensor(HoloOceanSensor):
          [ang_vel_bias_roll,  ang_vel_bias_pitch, ang_vel_bias_yaw]    ]
 
 
+    where the accleration components are in m/s and the angular velocity is in rad/s.
+
     **Configuration**
 
     The ``configuration`` block (see :ref:`configuration-block`) accepts the
     following options:
 
-    - ``AccelSigma``/``AccelCov``: Covariance/Std for acceleration component. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
-    - ``AngVelSigma``/``AngVelCov``: Covariance/Std for angular velocity component. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
-    - ``AccelBiasSigma``/``AccelCBiasov``: Covariance/Std for acceleration bias component. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
-    - ``AngVelSigma``/``AngVelCov``: Covariance/Std for acceleration bias component. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
+    - ``AccelSigma``/``AccelCov``: Covariance/Std for acceleration component. Can be scalar, 3-vector or 3x3-matrix. Set one or the other. Defaults to 0 => no noise.
+    - ``AngVelSigma``/``AngVelCov``: Covariance/Std for angular velocity component. Can be scalar, 3-vector or 3x3-matrix. Set one or the other. Defaults to 0 => no noise.
+    - ``AccelBiasSigma``/``AccelCBiasov``: Covariance/Std for acceleration bias component. Can be scalar, 3-vector or 3x3-matrix. Set one or the other. Defaults to 0 => no noise.
+    - ``AngVelBiasSigma``/``AngVelBiasCov``: Covariance/Std for acceleration bias component. Can be scalar, 3-vector or 3x3-matrix. Set one or the other. Defaults to 0 => no noise.
     - ``ReturnBias``: Whether the sensor should return the bias along with accel/ang. vel. Defaults to false.
 
     """
@@ -365,10 +367,19 @@ class IMUSensor(HoloOceanSensor):
 
         self.config = {} if config is None else config
 
-        return_bias = False
+        return_bias = self.config.get("ReturnBias", False)
 
-        if "ReturnBias" in self.config:
-            return_bias = self.config["ReturnBias"]
+        if "AccelSigma" in self.config and "AccelCov" in self.config:
+            raise ValueError("Can't set both AccelSigma and AccelCov in IMUSensor")
+
+        if "AngVelSigma" in self.config and "AngVelCov" in self.config:
+            raise ValueError("Can't set both AngVelSigma and AngVelCov in IMUSensor")
+
+        if "AccelBiasSigma" in self.config and "AccelBiasCov" in self.config:
+            raise ValueError("Can't set both AccelBiasSigma and AccelBiasCov in IMUSensor")
+
+        if "AngVelBiasSigma" in self.config and "AngVelBiasCov" in self.config:
+            raise ValueError("Can't set both AngVelBiasSigma and AngVelBiasCov in IMUSensor")
 
         self.shape = [4,3] if return_bias else [2,3]
 
@@ -485,11 +496,20 @@ class LocationSensor(HoloOceanSensor):
     The ``configuration`` block (see :ref:`configuration-block`) accepts the
     following options:
 
-    - ``Sigma``/``Cov``: Covariance/Std. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
+    - ``Sigma``/``Cov``: Covariance/Std. Can be scalar, 3-vector or 3x3-matrix. Set one or the other. Defaults to 0 => no noise.
 
     """
 
     sensor_type = "LocationSensor"
+
+    def __init__(self, client, agent_name, agent_type, name="LocationSensor",  config=None):
+
+        self.config = {} if config is None else config
+
+        if "Sigma" in self.config and "Cov" in self.config:
+            raise ValueError("Can't set both Sigma and Cov in LocationSensor")
+
+        super(LocationSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
     @property
     def dtype(self):
@@ -501,7 +521,7 @@ class LocationSensor(HoloOceanSensor):
 
 
 class RotationSensor(HoloOceanSensor):
-    """Gets the rotation of the agent in the world.
+    """Gets the rotation of the agent in the world, with rotation XYZ about the fixed frame, in degrees.
 
     Returns ``[roll, pitch, yaw]`` (see :ref:`rotations`)
     """
@@ -517,7 +537,7 @@ class RotationSensor(HoloOceanSensor):
 
 
 class VelocitySensor(HoloOceanSensor):
-    """Returns the x, y, and z velocity of the agent.
+    """Returns the x, y, and z velocity of the sensor in the global frame.
     
     """
     sensor_type = "VelocitySensor"
@@ -715,10 +735,10 @@ class DVLSensor(HoloOceanSensor):
 
     - ``Elevation``: Angle of each acoustic beam off z-axis pointing down. Only used for noise/visualization. Defaults to 90 => horizontal.
     - ``DebugLines``: Whether to show lines of each beam. Defaults to false.
-    - ``VelSigma``/``VelCov``: Covariance/Std to be applied to each beam velocity. Can be scalar, 4-vector or 4x4-matrix. Defaults to 0 => no noise.
+    - ``VelSigma``/``VelCov``: Covariance/Std to be applied to each beam velocity. Can be scalar, 4-vector or 4x4-matrix. Set one or the other. Defaults to 0 => no noise.
     - ``ReturnRange``: Boolean of whether range of beams should also be returned. Defaults to true.
     - ``MaxRange``: Maximum range that can be returned by the beams.
-    - ``RangeSigma``/``RangeCov``: Covariance/Std to be applied to each beam range. Can be scalar, 4-vector or 4x4-matrix. Defaults to 0 => no noise.
+    - ``RangeSigma``/``RangeCov``: Covariance/Std to be applied to each beam range. Can be scalar, 4-vector or 4x4-matrix. Set one or the other. Defaults to 0 => no noise.
 
     """
 
@@ -728,10 +748,13 @@ class DVLSensor(HoloOceanSensor):
 
         self.config = {} if config is None else config
 
-        return_range = True
+        return_range = self.config.get("ReturnRange", True)
 
-        if "ReturnRange" in self.config:
-            return_range = self.config["ReturnRange"]
+        if "VelSigma" in self.config and "VelCov" in self.config:
+            raise ValueError("Can't set both VelSigma and VelCov in DVLSensor")
+
+        if "RangeSigma" in self.config and "RangeCov" in self.config:
+            raise ValueError("Can't set both RangeSigma and RangeCov in DVLSensor")
 
         self.shape = [7] if return_range else [3]
 
@@ -764,6 +787,15 @@ class DepthSensor(HoloOceanSensor):
 
     sensor_type = "DepthSensor"
 
+    def __init__(self, client, agent_name, agent_type, name="DepthSensor",  config=None):
+
+        self.config = {} if config is None else config
+
+        if "Sigma" in self.config and "Cov" in self.config:
+            raise ValueError("Can't set both Sigma and Cov in DepthSensor")
+
+        super(DepthSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+
     @property
     def dtype(self):
         return np.float32
@@ -782,13 +814,25 @@ class GPSSensor(HoloOceanSensor):
     The ``configuration`` block (see :ref:`configuration-block`) accepts the
     following options:
 
-    - ``Sigma``/``Cov``: Covariance/Std of measurement. Can be scalar, 3-vector or 3x3-matrix. Defaults to 0 => no noise.
+    - ``Sigma``/``Cov``: Covariance/Std of measurement. Can be scalar, 3-vector or 3x3-matrix. Set one or the other. Defaults to 0 => no noise.
     - ``Depth``: How deep in the water we can still receive GPS messages in meters. Defaults to 2m.
-    - ``DepthSigma``/``DepthCov``: Covariance/Std of depth. Must be a scalar. Defaults to 0 => no noise.
+    - ``DepthSigma``/``DepthCov``: Covariance/Std of depth. Must be a scalar. Set one or the other. Defaults to 0 => no noise.
 
     """
 
     sensor_type = "GPSSensor"
+
+    def __init__(self, client, agent_name, agent_type, name="GPSSensor",  config=None):
+
+        self.config = {} if config is None else config
+
+        if "Sigma" in self.config and "Cov" in self.config:
+            raise ValueError("Can't set both Sigma and Cov in GPSSensor")
+
+        if "DepthSigma" in self.config and "DepthCov" in self.config:
+            raise ValueError("Can't set both DepthSigma and DepthCov in GPSSensor")
+
+        super(GPSSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
     @property
     def dtype(self):
@@ -991,6 +1035,15 @@ class OpticalModemSensor(HoloOceanSensor):
     instances = dict()
 
     def __init__(self, client, agent_name, agent_type, name="OpticalModemSensor",  config=None):
+
+        self.config = {} if config is None else config
+
+        if "DistanceSigma" in self.config and "DistanceCov" in self.config:
+            raise ValueError("Can't set both DistanceSigma and DistanceCov in OpticalModemSensor")
+
+        if "AngleSigma" in self.config and "AngleCov" in self.config:
+            raise ValueError("Can't set both AngleSigma and AngleCov in OpticalModemSensor")
+
         self.sending_to = []
         
         # assign an id
