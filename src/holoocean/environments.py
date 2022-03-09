@@ -388,9 +388,9 @@ class HoloOceanEnvironment:
             for sensor_name, sensor in agent.sensors.items():
                 sensor.reset()
 
-        self.tick()  # Must tick once to send reset before sending spawning commands
-        self.tick()  # Bad fix to potential race condition. See issue BYU-PCCL/holodeck#224
-        self.tick()
+        self.tick(publish=False)  # Must tick once to send reset before sending spawning commands
+        self.tick(publish=False)  # Bad fix to potential race condition. See issue BYU-PCCL/holodeck#224
+        self.tick(publish=False)
         # Clear command queue
         if self._command_center.queue_size > 0:
             print("Warning: Reset called before all commands could be sent. Discarding",
@@ -414,7 +414,7 @@ class HoloOceanEnvironment:
             self._default_state_fn = self._get_full_state
 
         for _ in range(self._pre_start_steps + 1):
-            self.tick()
+            self.tick(publish=False)
 
         return self._default_state_fn()
 
