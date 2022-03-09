@@ -38,7 +38,7 @@ def env():
 def test_actor_rotation(env, num):
     """Make sure the orientation we tell the actor to start at is the correct one
     """
-    angles = np.random.rand(3)*180
+    angles = np.random.rand(3)*90
     R = Rotation.from_euler('xyz', angles, degrees=True).as_matrix()
 
     env._scenario["agents"][0]["rotation"] = angles.tolist()
@@ -55,7 +55,7 @@ def test_actor_rotation(env, num):
 def test_sensor_rotation(env, num):
     """Make sure the orientation we tell the sensor to start at is the correct one
     """
-    angles = np.random.rand(3)*180
+    angles = np.random.rand(3)*90
     
     R = Rotation.from_euler('xyz', angles, degrees=True).as_matrix()
 
@@ -73,7 +73,7 @@ def test_sensor_rotation(env, num):
 def test_teleport_rotation(env, num):
     """Make sure the orientation we teleport the agent to is the correct one
     """
-    angles = np.random.rand(3)*180
+    angles = np.random.rand(3)*90
     
     R = Rotation.from_euler('xyz', angles, degrees=True).as_matrix()
 
