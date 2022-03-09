@@ -56,7 +56,7 @@ def test_imu_sensor_acceleration(env):
 
     #Move forward, making sure y is relatively small, and x is increasing
     for i in range(50):
-        x_accel, y_accel, z_accel = env.step([150,0])[0]["IMUSensor"][0]
+        x_accel, y_accel, z_accel = env.step([150,0])["IMUSensor"][0]
         assert x_accel >= 0, f"The acceleration wasn't positive at step {i}!"
         assert y_accel <= .5
         assert np.isclose(z_accel, 9.81, 1e-2)
@@ -68,7 +68,7 @@ def test_imu_sensor_acceleration(env):
 
     #Move backward, making sure y is relatively small, and x is decreasing
     for i in range(50):
-        x_accel, y_accel, z_accel = env.step([-150,0])[0]["IMUSensor"][0]
+        x_accel, y_accel, z_accel = env.step([-150,0])["IMUSensor"][0]
         assert x_accel <= 1e-3, f"The acceleration wasn't negative at step {i}!"
         assert y_accel <= .5
         assert np.isclose(z_accel, 9.81, 1e-2)
@@ -96,7 +96,7 @@ def test_imu_sensor_angular_velocity(env):
 
     #Move forward, making sure y is relatively small, and x is increasing
     for i in range(60):
-        x_angvel, y_angvel, new_z_angvel = env.step([0,150])[0]["IMUSensor"][1]
+        x_angvel, y_angvel, new_z_angvel = env.step([0,150])["IMUSensor"][1]
         assert x_angvel <= .5
         assert y_angvel <= .5
         assert new_z_angvel >= last_z_angvel, f"The angvel didn't increase at step {i}!"
@@ -108,7 +108,7 @@ def test_imu_sensor_angular_velocity(env):
 
     #Move backward, making sure y is relatively small, and x is decreasing
     for i in range(60):
-        x_angvel, y_angvel, new_z_angvel = env.step([0,-150])[0]["IMUSensor"][1]
+        x_angvel, y_angvel, new_z_angvel = env.step([0,-150])["IMUSensor"][1]
         assert x_angvel <= .5
         assert y_angvel <= .5
         assert new_z_angvel <= last_z_angvel, f"The angvel didn't decrease at step {i}!"
