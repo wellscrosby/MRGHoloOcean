@@ -14,7 +14,7 @@ def hovering_example():
     # The last four elements correspond to the horizontal thrusters (see docs for more info)
     command = np.array([0, 0, 0, 0, 10, 10, 10, 10])
     for _ in range(1000):
-        state, reward, terminal, _ = env.step(command)
+        state = env.step(command)
         # To access specific sensor data:
         if "PoseSensor" in state:
             pose = state["PoseSensor"]
@@ -45,12 +45,12 @@ def torpedo_example():
     # The last four elements correspond to 
     command = np.array([0, 0, 0, 0, 50])
     for _ in range(1000):
-        state, reward, terminal, _ = env.step(command)
+        state = env.step(command)
 
     # Now turn the top and bottom fins to turn left
     command = np.array([0, -45, 0, 45, 50])
     for _ in range(1000):
-        state, reward, terminal, _ = env.step(command)
+        state = env.step(command)
 
 
 def editor_example():
@@ -95,7 +95,7 @@ def editor_example():
     for i in range(10):
         env.reset()
         for _ in range(1000):
-            state, reward, terminal, _ = env.step(command)
+            state = env.step(command)
 
 
 def editor_multi_agent_example():
