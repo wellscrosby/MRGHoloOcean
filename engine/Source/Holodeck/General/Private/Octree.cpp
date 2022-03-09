@@ -380,7 +380,7 @@ FString Octree::getMaterialName(FHitResult hit){
 	// If not staticmesh, get landscape material
 	AActor* actor = hit.GetActor();
 	ALandscapeProxy* landscape = reinterpret_cast<ALandscapeProxy*>(actor);
-	mat = landscape->GetLandscapeMaterial();
+	mat = landscape->LandscapeMaterial;
 
 	if(mat != nullptr){
 		return mat->GetFName().ToString();
