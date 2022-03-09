@@ -800,7 +800,7 @@ class GPSSensor(HoloOceanSensor):
 
     @property
     def sensor_data(self):
-        if ~np.any(np.isnan(self._sensor_data_buffer)):
+        if ~np.any(np.isnan(self._sensor_data_buffer)) and self.tick_count == self.tick_every:
             return self._sensor_data_buffer
         else:
             return None
