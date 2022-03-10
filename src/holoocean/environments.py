@@ -183,7 +183,7 @@ class HoloOceanEnvironment:
 
         # Whether we need to wait for a sonar to load
         self.start_world = start_world
-        self._loading_sonar = False
+        self._has_sonar = False
 
         if self.num_agents == 1:
             self._default_state_fn = self._get_single_state
@@ -202,8 +202,8 @@ class HoloOceanEnvironment:
     @property
     def _timeout(self):
         # Returns the timeout that should be processed
-        # Make a larger timeout when creating octrees at the start
-        if (self._num_ticks < 20 and self._loading_sonar) or not self.start_world:
+        # Turns off timeout when creating octrees might be made
+        if self._has_sonar or not self.start_world:
             if os.name == "posix":
                 return None
             elif os.name == "nt":
@@ -279,7 +279,7 @@ class HoloOceanEnvironment:
 
                 # set up sensor rates
                 if self._ticks_per_sec < sensor_config['Hz']:
-                    raise ValueError(f"{sensor_config['sensor_name']} is sampled at {sensor_config['Hz']} which is less than ticks_per_sec {self._ticks_per_sec}")
+                    raise ValueError(f"{sensor_config['sensor_name']} is sampled at {sensor_config['Hz']} which is greater than ticks_per_sec {self._ticks_per_sec}")
 
                 # round sensor rate as needed
                 tick_every = self._ticks_per_sec / sensor_config['Hz']
@@ -298,8 +298,8 @@ class HoloOceanEnvironment:
                                                 tick_every=sensor_config['tick_every'],
                                                 lcm_channel=sensor_config['lcm_channel']))
 
-                if sensor_config['sensor_type'] == "ImagingSonarSensor":
-                    self._loading_sonar = True
+                if sensor_config['sensor_type'] in SensorDefinition._sonar_sensors:
+                    self._has_sonar = True
 
                 # Import LCM if needed
                 if sensor_config['lcm_channel'] is not None and self._lcm is None:

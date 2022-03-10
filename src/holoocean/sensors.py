@@ -1151,6 +1151,13 @@ class SensorDefinition:
         "GPSSensor": GPSSensor,
     }
 
+    # Sensors that need timeout turned off
+    _sonar_sensors = ["ImagingSonarSensor"]
+
+    # Sensors that are ticked at their rate on the C++ too
+    # Generally sensors with a heavy computational cost
+    _heavy_sensors = _sonar_sensors + ["RGBCamera"]
+
     def get_config_json_string(self):
         """Gets the configuration dictionary as a string ready for transport
 
@@ -1179,8 +1186,8 @@ class SensorDefinition:
         self.location = location
         self.rotation = rotation
         self.config = self.type.default_config if config is None else config
-        # hacky way to get RGBCamera to capture lined up with python rate
-        if sensor_type in ["RGBCamera", "ImagingSonarSensor"]:
+        # hacky way to get heavy sensors to capture lined up with python rate
+        if sensor_type in SensorDefinition._heavy_sensors:
             self.config['TicksPerCapture'] = tick_every
         self.existing = existing
 
