@@ -5,7 +5,7 @@
 #include "HolodeckBuoyantAgent.h"
 #include "HolodeckSonarSensor.h"
 
-float ATan2Approx(float y, float x){
+float UHolodeckSonarSensor::ATan2Approx(float y, float x){
     //http://pubs.opengroup.org/onlinepubs/009695399/functions/atan2.html
     //Volkan SALMA
 
@@ -39,56 +39,67 @@ void UHolodeckSonarSensor::ParseSensorParms(FString ParmsJson) {
 	TSharedPtr<FJsonObject> JsonParsed;
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ParmsJson);
 	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
-		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthSigma")) {
-			aziNoise.initSigma(JsonParsed->GetNumberField("AzimuthSigma"));
+		// Geometry Parameters
+		if (JsonParsed->HasTypedField<EJson::Number>("RangeMax")) {
+			RangeMax = JsonParsed->GetNumberField("RangeMax")*100;
 		}
-		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthCov")) {
-			aziNoise.initCov(JsonParsed->GetNumberField("AzimuthCov"));
+		if (JsonParsed->HasTypedField<EJson::Number>("RangeMin")) {
+			RangeMin = JsonParsed->GetNumberField("RangeMin")*100;
 		}
-		if (JsonParsed->HasTypedField<EJson::Number>("RangeSigma")) {
-			rNoise.initSigma(JsonParsed->GetNumberField("RangeSigma")*100);
-		}
-		if (JsonParsed->HasTypedField<EJson::Number>("RangeCov")) {
-			rNoise.initCov(JsonParsed->GetNumberField("RangeCov")*100*100);
-		}
-
-
-		if (JsonParsed->HasTypedField<EJson::Number>("MaxRange")) {
-			MaxRange = JsonParsed->GetNumberField("MaxRange")*100;
-		}
-
-		if (JsonParsed->HasTypedField<EJson::Number>("InitOctreeRange")) {
-			InitOctreeRange = JsonParsed->GetNumberField("InitOctreeRange")*100;
-		}
-
-		if (JsonParsed->HasTypedField<EJson::Number>("MinRange")) {
-			MinRange = JsonParsed->GetNumberField("MinRange")*100;
-		}
-
 		if (JsonParsed->HasTypedField<EJson::Number>("Azimuth")) {
 			Azimuth = JsonParsed->GetNumberField("Azimuth");
 		}
-
 		if (JsonParsed->HasTypedField<EJson::Number>("Elevation")) {
 			Elevation = JsonParsed->GetNumberField("Elevation");
 		}
 
+		// Misc Parameters
+		if (JsonParsed->HasTypedField<EJson::Number>("InitOctreeRange")) {
+			InitOctreeRange = JsonParsed->GetNumberField("InitOctreeRange")*100;
+		}
 		if (JsonParsed->HasTypedField<EJson::Number>("TicksPerCapture")) {
 			TicksPerCapture = JsonParsed->GetIntegerField("TicksPerCapture");
 		}
+
+		// Visualization Parameters
+		if (JsonParsed->HasTypedField<EJson::Boolean>("ViewRegion")) {
+			ViewRegion = JsonParsed->GetBoolField("ViewRegion");
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("ViewOctree")) {
+			ViewOctree = JsonParsed->GetIntegerField("ViewOctree");
+		}
+
+		// Performance Parameters
+		if (JsonParsed->HasTypedField<EJson::Number>("ShadowEpsilon")) {
+			ShadowEpsilon = JsonParsed->GetIntegerField("ShadowEpsilon");
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("WaterDensity")) {
+			WaterDensity = JsonParsed->GetIntegerField("WaterDensity");
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("WaterSpeedSound")) {
+			WaterSpeedSound = JsonParsed->GetIntegerField("WaterSpeedSound");
+		}
+
+
 	}
 	else {
 		UE_LOG(LogHolodeck, Fatal, TEXT("UHolodeckSonarSensor::ParseSensorParms:: Unable to parse json."));
 	}
 
 	if(InitOctreeRange == 0){
-		InitOctreeRange = MaxRange;
+		InitOctreeRange = RangeMax;
+	}
+
+	if(ShadowEpsilon == 0){
+		ShadowEpsilon = 4*Octree::OctreeMin;
 	}
 
 	minAzimuth = -Azimuth/2;
 	maxAzimuth = Azimuth/2;
 	minElev = 90 - Elevation/2;
 	maxElev = 90 + Elevation/2;
+
+	WaterImpedance = WaterDensity * WaterSpeedSound;
 
 	sqrt3_2 = UKismetMathLibrary::Sqrt(3) / 2;
 	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(Azimuth, Elevation)/2);
@@ -102,7 +113,7 @@ void UHolodeckSonarSensor::BeginDestroy() {
 
 void UHolodeckSonarSensor::initOctree(){
 	// We delay making trees till the message has been printed to the screen
-	if(toMake.Num() != 0 && TickCounter > 2){
+	if(toMake.Num() != 0 && TickCounter > 4){
 		UE_LOG(LogHolodeck, Log, TEXT("SonarSensor::Initial building num: %d"), toMake.Num());
 		ParallelFor(toMake.Num(), [&](int32 i){
 			toMake.GetData()[i]->load();
@@ -192,11 +203,11 @@ bool UHolodeckSonarSensor::inRange(Octree* tree){
 	FVector locLocal = SensortoWorld.GetRotation().UnrotateVector(tree->loc-SensortoWorld.GetTranslation());
 
 	// check if it's in range
-	tree->locSpherical.X = locLocal.Size() + rNoise.sampleFloat();
-	if(MinRange+offset-radius >= tree->locSpherical.X || tree->locSpherical.X >= MaxRange+offset+radius) return false; 
+	tree->locSpherical.X = locLocal.Size();
+	if(RangeMin+offset-radius >= tree->locSpherical.X || tree->locSpherical.X >= RangeMax+offset+radius) return false; 
 
 	// check if azimuth is in
-	tree->locSpherical.Y = ATan2Approx(-locLocal.Y, locLocal.X) + aziNoise.sampleFloat();
+	tree->locSpherical.Y = ATan2Approx(-locLocal.Y, locLocal.X);
 	if(minAzimuth >= tree->locSpherical.Y || tree->locSpherical.Y >= maxAzimuth) return false;
 
 	// check if elevation is in
@@ -214,13 +225,13 @@ void UHolodeckSonarSensor::leavesInRange(Octree* tree, TArray<Octree*>& rLeaves,
 			if(stopAt == Octree::OctreeMin){
 				// Compute contribution while we're parallelized
 				// If no contribution, we don't have to add it in
-				FVector normalImpact = GetComponentLocation() - tree->loc; 
-				normalImpact.Normalize();
+				tree->normalImpact = GetComponentLocation() - tree->loc; 
+				tree->normalImpact.Normalize();
 
 				// compute contribution
-				float val = FVector::DotProduct(tree->normal, normalImpact);
-				if(val > 0){
-					tree->val = val;
+				float cos = FVector::DotProduct(tree->normal, tree->normalImpact);
+				if(cos > 0){
+					tree->cos = cos;
 					rLeaves.Add(tree);
 				} 
 			}
@@ -258,11 +269,95 @@ void UHolodeckSonarSensor::findLeaves(){
 	});
 }
 
+void UHolodeckSonarSensor::shadowLeaves(){
+	ParallelFor(sortedLeaves.Num(), [&](int32 i){
+		TArray<Octree*>& binLeafs = sortedLeaves.GetData()[i]; 
+
+		// sort from closest to farthest
+		binLeafs.Sort([](const Octree& a, const Octree& b){
+			return a.locSpherical.X < b.locSpherical.X;
+		});
+
+		// Get the closest cluster in the bin
+		float diff, R;
+		Octree* jth;
+		for(int32 j=0;j<binLeafs.Num();j++){
+			jth = binLeafs.GetData()[j];
+			
+			R = (jth->z - WaterImpedance) / (jth->z + WaterImpedance);
+			jth->val = R*R*jth->cos;
+
+			// diff = FVector::Dist(jth->loc, binLeafs.GetData()[j+1]->loc);
+			if(j != binLeafs.Num()-1){
+				diff = FMath::Abs(jth->locSpherical.X - binLeafs.GetData()[j+1]->locSpherical.X);
+				if(diff > ShadowEpsilon){
+					binLeafs.RemoveAt(j+1,binLeafs.Num()-j-1);
+					break;
+				}
+			}
+		}
+
+	});
+}
+
+void UHolodeckSonarSensor::showBeam(float DeltaTime){
+	// draw points inside our region
+	if(ViewOctree >= -1){
+		for( TArray<Octree*> bins : sortedLeaves){
+			for( Octree* l : bins){
+				if(ViewOctree == -1 || ViewOctree == l->idx.Y){
+					DrawDebugPoint(GetWorld(), l->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
+				}
+			}
+		}
+	}
+}
+
+void UHolodeckSonarSensor::showRegion(float DeltaTime){
+	// draw outlines of our region
+	if(ViewRegion){
+		FTransform tran = this->GetComponentTransform();
+		float debugThickness = 3.0f;
+		
+		// range lines
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, minAzimuth, minElev, tran), spherToEuc(RangeMax, minAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, minAzimuth, maxElev, tran), spherToEuc(RangeMax, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, maxAzimuth, minElev, tran), spherToEuc(RangeMax, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, maxAzimuth, maxElev, tran), spherToEuc(RangeMax, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+
+		// azimuth lines (should be arcs, we're being lazy)
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, minAzimuth, minElev, tran), spherToEuc(RangeMin, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, minAzimuth, maxElev, tran), spherToEuc(RangeMin, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMax, minAzimuth, minElev, tran), spherToEuc(RangeMax, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMax, minAzimuth, maxElev, tran), spherToEuc(RangeMax, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+
+		// elevation lines (should be arcs, we're being lazy)
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, minAzimuth, minElev, tran), spherToEuc(RangeMin, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMin, maxAzimuth, minElev, tran), spherToEuc(RangeMin, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMax, minAzimuth, minElev, tran), spherToEuc(RangeMax, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+		DrawDebugLine(GetWorld(), spherToEuc(RangeMax, maxAzimuth, minElev, tran), spherToEuc(RangeMax, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+	}		
+}
+
+FVector UHolodeckSonarSensor::spherToEuc(float r, float theta, float phi, FTransform SensortoWorld){
+	float x = r*UKismetMathLibrary::DegSin(phi)*UKismetMathLibrary::DegCos(theta);
+	float y = r*UKismetMathLibrary::DegSin(phi)*UKismetMathLibrary::DegSin(theta);
+	float z = r*UKismetMathLibrary::DegCos(phi);
+	return UKismetMathLibrary::TransformLocation(SensortoWorld, FVector(x, y, z));
+}
+
 void UHolodeckSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	// We initialize this here to make sure all agents are loaded
 	// This does nothing if it's already been loaded
 	initOctree();
 
+	// If the sonar ran last timestep, show off what it saw
+	if(TickCounter == 0){
+		showBeam(DeltaTime);
+		showRegion(DeltaTime);
+	}
+
+	// Count till next sonar timestep
 	TickCounter++;
 	if(TickCounter == TicksPerCapture){
 		TickCounter = 0;

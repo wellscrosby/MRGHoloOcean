@@ -7,9 +7,11 @@
 #include "Misc/FileHelper.h"
 #include "HAL/FileManagerGeneric.h"
 #include "Containers/Map.h"
+#include "Containers/DiscardableKeyValueCache.h"
 #include "DrawDebugHelpers.h"
-#include "Conversion.h"
+#include "LandscapeProxy.h"
 
+#include "Conversion.h"
 #include "gason.h"
 #include "jsonbuilder.h"
 #include <string>
@@ -28,7 +30,7 @@ class Octree
         static FVector EnvMin;
         static FVector EnvMax;
         static UWorld* World;
-        static TMap<FString,FVector2D> materials;
+        static TDiscardableKeyValueCache<FString,float> materials;
 
         static FVector EnvCenter;
 
@@ -45,6 +47,7 @@ class Octree
             return p;
         }
 
+        static FString getMaterialName(FHitResult hit);
         void fillMaterialProperties(FString mat);
 
     public:
@@ -101,13 +104,16 @@ class Octree
         // Given to each leaf 
         FVector normal;
         FString material;
-        float density = 1.0f;
-        float sos = 1.0f; // speed of sound
+        // impedance
+        float z = 1.0f;
 
         // Used during computations
-        // Value of Range, Elevation, and Azimuth in that order (in m/degrees/degrees).
+        // Value of Range, Elevation, and Azimuth in that order (in cm/degrees/degrees).
         FVector locSpherical;
+        FVector normalImpact;
         // Index of Range, Elevation, and Azimuth in that order.
         FIntVector idx;
+        // Holds cos of angle, and value to put in
+        float cos;
         float val;
 };
