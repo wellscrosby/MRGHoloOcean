@@ -48,20 +48,27 @@ public:
 
 protected:
 	//See HolodeckSensor for the documentation of these overridden functions.
-	// int GetNumItems() override { return BinsRange*BinsAzimuth; }; // Returns 2D array for Buffer for Imaging Sonar
-	int GetNumItems() override { return BinsRange; }; // Returns 1D array for buffer for Sidescan Sonar
+	int GetNumItems() override { return RangeBins; }; // Returns 1D array for buffer for Sidescan Sonar
 	int GetItemSize() override { return sizeof(float); };
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsRange = 300;
+	int32 RangeBins = 0;
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsAzimuth = 600;
+	float RangeRes = 0;
 
-	// Elevation bins are used for shadowing, but ultimately no elevation information is retained in the output
 	UPROPERTY(EditAnywhere)
-	int32 BinsElevation = 0;
+	int32 AzimuthBins = 0;
+
+	UPROPERTY(EditAnywhere)
+	float AzimuthRes = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 ElevationBins = 0;
+
+	UPROPERTY(EditAnywhere)
+	float ElevationRes = 0;
 
 	UPROPERTY(EditAnywhere)
 	bool ViewRegion = false;
@@ -75,11 +82,6 @@ private:
 	 * After initialization, Parent contains a pointer to whatever the sensor is attached to.
 	 */
 	AActor* Parent;
-
-	// various computations we want to cache
-	float RangeRes;
-	float AzimuthRes;
-	float ElevRes;
 
 	// Used to hold leafs when parallelized sorting/binning happens
 	TArray<TArray<Octree*>> sortedLeaves;

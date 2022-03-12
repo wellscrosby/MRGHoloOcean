@@ -20,10 +20,10 @@ void USidescanSonarSensor::BeginDestroy() {
 void USidescanSonarSensor::ParseSensorParms(FString ParmsJson) {
 
 	// Override the Parent Class defaults for some key parameters
-	MaxRange = 35 * 100; 	// 20 m (in cm)
-	MinRange = 0.1 * 100; 	// 0.1 m (in cm)
-	Azimuth = 160; 			// degrees
-	Elevation = 0.25;			// degrees
+	Azimuth = 170; 			// degrees
+	Elevation = 0.25;		// degrees
+	RangeMin = 0.5 * 100; 	// 0.5 m (in cm)
+	RangeMax = 35 * 100; 	// 35 m (in cm)
 
 	// Parse any parent class parameters that were provided in the configuration
 	Super::ParseSensorParms(ParmsJson);
@@ -46,16 +46,28 @@ void USidescanSonarSensor::ParseSensorParms(FString ParmsJson) {
 			multNoise.initCov(JsonParsed->GetNumberField("MultCov"));
 		}
 
-		if (JsonParsed->HasTypedField<EJson::Number>("BinsRange")) {
-			BinsRange = JsonParsed->GetIntegerField("BinsRange");
+		if (JsonParsed->HasTypedField<EJson::Number>("RangeRes")) {
+			RangeRes = JsonParsed->GetNumberField("RangeRes") * 100; // m to cm
 		}
 
-		if (JsonParsed->HasTypedField<EJson::Number>("BinsAzimuth")) {
-			BinsAzimuth = JsonParsed->GetIntegerField("BinsAzimuth");
+		if (JsonParsed->HasTypedField<EJson::Number>("ElevationRes")) {
+			ElevationRes = JsonParsed->GetNumberField("ElevationRes"); // degrees
 		}
 
-		if (JsonParsed->HasTypedField<EJson::Number>("BinsElevation")) {
-			BinsElevation = JsonParsed->GetIntegerField("BinsElevation");
+		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthRes")) {
+			AzimuthRes = JsonParsed->GetNumberField("AzimuthRes"); // degrees
+		}
+
+		if (JsonParsed->HasTypedField<EJson::Number>("RangeBins")) {
+			RangeBins = JsonParsed->GetIntegerField("RangeBins");
+		}
+
+		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthBins")) {
+			AzimuthBins = JsonParsed->GetIntegerField("AzimuthBins");
+		}
+
+		if (JsonParsed->HasTypedField<EJson::Number>("ElevationBins")) {
+			ElevationBins = JsonParsed->GetIntegerField("ElevationBins");
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Boolean>("ViewRegion")) {
@@ -71,32 +83,54 @@ void USidescanSonarSensor::ParseSensorParms(FString ParmsJson) {
 		UE_LOG(LogHolodeck, Fatal, TEXT("USidescanSonarSensor::ParseSensorParms:: Unable to parse json."));
 	}
 
-	float dist = (MaxRange - MinRange) / 8 + MinRange;
-	BinsElevation = (dist * Elevation * Pi / 180) / Octree::OctreeMin;
-
-	if (BinsElevation < 1)
-	{
-		BinsElevation = 1;
+	// Parse through the Range parameters given to us
+	if(RangeBins != 0){
+		RangeRes = (RangeMax - RangeMin) / RangeBins;
+	} 
+	else if(RangeRes != 0){
+		RangeBins = (RangeMax - RangeMin) / RangeRes;
 	}
-	// ElevRes = Elevation / BinsElevation
-	// if(BinsElevation == 0){
-	// 	BinsElevation = 10;
-	// }
+	else{
+		RangeRes = 5; // cm
+		RangeBins = (RangeMax - RangeMin) / RangeRes;
+	}
+
+	// Parse through the Azimuth parameters given to us
+	if(AzimuthBins != 0){
+		AzimuthRes = Azimuth / AzimuthBins;
+	} 
+	else if(AzimuthRes != 0){
+		AzimuthBins = Azimuth / AzimuthRes;
+	}
+	else{
+		// Calculate how large the azimuth bins should be
+		AzimuthRes = (180 * 1.5 * Octree::OctreeMin) / (Pi * RangeMin);
+		AzimuthBins = Azimuth / AzimuthRes;
+	}
+
+	// Parse through the Elevation parameters given to us
+	if(ElevationBins != 0){
+		ElevationRes = Elevation / ElevationBins;
+	} 
+	else if(ElevationRes != 0){
+		ElevationBins = Elevation / ElevationRes;
+	}
+	else{
+		// Calculate how large our shadowing bins should be
+		ElevationBins = (RangeMin*Elevation*Pi/180) / Octree::OctreeMin;
+		if(ElevationBins < 1) ElevationBins = 1;
+		ElevationRes = Elevation / ElevationBins;
+	}
 }
 
 void USidescanSonarSensor::InitializeSensor() {
 	Super::InitializeSensor();
 	
-	// Get size of each bin
-	RangeRes = (MaxRange - MinRange) / BinsRange;
-	AzimuthRes = Azimuth / BinsAzimuth;
-	ElevRes = Elevation / BinsElevation;
-	
 	// setup count of each bin
-	// count = new int32[BinsRange*BinsAzimuth](); // Method for imaging sonar
-	count = new int32[BinsRange](); // Sidescan Sonar (1d array)
+	// count = new int32[RangeBins*AzimuthBins](); // Method for imaging sonar
+	count = new int32[RangeBins](); // Sidescan Sonar (1d array)
 
-	for(int i=0;i<BinsAzimuth*BinsElevation;i++){
+	for(int i=0;i<AzimuthBins*ElevationBins;i++){
 		sortedLeaves.Add(TArray<Octree*>());
 		sortedLeaves[i].Reserve(10000);
 	}
@@ -117,10 +151,10 @@ void USidescanSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickT
 	if(TickCounter == 0){
 		// reset things and get ready
 		float* result = static_cast<float*>(Buffer);
-		// std::fill(result, result+BinsRange*BinsAzimuth, 0);
-		// std::fill(count, count+BinsRange*BinsAzimuth, 0);
-		std::fill(result, result+BinsRange, 0);
-		std::fill(count, count+BinsRange, 0);
+		// std::fill(result, result+RangeBins*AzimuthBins, 0);
+		// std::fill(count, count+RangeBins*AzimuthBins, 0);
+		std::fill(result, result+RangeBins, 0);
+		std::fill(count, count+RangeBins, 0);
 		
 		for(auto& sl: sortedLeaves){
 			sl.Reset();
@@ -135,14 +169,14 @@ void USidescanSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickT
 		for(TArray<Octree*>& bin : foundLeaves){
 			for(Octree* l : bin){
 				// Compute bins while we're parallelized
-				l->idx.Y = (int32)((l->locSpherical.Y - minAzimuth)/ AzimuthRes);
-				l->idx.Z = (int32)((l->locSpherical.Z - minElev)/ ElevRes);
+				l->idx.Y = (int32)((l->locSpherical.Y - minAzimuth)/ AzimuthResDegrees);
+				l->idx.Z = (int32)((l->locSpherical.Z - minElev)/ ElevationResDegrees);
 				// Sometimes we get float->int rounding errors
-				if(l->idx.Y == BinsAzimuth) --l->idx.Y;
+				if(l->idx.Y == AzimuthBins) --l->idx.Y;
 
 				// UE_LOG(LogTemp, Warning, TEXT("Index Y: %d"), l->idx.Y);
 
-				idx = l->idx.Z*BinsAzimuth + l->idx.Y;
+				idx = l->idx.Z*AzimuthBins + l->idx.Y;
 				sortedLeaves[idx].Emplace(l);
 			}
 		}
@@ -150,7 +184,7 @@ void USidescanSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickT
 
 		// HANDLE SHADOWING
 		float eps = 16;
-		ParallelFor(BinsAzimuth*BinsElevation, [&](int32 i){
+		ParallelFor(AzimuthBins*ElevationBins, [&](int32 i){
 			TArray<Octree*>& binLeafs = sortedLeaves.GetData()[i]; 
 
 			// sort from closest to farthest
@@ -166,17 +200,17 @@ void USidescanSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickT
 			for(int j=0;j<binLeafs.Num()-1;j++){
 				jth = binLeafs.GetData()[j];
 				
-				jth->idx.X = (int32)((jth->locSpherical.X - MinRange) / RangeRes);
-				if (jth->idx.Y > (BinsAzimuth / 2))
+				jth->idx.X = (int32)((jth->locSpherical.X - RangeMin) / RangeRes);
+				if (jth->idx.Y > (AzimuthBins / 2))
 				// if (jth->locSpherical.Y > 0)
 				{
-					idx = BinsRange / 2 - jth->idx.X / 2 - 1;
+					idx = RangeBins / 2 - jth->idx.X / 2 - 1;
 				}
 				else
 				{
-					idx = BinsRange / 2 + jth->idx.X / 2;
+					idx = RangeBins / 2 + jth->idx.X / 2;
 				}
-				// idx = jth->idx.X*BinsAzimuth + jth->idx.Y;
+				// idx = jth->idx.X*AzimuthBins + jth->idx.Y;
 				z_t = jth->sos * jth->density;
 				R = (z_t - z_i) / (z_t + z_i);
 
@@ -192,10 +226,10 @@ void USidescanSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickT
 
 		
 		// MOVE THEM INTO BUFFER
-		// for (int i = 0; i < BinsRange*BinsAzimuth; i++) {
-		for (int i = 0; i < BinsRange; i++) {
+		// for (int i = 0; i < RangeBins*AzimuthBins; i++) {
+		for (int i = 0; i < RangeBins; i++) {
 			if(count[i] != 0){
-				result[i] *= (1 + multNoise.sampleFloat())/count[i];
+				result[i] *= (1 + multNoise.sampleFloat()) / count[i];
 				result[i] += addNoise.sampleRayleigh();
 			}
 			else{
@@ -220,22 +254,22 @@ void USidescanSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickT
 			float debugThickness = 3.0f;
 			
 			// range lines
-			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, minAzimuth, minElev, tran), spherToEucSS(MaxRange, minAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, minAzimuth, maxElev, tran), spherToEucSS(MaxRange, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, maxAzimuth, minElev, tran), spherToEucSS(MaxRange, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, maxAzimuth, maxElev, tran), spherToEucSS(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(RangeMin, minAzimuth, minElev, tran), spherToEucSS(RangeMax, minAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(RangeMin, minAzimuth, maxElev, tran), spherToEucSS(RangeMax, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(RangeMin, maxAzimuth, minElev, tran), spherToEucSS(RangeMax, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(RangeMin, maxAzimuth, maxElev, tran), spherToEucSS(RangeMax, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
 
 			// azimuth lines (should be arcs, we're being lazy)
-			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, minAzimuth, minElev, tran), spherToEucSS(MinRange, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, minAzimuth, maxElev, tran), spherToEucSS(MinRange, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEucSS(MaxRange, minAzimuth, minElev, tran), spherToEucSS(MaxRange, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEucSS(MaxRange, minAzimuth, maxElev, tran), spherToEucSS(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(RangeMin, minAzimuth, minElev, tran), spherToEucSS(RangeMin, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(RangeMin, minAzimuth, maxElev, tran), spherToEucSS(RangeMin, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(RangeMax, minAzimuth, minElev, tran), spherToEucSS(RangeMax, maxAzimuth, minElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(RangeMax, minAzimuth, maxElev, tran), spherToEucSS(RangeMax, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
 
 			// elevation lines (should be arcs, we're being lazy)
-			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, minAzimuth, minElev, tran), spherToEucSS(MinRange, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEucSS(MinRange, maxAzimuth, minElev, tran), spherToEucSS(MinRange, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEucSS(MaxRange, minAzimuth, minElev, tran), spherToEucSS(MaxRange, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
-			DrawDebugLine(GetWorld(), spherToEucSS(MaxRange, maxAzimuth, minElev, tran), spherToEucSS(MaxRange, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(RangeMin, minAzimuth, minElev, tran), spherToEucSS(RangeMin, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(RangeMin, maxAzimuth, minElev, tran), spherToEucSS(RangeMin, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(RangeMax, minAzimuth, minElev, tran), spherToEucSS(RangeMax, minAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
+			DrawDebugLine(GetWorld(), spherToEucSS(RangeMax, maxAzimuth, minElev, tran), spherToEucSS(RangeMax, maxAzimuth, maxElev, tran), FColor::Green, false, DeltaTime*TicksPerCapture, ECC_WorldStatic, debugThickness);
 		}		
 	}
 }
