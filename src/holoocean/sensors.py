@@ -695,9 +695,9 @@ class SidescanSonarSensor(HoloOceanSensor):
         elif "RangeBins" in self.config:
             range_bins = self.config["RangeBins"]
         elif "RangeRes" in self.config:
-            range_bins = (range_max - range_min) // self.config["RangeRes"]
+            range_bins = int((range_max - range_min) // self.config["RangeRes"])
         else:
-            range_bins = (range_max - range_min) // range_res
+            range_bins = int((range_max - range_min) // range_res)
 
         if "AzimuthBins" in self.config and "AzimuthRes" in self.config:
             raise ValueError("Can't set both AzimuthBins and AzimuthRes, use one of them in your configuration")
@@ -712,7 +712,7 @@ class SidescanSonarSensor(HoloOceanSensor):
             raise ValueError("Can't set both MultSigma and MultCov, use one of them in your configuration")
         
         # Ensure shape of python variable matches what will be sent from the c++ side
-        self.shape = (range_bins, 1)
+        self.shape = [range_bins]
 
         super(SidescanSonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
