@@ -70,12 +70,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float ElevationRes = 0;
 
-	UPROPERTY(EditAnywhere)
-	bool ViewRegion = false;
-
-	UPROPERTY(EditAnywhere)
-	int ViewOctree = -10;
-
 private:
 	/*
 	 * Parent
@@ -83,14 +77,10 @@ private:
 	 */
 	AActor* Parent;
 
-	// Used to hold leafs when parallelized sorting/binning happens
-	TArray<TArray<Octree*>> sortedLeaves;
+	// Used for counting how many leaves in a bin for averaging at the end
 	int32* count;
 	
 	// for adding noise
 	MultivariateNormal<1> addNoise;
 	MultivariateNormal<1> multNoise;
-
-	float density_water = 997;
-	float sos_water = 1480;
 };
