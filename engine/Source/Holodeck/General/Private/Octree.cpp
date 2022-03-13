@@ -30,7 +30,7 @@ FVector Octree::EnvMin;
 FVector Octree::EnvMax;
 FVector Octree::EnvCenter;
 UWorld* Octree::World;
-TMap<FString, FVector2D> Octree::materials;
+TDiscardableKeyValueCache<FString, float> Octree::materials;
 
 float sign(float val){
     bool s = signbit(val);
@@ -95,12 +95,8 @@ void Octree::initOctree(UWorld* w){
         FString key = stringArray[0];
         if(stringArray.Num() == 3){
             // density, speed of sound
-            FVector2D val = FVector2D(FCString::Atof(*stringArray[1]), FCString::Atof(*stringArray[2]));
-            materials.Add(key, val);
-        }
-        // if it's blank, assume full reflection
-        else{
-            materials.Add(key, FVector2D(10000, 10000));
+            float z = FCString::Atof(*stringArray[1]) * FCString::Atof(*stringArray[2]);
+            materials.Add(key, z);
         }
 	}
 }
@@ -184,11 +180,8 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, float octreeMin, FS
             else if(octreeSize == Octree::OctreeMin){
                 child->normal = hit.Normal;
 
-                // Get physical material (not used very often)
-                // FString material = hit.PhysMaterial.Get()->GetFName().ToString();
                 // Get material (there is tons of these!)
-                // FString mat = hit.GetComponent()->GetMaterial(hit.ElementIndex)->GetFName().ToString();
-                child->fillMaterialProperties("test");
+                child->fillMaterialProperties(getMaterialName(hit));
 
                 // clean normal
                 if(isnan(child->normal.X)) child->normal.X = sign(child->normal.X); 
@@ -358,20 +351,42 @@ void Octree::unload(){
 
 void Octree::fillMaterialProperties(FString mat){
     material = mat;
-    FVector2D* matProp = materials.Find(material);
-    if(matProp == nullptr){
+    float matProp;
+    bool found = materials.Find(material, matProp);
+    if(!found){
         UE_LOG(LogHolodeck, Warning, TEXT("Missing material information for %s, adding in blank row to csv"), *this->material);
 
-        // Add blank line to material file to fill in later
+        // Add default line to material file to fill in later
         FString filePath = FPaths::ProjectDir() + "../../materials.csv";
-        FString line = "\n" + material;
+        FString line = "\n" + material + ", 10000, 10000";
         FFileHelper::SaveStringToFile(line, *filePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
 
         // Default to something really high to get full reflection for this time
-        materials.Add(material, FVector2D(10000, 10000));
+        z = 10000*10000;
+        materials.Add(material, z);
     }
     else{
-        density = matProp->X;
-        sos = matProp->Y;
+        z = matProp;
     }
+}
+
+FString Octree::getMaterialName(FHitResult hit){
+    // Get staticmesh material
+	UMaterialInterface* mat = hit.GetComponent()->GetMaterial(hit.ElementIndex);
+	if(mat != nullptr){
+		return mat->GetFName().ToString(); 
+	}
+
+	// If not staticmesh, get landscape material
+	AActor* actor = hit.GetActor();
+	ALandscapeProxy* landscape = reinterpret_cast<ALandscapeProxy*>(actor);
+	mat = landscape->LandscapeMaterial;
+
+	if(mat != nullptr){
+		return mat->GetFName().ToString();
+	}
+
+	// If we have extra issues getting material
+    UE_LOG(LogHolodeck, Warning, TEXT("Couldn't get material name for an octree leaf, putting as MaterialNotFound"));
+	return "MaterialNotFound";
 }

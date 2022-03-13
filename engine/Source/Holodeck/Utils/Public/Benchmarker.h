@@ -10,8 +10,8 @@
 class HOLODECK_API Benchmarker
 {
 public:
-	Benchmarker();
-	Benchmarker(float Alpha);
+	// If manual start is false, CalcMs will automatically end your iteration and start the next one.
+	Benchmarker(bool manual_start_=false);
 	~Benchmarker();
 
 	/**
@@ -31,25 +31,12 @@ public:
 	/**
 	  * CalculateAvg
 	  *
-	  * Calculates the avg time for the function
+	  * Calculates the total time for the function
 	  */
-	void CalculateAvg();
-
-	/**
-	  * Stat
-	  *
-	  * Returns the average
-	  * @return the average
-	  */
-	FString Stat();
-
 	float CalcMs();
 
 private:
-	bool first_pass;
-	float alpha;
-	float avg;
-	std::chrono::duration<float> time_span;
+	bool manual_start;
 	std::chrono::high_resolution_clock::time_point t_start;
 	std::chrono::high_resolution_clock::time_point t_end;
 };

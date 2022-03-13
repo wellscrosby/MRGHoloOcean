@@ -9,7 +9,6 @@
 #include "Octree.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Async/ParallelFor.h"
-#include "MultivariateNormal.h"
 
 #include "HolodeckSonarSensor.generated.h"
 
@@ -42,16 +41,16 @@ protected:
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere)
-	float MaxRange = 3000;
+	float RangeMax = 1000;
 
 	UPROPERTY(EditAnywhere)
 	float InitOctreeRange = 0;
 
 	UPROPERTY(EditAnywhere)
-	float MinRange = 300;
+	float RangeMin = 10;
 
 	UPROPERTY(EditAnywhere)
-	float Azimuth = 130;
+	float Azimuth = 120;
 
 	UPROPERTY(EditAnywhere)
 	float Elevation = 20;
@@ -59,28 +58,57 @@ protected:
 	UPROPERTY(EditAnywhere)
 	int TicksPerCapture = 1;
 
+	UPROPERTY(EditAnywhere)
+	bool ViewRegion = false;
+
+	UPROPERTY(EditAnywhere)
+	int ViewOctree = -10;
+
+	UPROPERTY(EditAnywhere)
+	float ShadowEpsilon = 0;
+
+	UPROPERTY(EditAnywhere)
+	float WaterDensity = 997.0;
+
+	UPROPERTY(EditAnywhere)
+	float WaterSpeedSound = 1480.0;
+
 	// Call at the beginning of every tick, loads octree
 	void initOctree();
 
 	// Finds all the leaves in range
 	void findLeaves();
 
+	// Shadow leaves that have been sorted
+	void shadowLeaves();
+
+	// Visualizer helpers
+	void showBeam(float DeltaTime);
+	virtual void showRegion(float DeltaTime);
+
 	// Used to hold leafs when parallelized filtering happens
 	TArray<TArray<Octree*>> foundLeaves;
 
+	// Used to hold leafs when parallelized sorting/binning happens
+	TArray<TArray<Octree*>> sortedLeaves;
+
 	// Water information (Change to parameter?)
-	float density_water = 997;
-	float sos_water = 1480;
+	float WaterImpedance;
 
 	// use for skipping frames
 	int TickCounter = 0;
 
 	// various computations we want to cache
+	float ATan2Approx(float y, float x);
 	float minAzimuth;
 	float maxAzimuth;
 	float minElev;
 	float maxElev;
 
+	virtual bool inRange(Octree* tree);
+	void leavesInRange(Octree* tree, TArray<Octree*>& leafs, float stopAt);
+	FVector spherToEuc(float r, float theta, float phi, FTransform SensortoWorld);
+	
 private:
 	/*
 	 * Parent
@@ -98,14 +126,7 @@ private:
 	// initialize + reserve vectors once
 	TArray<Octree*> bigLeaves;
 
-	// for adding noise
-	MultivariateNormal<1> aziNoise;
-	MultivariateNormal<1> rNoise;
-
 	// various computations we want to cache
-	float sqrt2;
+	float sqrt3_2;
 	float sinOffset;
-
-	bool inRange(Octree* tree);
-	void leavesInRange(Octree* tree, TArray<Octree*>& leafs, float stopAt);
 };
