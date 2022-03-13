@@ -779,14 +779,14 @@ class ImagingSonarSensor(HoloOceanSensor):
         elif "RangeBins" in self.config:
             b_range = self.config["RangeBins"]
         elif "RangeRes" in self.config:
-            b_range = (max_range - min_range) / self.config["RangeRes"]
+            b_range = int((max_range - min_range) // self.config["RangeRes"])
 
         if "AzimuthBins" in self.config and "AzimuthRes" in self.config:
             raise ValueError("Can't set both AzimuthBins and AzimuthRes, use one of them in your configuration")
         elif "AzimuthBins" in self.config:
             b_azimuth = self.config["AzimuthBins"]
         elif "AzimuthRes" in self.config:
-            b_azimuth = azimuth / self.config["AzimuthRes"]
+            b_azimuth = int(azimuth // self.config["AzimuthRes"])
 
         if "ElevationBins" in self.config and "ElevationRes" in self.config:
             raise ValueError("Can't set both ElevationBins and ElevationRes, use one of them in your configuration")
