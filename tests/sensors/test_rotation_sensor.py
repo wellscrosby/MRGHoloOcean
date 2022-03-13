@@ -1,48 +1,48 @@
 import holoocean
 import numpy as np
-from tests.utils.equality import almost_equal
 import uuid
+import pytest
 
 
-base_cfg = {
-    "name": "test_rotation_sensor",
-    "world": "ExampleLevel",
-    "main_agent": "sphere0",
-    "frames_per_sec": False,
-    "agents": [
-        {
-            "agent_name": "sphere0",
-            "agent_type": "SphereAgent",
-            "sensors": [
-                {
-                    "sensor_type": "RotationSensor",
-                }
-            ],
-            "control_scheme": 0,
-            "location": [.95, -1.75, .5]
-        }
-    ]
-}
+@pytest.fixture(scope="module")
+def env():
+    scenario = {
+        "name": "test_rotation_sensor",
+        "world": "ExampleLevel",
+        "main_agent": "sphere0",
+        "frames_per_sec": False,
+        "agents": [
+            {
+                "agent_name": "sphere0",
+                "agent_type": "SphereAgent",
+                "sensors": [
+                    {
+                        "sensor_type": "RotationSensor",
+                    }
+                ],
+                "control_scheme": 0,
+                "location": [.95, -1.75, .5]
+            }
+        ]
+    }
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    with holoocean.environments.HoloOceanEnvironment(scenario=scenario,
+                                                   binary_path=binary_path,
+                                                   show_viewport=False,
+                                                   uuid=str(uuid.uuid4())) as env:
+        yield env
 
-
-def test_rotation_sensor_after_teleport():
+@pytest.mark.parametrize('num', range(3))
+def test_rotation_sensor_after_teleport(env, num):
     """Make sure that the rotation sensor correctly updates after using a teleport command to 
     rotate the agent
 
     """
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    loc = [123, 3740, 1030]
+    # Do much smaller rotations to avoid singularities
+    rot_deg = np.random.rand(3)*20
 
-    with holoocean.environments.HoloOceanEnvironment(scenario=base_cfg,
-                                                   binary_path=binary_path,
-                                                   show_viewport=False,
-                                                   uuid=str(uuid.uuid4())) as env:
+    env.agents['sphere0'].teleport(loc, rot_deg)
+    rotation = env.tick()["RotationSensor"]
 
-        for _ in range(10):
-            env.tick()
-
-        loc = [123, 3740, 1030]
-        rot_deg = np.array([0, 90, 0])
-        env.agents['sphere0'].teleport(loc, rot_deg)
-        rotation = env.tick()["RotationSensor"]
-
-        assert almost_equal(rot_deg, rotation), "The agent rotated in an unexpected manner!"
+    assert np.allclose(rot_deg, rotation, rtol=1e-4), "The agent rotated in an unexpected manner!"
