@@ -731,6 +731,60 @@ class ImagingSonarSensor(HoloOceanSensor):
     def data_shape(self):
         return self.shape
 
+class ProfilingSonarSensor(ImagingSonarSensor):
+    """Simulates a multibeam profiling sonar. This is largely based off of the imaging sonar (:class:`~holoocean.sensors.ImagingSonarSensor`), just with
+    different defaults. See :ref:`configure-octree` for more on how to configure the octree that is used.
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts any of 
+    the options in the following sections.
+
+    **Basic Configuration**
+
+    - ``Azimuth``: Azimuth (side to side) angle visible in degrees, defaults to 120.
+    - ``Elevation``: Elevation angle (up and down) visible in degrees, defaults to 1.
+    - ``RangeMin``: Minimum range visible in meters, defaults to 0.5.
+    - ``RangeMax``: Maximum range visible in meters, defaults to 75.
+    - ``RangeBins``/``RangeRes``: Number of range bins of resulting image, or resolution (length in meters) of each bin. Set one or the other. Defaults to 750 bins.
+    - ``AzimuthBins``/``AzimuthRes``: Number of azimuth bins of resulting image, or resolution (length in degrees) of each bin. Set one or the other. Defaults to 480 bins.
+   
+    **Noise Configuration**
+
+    - ``AddSigma``/``AddCov``: Additive noise std/covariance from a Rayleigh distribution. Needs to be a float. Set one or the other. Defaults to 0, or off.
+    - ``MultSigma``/``MultCov``: Multiplication noise std/covariance from a normal distribution. Needs to be a float. Set one or the other. Defaults to 0, or off.
+    - ``MultiPath``: Whether to compute multipath or not. Defaults to False.
+    - ``ClusterSize``: Size of cluster when multipath is enabled. Defaults to 5.
+    - ``ScaleNoise``: Whether to scale the returned intensities or not. Defaults to False.
+    - ``AzimuthStreaks``: What sort of azimuth artifacts to introduce. -1 is a removal artifact, 0 is no artifact, and 1 is increased gain artifact. Defaults to 0.
+
+    **Advanced Configuration**
+
+    - ``ElevationBins``/``ElevationRes``: Number of elevation bins used when shadowing is done, or resolution (length in degrees) of each bin. Set one or the other. By default this is computed based on the octree size and the min/max range. Should only be set if shadowing isn't working.
+    - ``InitOctreeRange``: Upon startup, all mid-level octrees within this distance of the agent will be created.
+    - ``ViewRegion``: Turns on green lines to see visible region. Defaults to False.
+    - ``ViewOctree``: What octree leaves to show. Less than -1 means none, -1 means all, and anything greater than or equal to 0 shows the corresponding beam index. Defaults to -10.
+    - ``ShadowEpsilon``: What constitutes a break between clusters when shadowing. Defaults to 4*OctreeMin.
+    - ``WaterDensity``: Density of water in kg/m^3. Defaults to 997.
+    - ``WaterSpeedSound``: Speed of sound in water in m/s. Defaults to 1480.
+
+    """
+
+    sensor_type = "ProfilingSonarSensor"
+
+    def __init__(self, client, agent_name, agent_type, name="ProfilingSonarSensor", config=None):
+        if "RangeMin" not in config:
+            config["RangeMin"] = 0.5
+
+        if "RangeMax" not in config:
+            config["RangeMax"] = 75
+
+        if "RangeBins" not in config and "RangeRes" not in config:
+            config["RangeBins"] = 750
+
+        if "AzimuthBins" not in config and "AzimuthRes" not in config:
+            config["AzimuthBins"] = 480
+
+        super(ProfilingSonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+
 class DVLSensor(HoloOceanSensor):
     """Doppler Velocity Log Sensor.
 
@@ -1128,6 +1182,7 @@ class SensorDefinition:
         "DepthSensor": DepthSensor,
         "OpticalModemSensor": OpticalModemSensor,
         "ImagingSonarSensor": ImagingSonarSensor,
+        "ProfilingSonarSensor": ProfilingSonarSensor,
         "GPSSensor": GPSSensor,
     }
 
