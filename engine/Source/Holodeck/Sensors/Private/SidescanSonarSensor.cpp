@@ -206,4 +206,13 @@ void USidescanSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickT
 			}
 		}
 	}
+
+	if (runtickCounter == 20 && (RangeMin*Elevation*Pi/180) / Octree::OctreeMin < 1)
+	{
+		float recommendedElevation = Octree::OctreeMin * 180 / (RangeMin * Pi);
+		float recommendedOctreeMin = RangeMin * Elevation * Pi / 180 / 100;
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("WARNING: Elevation angle potentially too small with current OctreeMin configuration\n Recommended changes (pick one):\n Elevation = %f\n OctreeMin = %f\n"), recommendedElevation, recommendedOctreeMin));
+	}
+
+	runtickCounter++;
 }

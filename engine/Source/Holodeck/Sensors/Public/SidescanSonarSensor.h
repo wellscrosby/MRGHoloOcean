@@ -79,6 +79,7 @@ private:
 
 	// Used for counting how many leaves in a bin for averaging at the end
 	int32* count;
+	uint32 runtickCounter = 0;
 	
 	// for adding noise
 	MultivariateNormal<1> addNoise;
