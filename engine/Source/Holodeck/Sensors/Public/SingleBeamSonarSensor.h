@@ -49,27 +49,23 @@ public:
 
 protected:
 	//See HolodeckSensor for the documentation of these overridden functions.
-	int GetNumItems() override { return BinsRange; };
+	int GetNumItems() override { return RangeBins; };
 	int GetItemSize() override { return sizeof(float); };
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	// Finds all the leaves in range
 	void findLeaves();
+
+	virtual void showRegion(float DeltaTime) override;
 	
 	UPROPERTY(EditAnywhere)
-	int32 BinsRange = 200;
+	int32 RangeBins = 200;
 
 	UPROPERTY(EditAnywhere)
 	int32 BinsCentralAngle = 6; 
 
 	UPROPERTY(EditAnywhere)
 	int32 BinsOpeningAngle = 5; 
-
-	UPROPERTY(EditAnywhere)
-	bool ViewRegion = false;
-
-	UPROPERTY(EditAnywhere)
-	int ViewOctree = -10;
 
 private:
 	/*
@@ -97,7 +93,6 @@ private:
 	float sinOffset;
 
 	// Used to hold leafs when parallelized sorting/binning happens
-	TArray<TArray<Octree*>> sortedLeaves;
 	int32* count;
 	
 	// for adding noise

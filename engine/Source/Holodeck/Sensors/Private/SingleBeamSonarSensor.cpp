@@ -22,13 +22,13 @@ void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 	// default values
 	OpeningAngle = 30;
 	
-	BinsRange = 200;
+	RangeBins = 200;
 	BinsCentralAngle = 6;
 	BinsOpeningAngle = 5;
 
 	// range in cm
-	MinRange = 50;
-	MaxRange = 1000;
+	RangeMin = 50;
+	RangeMax = 1000;
 
 	Super::ParseSensorParms(ParmsJson);
 
@@ -36,8 +36,9 @@ void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 	TSharedPtr<FJsonObject> JsonParsed;
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ParmsJson);
 	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
-		if (JsonParsed->HasTypedField<EJson::Number>("BinsRange")) {
-			BinsRange = JsonParsed->GetIntegerField("BinsRange");
+		// Geometry Parameters
+		if (JsonParsed->HasTypedField<EJson::Number>("RangeBins")) {
+			RangeBins = JsonParsed->GetIntegerField("RangeBins");
 		} 	
 		if (JsonParsed->HasTypedField<EJson::Number>("BinsOpeningAngle")) {
 			BinsOpeningAngle = JsonParsed->GetIntegerField("BinsOpeningAngle");
@@ -48,12 +49,9 @@ void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 		if (JsonParsed->HasTypedField<EJson::Number>("OpeningAngle")) {
 			OpeningAngle = JsonParsed->GetIntegerField("OpeningAngle");
 		}
-		if (JsonParsed->HasTypedField<EJson::Number>("MaxRange")) {
-			MaxRange = JsonParsed->GetNumberField("MaxRange")*100;
-		}
-		if (JsonParsed->HasTypedField<EJson::Number>("MinRange")) {
-			MinRange = JsonParsed->GetNumberField("MinRange")*100;
-		}
+
+
+		// Noise Parameters
 		if (JsonParsed->HasTypedField<EJson::Number>("AddSigma")) {
 			addNoise.initSigma(JsonParsed->GetNumberField("AddSigma"));
 		}
@@ -71,12 +69,6 @@ void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 		}
 		if (JsonParsed->HasTypedField<EJson::Number>("RangeCov")) {
 			rNoise.initBounds(JsonParsed->GetNumberField("RangeCov"));
-		}
-		if (JsonParsed->HasTypedField<EJson::Boolean>("ViewRegion")) {
-			ViewRegion = JsonParsed->GetBoolField("ViewRegion");
-		}
-		if (JsonParsed->HasTypedField<EJson::Number>("ViewOctree")) {
-			ViewOctree = JsonParsed->GetIntegerField("ViewOctree");
 		}
 	}
 	else {
@@ -101,12 +93,12 @@ void USingleBeamSonarSensor::InitializeSensor() {
 	maxOpeningAngle = OpeningAngle/2;
 
 	// Get size of each bin
-	RangeRes = (MaxRange - MinRange) / BinsRange;
+	RangeRes = (RangeMax - RangeMin) / RangeBins;
 	CentralAngleRes = CentralAngle / BinsCentralAngle;
 	OpeningAngleRes = OpeningAngle / BinsOpeningAngle;
 	
 	// setup count of each bin
-	count = new int32[BinsRange]();
+	count = new int32[RangeBins]();
 
 	for(int i=0;i<BinsCentralAngle*BinsOpeningAngle;i++){
 		sortedLeaves.Add(TArray<Octree*>());
@@ -163,7 +155,7 @@ bool USingleBeamSonarSensor::inRange(Octree* tree){
 
 	// check if it's in range
 	tree->locSpherical.X = locLocal.Size();
-	if(MinRange+offset-radius >= tree->locSpherical.X || tree->locSpherical.X >= MaxRange+offset+radius) return false; 
+	if(RangeMin+offset-radius >= tree->locSpherical.X || tree->locSpherical.X >= RangeMax+offset+radius) return false; 
 
 	// check if OpeningAngle is in range. OpeningAngle is angle off of x-axis
 	tree->locSpherical.Z = ATan2ApproxSingleBeam(UKismetMathLibrary::Sqrt(UKismetMathLibrary::Square(locLocal.Y)+UKismetMathLibrary::Square(locLocal.Z)), locLocal.X); //OpeningAngle of leaf we are inspecting
@@ -184,13 +176,13 @@ void USingleBeamSonarSensor::leavesInRange(Octree* tree, TArray<Octree*>& rLeave
 			if(stopAt == Octree::OctreeMin){
 				// Compute contribution while we're parallelized
 				// If no contribution, we don't have to add it in
-				FVector normalImpact = GetComponentLocation() - tree->loc; 
-				normalImpact.Normalize();
+				tree->normalImpact = GetComponentLocation() - tree->loc; 
+				tree->normalImpact.Normalize();
 
 				// compute contribution
-				float val = FVector::DotProduct(tree->normal, normalImpact);
-				if(val > 0){
-					tree->val = val;
+				float cos = FVector::DotProduct(tree->normal, tree->normalImpact);
+				if(cos > 0){
+					tree->cos = cos;
 					rLeaves.Add(tree);
 				} 
 			}
@@ -230,14 +222,25 @@ void USingleBeamSonarSensor::findLeaves(){
 	});
 }
 
+void USingleBeamSonarSensor::showRegion(float DeltaTime){
+	if(ViewRegion){
+		FTransform tran = this->GetComponentTransform();
+		float debugThickness = 3.0f;
+		float DebugNumSides = 6; //change later?
+		float length = (RangeMax - RangeMin)*100; //length of cone in cm
+
+		DrawDebugCone(GetWorld(), GetComponentLocation(), GetForwardVector(), length, (OpeningAngle/2)*Pi/180, (OpeningAngle/2)*Pi/180, DebugNumSides, FColor::Green, false, .00, ECC_WorldStatic, debugThickness);
+	}		
+}
+
 void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	Super::TickSensorComponent(DeltaTime, TickType, ThisTickFunction);
 
 	if(TickCounter == 0){
 		// reset things and get ready
 		float* result = static_cast<float*>(Buffer);
-		std::fill(result, result+BinsRange, 0);
-		std::fill(count, count+BinsRange, 0);
+		std::fill(result, result+RangeBins, 0);
+		std::fill(count, count+RangeBins, 0);
 		
 		for(auto& sl: sortedLeaves){
 			sl.Reset();
@@ -245,6 +248,7 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 
 		// Finds leaves in range and puts them in foundLeaves
 		findLeaves();		// does not return anything, saves to foundLeaves
+
 
 		// SORT THEM INTO CENTRALANGLE/OPENINGANGLE BINS
 		int32 idx;
@@ -263,49 +267,33 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 		}
 
 		// HANDLE SHADOWING
-		float eps = 100;
-		ParallelFor(BinsCentralAngle*BinsOpeningAngle, [&](int32 i){
-			TArray<Octree*>& binLeafs = sortedLeaves.GetData()[i]; 
+		shadowLeaves();
 
-			// sort from closest to farthest
-			binLeafs.Sort([](const Octree& a, const Octree& b){
-				// range
-				return a.locSpherical.X < b.locSpherical.X;
-			});
 
-			// Get the closest cluster in the bin
-			// location of each bin irange, icentralangle, iOpeningAngle
-			int32 idx;
-			float diff, z_t, R;
-			float z_i = sos_water * density_water;
-			Octree* jth;
-			for(int j=0;j<binLeafs.Num()-1;j++){
-				jth = binLeafs.GetData()[j];
-				// add noise to range measurements
-				double range_noise = rNoise.sampleExponential();
-				jth->idx.X = (int32)((jth->locSpherical.X - MinRange + range_noise) / RangeRes); 
-				idx = jth->idx.X;
-				z_t = jth->sos * jth->density;
-				R = (z_t - z_i) / (z_t + z_i);
+		// ADD IN ALL CONTRIBUTIONS
+		float range_noise;
+		for(TArray<Octree*>& bin : sortedLeaves){
+			for(Octree* l : bin){
+				// Add noise to each of them
+				range_noise = rNoise.sampleExponential();
+				l->idx.X = (int32)((l->locSpherical.X - RangeMin + range_noise) / RangeRes); 
 
-				// calculate intesity and add them up
-				result[idx] += jth->val * R; 
+				// In case our noise has pushed us out of range
+				if(l->idx.X >= RangeBins) l->idx.X = RangeBins-1;
+
+				// Add to their appropriate bin
+				idx = l->idx.X;
+
+				result[idx] += l->val;
 				++count[idx];
-				
-				// Light up some bins to visualize things. 
-				// Make sure you change the bool at end of ParallelFor to true to turn off running in parallel, since 
-				// this can't be done in parallel
-				// DrawDebugPoint(GetWorld(), jth->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
-
-				diff = FMath::Abs(jth->locSpherical.X - binLeafs.GetData()[j+1]->locSpherical.X);
-				if(diff > eps) break;
 			}
-		}, true);
-
+		}
 		
+
 		// MOVE THEM INTO BUFFER
-		for (int i = 0; i < BinsRange; i++) {
+		for (int i = 0; i < RangeBins; i++) {
 			if(count[i] != 0){
+
 				// actually take the average of the intensities
 				result[i] *= (1 + multNoise.sampleFloat())/count[i];
 				result[i] += addNoise.sampleRayleigh();
@@ -313,27 +301,6 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 			else{
 				result[i] = addNoise.sampleRayleigh();
 			}
-		}
-
-
-		// draw points inside our region
-		if(ViewOctree >= -1){
-			for( TArray<Octree*> bins : sortedLeaves){
-				for( Octree* l : bins){
-					if(ViewOctree == -1 || ViewOctree == l->idx.Y)
-						DrawDebugPoint(GetWorld(), l->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
-				}
-			}
-		}
-
-		// draw outlines of our region
-		if(ViewRegion){
-			FTransform tran = this->GetComponentTransform();
-			float debugThickness = 3.0f;
-			float DebugNumSides = 6; //change later?
-			float length = (MaxRange - MinRange)*100; //length of cone in cm
-
-			DrawDebugCone(GetWorld(), GetComponentLocation(), GetForwardVector(), length, (OpeningAngle/2)*Pi/180, (OpeningAngle/2)*Pi/180, DebugNumSides, FColor::Green, false, .00, ECC_WorldStatic, debugThickness);
 		}		
 	}
 }
