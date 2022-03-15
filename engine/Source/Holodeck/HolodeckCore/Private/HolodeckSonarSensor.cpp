@@ -113,7 +113,7 @@ void UHolodeckSonarSensor::BeginDestroy() {
 
 void UHolodeckSonarSensor::initOctree(){
 	// We delay making trees till the message has been printed to the screen
-	if(toMake.Num() != 0 && TickCounter > 4){
+	if(toMake.Num() != 0 && TickCounter >= 8){
 		UE_LOG(LogHolodeck, Log, TEXT("SonarSensor::Initial building num: %d"), toMake.Num());
 		ParallelFor(toMake.Num(), [&](int32 i){
 			toMake.GetData()[i]->load();
@@ -124,7 +124,7 @@ void UHolodeckSonarSensor::initOctree(){
 	}
 
 	// If we haven't made it yet
-	if(octree == nullptr){
+	if(octree == nullptr && TickCounter >= 5){
 		// initialize small octree for each agent
 		for(auto& agent : Controller->GetServer()->AgentMap){
 			// skip ourselves
@@ -150,7 +150,7 @@ void UHolodeckSonarSensor::initOctree(){
 		std::function<void(Octree*, TArray<Octree*>&)> findCloseLeaves;
 		findCloseLeaves = [&offset, &loc, &findCloseLeaves](Octree* tree, TArray<Octree*>& list){
 			if(tree->size == Octree::OctreeMax){
-				if((loc - tree->loc).Size() < offset && !FPaths::FileExists(tree->file)){
+				if((loc - tree->loc).Size() <= offset && !FPaths::FileExists(tree->file)){
 					list.Add(tree);
 				}
 			}
@@ -359,7 +359,7 @@ void UHolodeckSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickT
 
 	// Count till next sonar timestep
 	TickCounter++;
-	if(TickCounter == TicksPerCapture){
+	if(TickCounter % TicksPerCapture == 0 && octree != nullptr && toMake.Num() == 0){
 		TickCounter = 0;
 	}
 }

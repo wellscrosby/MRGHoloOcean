@@ -26,6 +26,7 @@
 #include "PoseSensor.h"
 #include "AcousticBeaconSensor.h"
 #include "ImagingSonarSensor.h"
+#include "ProfilingSonarSensor.h"
 #include "GPSSensor.h"
 #include "DepthSensor.h"
 #include "OpticalModemSensor.h"
