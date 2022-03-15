@@ -53,10 +53,9 @@ protected:
 	int GetItemSize() override { return sizeof(float); };
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	// Finds all the leaves in range
-	void findLeaves();
-
 	virtual void showRegion(float DeltaTime) override;
+
+	virtual bool inRange(Octree* tree) override;
 	
 	UPROPERTY(EditAnywhere)
 	int32 RangeBins = 200;
@@ -89,7 +88,7 @@ private:
 	float OpeningAngleRes;
 	
 	// various computations we want to cache
-	float sqrt2;
+	float sqrt3_2;
 	float sinOffset;
 
 	// Used to hold leafs when parallelized sorting/binning happens
@@ -99,10 +98,4 @@ private:
 	MultivariateNormal<1> addNoise;
 	MultivariateNormal<1> multNoise;
 	MultivariateUniform<1> rNoise;
-
-	float density_water = 997;
-	float sos_water = 1480;
-
-	bool inRange(Octree* tree);
-	void leavesInRange(Octree* tree, TArray<Octree*>& leafs, float stopAt);
 };

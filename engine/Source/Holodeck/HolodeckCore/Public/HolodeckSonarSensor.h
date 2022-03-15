@@ -92,19 +92,11 @@ protected:
 	// Used to hold leafs when parallelized sorting/binning happens
 	TArray<TArray<Octree*>> sortedLeaves;
 
-	// Water information (Change to parameter?)
+	// Water information
 	float WaterImpedance;
 
 	// use for skipping frames
 	int TickCounter = 0;
-
-	// holds our implementation of Octrees
-	Octree* octree = nullptr;
-	TArray<Octree*> agents;
-	void viewLeaves(Octree* tree);
-	
-	// initialize + reserve vectors once
-	TArray<Octree*> bigLeaves;
 
 	// various computations we want to cache
 	float ATan2Approx(float y, float x);
@@ -124,15 +116,15 @@ private:
 	 */
 	AActor* Parent;
 
-	// // holds our implementation of Octrees
-	// Octree* octree = nullptr;
-	// TArray<Octree*> agents;
-	// void viewLeaves(Octree* tree);
+	// holds our implementation of Octrees
+	Octree* octree = nullptr;
+	TArray<Octree*> agents;
+	void viewLeaves(Octree* tree);
 
 	// What octrees we initally make
 	TArray<Octree*> toMake;
-	// // initialize + reserve vectors once
-	// TArray<Octree*> bigLeaves;
+	// initialize + reserve vectors once
+	TArray<Octree*> bigLeaves;
 
 	// various computations we want to cache
 	float sqrt3_2;

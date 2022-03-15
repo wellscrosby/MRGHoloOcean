@@ -104,35 +104,11 @@ void USingleBeamSonarSensor::InitializeSensor() {
 		sortedLeaves.Add(TArray<Octree*>());
 		sortedLeaves[i].Reserve(10000);
 	}
+
+	sqrt3_2 = UKismetMathLibrary::Sqrt(3)/2;
+	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(CentralAngle, OpeningAngle)/2);
 }
 
-
-// fast arctan function
-float ATan2ApproxSingleBeam(float y, float x){
-    //http://pubs.opengroup.org/onlinepubs/009695399/functions/atan2.html
-    //Volkan SALMA
-
-    const float ONEQTR_PI = Pi / 4.0;
-	const float THRQTR_PI = 3.0 * Pi / 4.0;
-	float r, angle;
-	float abs_y = fabs(y) + 1e-10f;      // kludge to prevent 0/0 condition
-	if ( x < 0.0f )
-	{
-		r = (x + abs_y) / (abs_y - x);
-		angle = THRQTR_PI;
-	}
-	else
-	{
-		r = (x - abs_y) / (x + abs_y);
-		angle = ONEQTR_PI;
-	}
-	angle += (0.1963f * r * r - 0.9817f) * r;
-	angle *= 180/Pi;
-	if ( y < 0.0f )
-		return( -angle );     // negate if in quad III or IV
-	else
-		return( angle );
-}
 
 // determine if a single leaf is in your tree
 bool USingleBeamSonarSensor::inRange(Octree* tree){
@@ -141,11 +117,8 @@ bool USingleBeamSonarSensor::inRange(Octree* tree){
 	float offset = 0;
 	float radius = 0;
 
-	sqrt2 = UKismetMathLibrary::Sqrt(3)/2;
-	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(CentralAngle, OpeningAngle)/2);
-
 	if(tree->size != Octree::OctreeMin){
-		radius = tree->size*sqrt2;
+		radius = tree->size*sqrt3_2;
 		offset = radius/sinOffset;
 		SensortoWorld.AddToTranslation( -this->GetForwardVector()*offset );
 	}
@@ -158,76 +131,22 @@ bool USingleBeamSonarSensor::inRange(Octree* tree){
 	if(RangeMin+offset-radius >= tree->locSpherical.X || tree->locSpherical.X >= RangeMax+offset+radius) return false; 
 
 	// check if OpeningAngle is in range. OpeningAngle is angle off of x-axis
-	tree->locSpherical.Z = ATan2ApproxSingleBeam(UKismetMathLibrary::Sqrt(UKismetMathLibrary::Square(locLocal.Y)+UKismetMathLibrary::Square(locLocal.Z)), locLocal.X); //OpeningAngle of leaf we are inspecting
+	tree->locSpherical.Z = ATan2Approx(UKismetMathLibrary::Sqrt(UKismetMathLibrary::Square(locLocal.Y)+UKismetMathLibrary::Square(locLocal.Z)), locLocal.X); //OpeningAngle of leaf we are inspecting
 	if(minOpeningAngle >= tree->locSpherical.Z || tree->locSpherical.Z >= maxOpeningAngle) return false;
 
 	// save CentralAngle for shadowing later. CentralAngle goes around the x-axis
-	tree->locSpherical.Y = ATan2ApproxSingleBeam(locLocal.Z, locLocal.Y);
+	tree->locSpherical.Y = ATan2Approx(locLocal.Z, locLocal.Y);
 
 	// otherwise it's in!
 	return true;
 }	
 
-// leavesInRange recursively check if each tree and then children etc are in range
-void USingleBeamSonarSensor::leavesInRange(Octree* tree, TArray<Octree*>& rLeaves, float stopAt){
-	bool in = inRange(tree);
-	if(in){
-		if(tree->size == stopAt){
-			if(stopAt == Octree::OctreeMin){
-				// Compute contribution while we're parallelized
-				// If no contribution, we don't have to add it in
-				tree->normalImpact = GetComponentLocation() - tree->loc; 
-				tree->normalImpact.Normalize();
-
-				// compute contribution
-				float cos = FVector::DotProduct(tree->normal, tree->normalImpact);
-				if(cos > 0){
-					tree->cos = cos;
-					rLeaves.Add(tree);
-				} 
-			}
-			else{
-				rLeaves.Add(tree);
-			}
-			return;
-		}
-
-		for(Octree* l : tree->leaves){
-			leavesInRange(l, rLeaves, stopAt);
-		}
-	}
-	else if(tree->size >= Octree::OctreeMax){
-		tree->unload();
-	}
-}
-
-// findLeaves used for parallizing
-void USingleBeamSonarSensor::findLeaves(){
-	// Empty everything out
-	bigLeaves.Reset();
-	for(auto& fl: foundLeaves){
-		fl.Reset();
-	}
-
-	// FILTER TO GET THE bigLeaves WE WANT
-	// start at octree root, store in bigLeaves
-	leavesInRange(octree, bigLeaves, Octree::OctreeMax);
-	bigLeaves += agents;
-
-	ParallelFor(bigLeaves.Num(), [&](int32 i){
-		Octree* leaf = bigLeaves.GetData()[i];
-		leaf->load();
-		for(Octree* l : leaf->leaves)
-			leavesInRange(l, foundLeaves.GetData()[i%1000], Octree::OctreeMin);
-	});
-}
 
 void USingleBeamSonarSensor::showRegion(float DeltaTime){
 	if(ViewRegion){
-		FTransform tran = this->GetComponentTransform();
 		float debugThickness = 3.0f;
 		float DebugNumSides = 6; //change later?
-		float length = (RangeMax - RangeMin)*100; //length of cone in cm
+		float length = (RangeMax - RangeMin); //length of cone in cm
 
 		DrawDebugCone(GetWorld(), GetComponentLocation(), GetForwardVector(), length, (OpeningAngle/2)*Pi/180, (OpeningAngle/2)*Pi/180, DebugNumSides, FColor::Green, false, .00, ECC_WorldStatic, debugThickness);
 	}		
