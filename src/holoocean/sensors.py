@@ -699,13 +699,37 @@ class ImagingSonarSensor(HoloOceanSensor):
         return self.shape
 
 class SingleBeamSonarSensor(HoloOceanSensor):
+    """Simulates an echosounder, which is a sonar sensor with a single cone shaped beam. See :ref:`configure-octree` for more on
+    how to configure the octree that is used.
+
+    Returns a 1D numpy array of the average intensities held in each range bin of the sensor. The length of the array is specified by the number of range bins chosen for the sensor.
+
+    **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the following
+    options:
+
+    - ``BinsRange``: Number of range bins of resulting image, defaults to 200.
+    - ``BinsOpeningAngle``: Number of opening angle bins to use during shadowing, defaults to 5.
+    - ``BinsCentralAngle``: Number of central angle bins to use during shadowing, defaults to 6.
+    - ``MinRange``: Minimum range visible in meters, defaults to 0.5.
+    - ``MaxRange``: Maximum range visible in meters, defaults to 10.
+    - ``OpeningAngle``: Opening angle of the cone visible in degrees, defaults to 30. In this documentation, the opening angle would be 2 times the semi-vertical angle of the cone.
+    - ``InitOctreeRange``: Upon startup, all mid-level octrees within this distance will be created.
+    - ``AddSigma``/``AddCov``: Additive noise covariance/std from a Rayleigh distribution. Needs to be a float. Defaults to 0/off.
+    - ``MultSigma``/``MultCov``: Multiplication noise covariance/std from a normal distribution. Needs to be a float. Defaults to 0/off.
+    - ``RangeSigma``/``RangeCov``: Additive noise covariance/std from an exponential distribution that will be added to the range measurements. Needs to be a float. Defaults to 0/off.
+    - ``ViewRegion``: Turns on green lines to see visible region. Defaults to false.
+    - ``ViewOctree``: Highlights all voxels in range. Defaults to false.
+
+    """ 
     sensor_type = "SingleBeamSonarSensor" 
 
     def __init__(self, client, agent_name, agent_type, name="SingleBeamSonarSensor", config=None):
 
         self.config = {} if config is None else config
 
-        b_range   = 300
+        b_range = 200
 
         if "BinsRange" in self.config:
             b_range = self.config["BinsRange"]
