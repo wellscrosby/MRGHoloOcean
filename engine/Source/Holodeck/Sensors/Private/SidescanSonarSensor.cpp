@@ -95,7 +95,7 @@ void USidescanSonarSensor::ParseSensorParms(FString ParmsJson) {
 	}
 	else{
 		// Calculate how large the azimuth bins should be
-		AzimuthRes = (180 * 1.5 * Octree::OctreeMin) / (Pi * RangeMin);
+		AzimuthRes = (180 * Octree::OctreeMin) / (Pi * (RangeMin + 0.1 * (RangeMax - RangeMin)));
 		AzimuthBins = Azimuth / AzimuthRes;
 	}
 
