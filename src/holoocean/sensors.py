@@ -729,6 +729,7 @@ class SingleBeamSonarSensor(HoloOceanSensor):
 
         self.config = {} if config is None else config
 
+        # default range for bins
         b_range = 200
 
         if "BinsRange" in self.config:
