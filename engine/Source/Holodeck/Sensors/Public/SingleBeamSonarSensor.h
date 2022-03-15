@@ -12,7 +12,6 @@
 #include "MultivariateNormal.h"
 #include "MultivariateUniform.h"
 
-
 #include "Json.h"
 
 #include "SingleBeamSonarSensor.generated.h"
@@ -58,13 +57,13 @@ protected:
 	void findLeaves();
 	
 	UPROPERTY(EditAnywhere)
-	int32 BinsRange = 300;
+	int32 BinsRange = 200;
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsAzimuth = 12; 
+	int32 BinsCentralAngle = 6; 
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsElevation = 5; 
+	int32 BinsOpeningAngle = 5; 
 
 	UPROPERTY(EditAnywhere)
 	bool ViewRegion = false;
@@ -79,15 +78,20 @@ private:
 	 */
 	AActor* Parent;
 
-	// various computations we want to cache
-	float RangeRes;
-	float AzimuthRes;
-	float ElevRes;
-	
-	// for adding noise
-	MultivariateNormal<1> aziNoise;
-	MultivariateUniform<1> rNoise;
+	// angles unique to SingleBeam
+	float OpeningAngle;
+	float CentralAngle;
 
+	float minOpeningAngle;
+	float maxOpeningAngle;
+	float minCentralAngle;
+	float maxCentralAngle;
+
+	// resolutions unique to SingleBeam
+	float RangeRes;
+	float CentralAngleRes;
+	float OpeningAngleRes;
+	
 	// various computations we want to cache
 	float sqrt2;
 	float sinOffset;
@@ -99,6 +103,7 @@ private:
 	// for adding noise
 	MultivariateNormal<1> addNoise;
 	MultivariateNormal<1> multNoise;
+	MultivariateUniform<1> rNoise;
 
 	float density_water = 997;
 	float sos_water = 1480;

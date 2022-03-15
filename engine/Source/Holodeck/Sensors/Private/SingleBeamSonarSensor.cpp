@@ -8,7 +8,7 @@
 
 USingleBeamSonarSensor::USingleBeamSonarSensor() {
 	SensorName = "SingleBeamSonarSensor";
-}
+} 
 
 void USingleBeamSonarSensor::BeginDestroy() {
 	Super::BeginDestroy();
@@ -19,23 +19,41 @@ void USingleBeamSonarSensor::BeginDestroy() {
 // Allows sensor parameters to be set programmatically from client.
 void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 
-	// default values, user can override through ParmsJson
-	Elevation = 30;
+	// default values
+	OpeningAngle = 30;
 	
-	BinsRange = 10;
-	BinsAzimuth = 2;
-	BinsElevation = 2;
+	BinsRange = 200;
+	BinsCentralAngle = 6;
+	BinsOpeningAngle = 5;
 
-	MinRange = 1;
-	MaxRange = 10;
+	// range in cm
+	MinRange = 50;
+	MaxRange = 1000;
 
 	Super::ParseSensorParms(ParmsJson);
 
+	// user can override default values
 	TSharedPtr<FJsonObject> JsonParsed;
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ParmsJson);
 	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
-
-		// For handling noise. What is this doing?
+		if (JsonParsed->HasTypedField<EJson::Number>("BinsRange")) {
+			BinsRange = JsonParsed->GetIntegerField("BinsRange");
+		} 	
+		if (JsonParsed->HasTypedField<EJson::Number>("BinsOpeningAngle")) {
+			BinsOpeningAngle = JsonParsed->GetIntegerField("BinsOpeningAngle");
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("BinsCentralAngle")) {
+			BinsCentralAngle = JsonParsed->GetIntegerField("BinsCentralAngle");
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("OpeningAngle")) {
+			OpeningAngle = JsonParsed->GetIntegerField("OpeningAngle");
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("MaxRange")) {
+			MaxRange = JsonParsed->GetNumberField("MaxRange")*100;
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("MinRange")) {
+			MinRange = JsonParsed->GetNumberField("MinRange")*100;
+		}
 		if (JsonParsed->HasTypedField<EJson::Number>("AddSigma")) {
 			addNoise.initSigma(JsonParsed->GetNumberField("AddSigma"));
 		}
@@ -48,18 +66,11 @@ void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 		if (JsonParsed->HasTypedField<EJson::Number>("MultCov")) {
 			multNoise.initCov(JsonParsed->GetNumberField("MultCov"));
 		}
-		// the range noise will be in cm
-		if (JsonParsed->HasTypedField<EJson::Number>("MultUniform")) {
-			rNoise.initBounds(JsonParsed->GetNumberField("MultUniform"));
+		if (JsonParsed->HasTypedField<EJson::Number>("RangeSigma")) {
+			rNoise.initBounds(JsonParsed->GetNumberField("RangeSigma"));
 		}
-		if (JsonParsed->HasTypedField<EJson::Number>("BinsRange")) {
-			BinsRange = JsonParsed->GetIntegerField("BinsRange");
-		} 	
-		if (JsonParsed->HasTypedField<EJson::Number>("BinsElevation")) {
-			BinsElevation = JsonParsed->GetIntegerField("BinsElevation");
-		}
-		if (JsonParsed->HasTypedField<EJson::Number>("BinsAzimuth")) {
-			BinsAzimuth = JsonParsed->GetIntegerField("BinsAzimuth");
+		if (JsonParsed->HasTypedField<EJson::Number>("RangeCov")) {
+			rNoise.initBounds(JsonParsed->GetNumberField("RangeCov"));
 		}
 		if (JsonParsed->HasTypedField<EJson::Boolean>("ViewRegion")) {
 			ViewRegion = JsonParsed->GetBoolField("ViewRegion");
@@ -67,22 +78,13 @@ void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 		if (JsonParsed->HasTypedField<EJson::Number>("ViewOctree")) {
 			ViewOctree = JsonParsed->GetIntegerField("ViewOctree");
 		}
-		if (JsonParsed->HasTypedField<EJson::Number>("Elevation")) {
-			ViewOctree = JsonParsed->GetIntegerField("Elevation");
-		}
-		if (JsonParsed->HasTypedField<EJson::Number>("MaxRange")) {
-			ViewOctree = JsonParsed->GetIntegerField("MaxRange");
-		}
-		if (JsonParsed->HasTypedField<EJson::Number>("MinRange")) {
-			ViewOctree = JsonParsed->GetIntegerField("MinRange");
-		}
 	}
 	else {
 		UE_LOG(LogHolodeck, Fatal, TEXT("USingleBeamSonarSensor::ParseSensorParms:: Unable to parse json."));
 	}
 
-	if(BinsElevation == 0){
-		BinsElevation = Elevation*10;
+	if(BinsOpeningAngle == 0){
+		BinsOpeningAngle = OpeningAngle*10;
 	}
 }
 
@@ -91,34 +93,29 @@ void USingleBeamSonarSensor::InitializeSensor() {
 	
 	// Setup bins
 	// TODO: Make these according to octree size
-	Azimuth = 360;
+	CentralAngle = 360;
 
-	minAzimuth = -180;
-	maxAzimuth = 180;
-	minElev = 0;
-	maxElev = Elevation/2;
+	minCentralAngle = -180;
+	maxCentralAngle = 180;
+	minOpeningAngle = 0;
+	maxOpeningAngle = OpeningAngle/2;
 
 	// Get size of each bin
 	RangeRes = (MaxRange - MinRange) / BinsRange;
-	AzimuthRes = Azimuth / BinsAzimuth;
-	ElevRes = Elevation / BinsElevation;
+	CentralAngleRes = CentralAngle / BinsCentralAngle;
+	OpeningAngleRes = OpeningAngle / BinsOpeningAngle;
 	
 	// setup count of each bin
 	count = new int32[BinsRange]();
 
-	for(int i=0;i<BinsAzimuth*BinsElevation;i++){
+	for(int i=0;i<BinsCentralAngle*BinsOpeningAngle;i++){
 		sortedLeaves.Add(TArray<Octree*>());
 		sortedLeaves[i].Reserve(10000);
 	}
 }
 
-FVector spherToEucSingleBeamSingleBeam(float r, float theta, float phi, FTransform SensortoWorld){
-	float x = r*UKismetMathLibrary::DegSin(phi)*UKismetMathLibrary::DegCos(theta);
-	float y = r*UKismetMathLibrary::DegSin(phi)*UKismetMathLibrary::DegSin(theta);
-	float z = r*UKismetMathLibrary::DegCos(phi);
-	return UKismetMathLibrary::TransformLocation(SensortoWorld, FVector(x, y, z));
-}
 
+// fast arctan function
 float ATan2ApproxSingleBeam(float y, float x){
     //http://pubs.opengroup.org/onlinepubs/009695399/functions/atan2.html
     //Volkan SALMA
@@ -145,7 +142,7 @@ float ATan2ApproxSingleBeam(float y, float x){
 		return( angle );
 }
 
-// inRange tells if a single leaf is in your tree
+// determine if a single leaf is in your tree
 bool USingleBeamSonarSensor::inRange(Octree* tree){
 	FTransform SensortoWorld = this->GetComponentTransform();
 	// if it's not a leaf, we use a bigger search area
@@ -153,7 +150,7 @@ bool USingleBeamSonarSensor::inRange(Octree* tree){
 	float radius = 0;
 
 	sqrt2 = UKismetMathLibrary::Sqrt(3)/2;
-	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(Azimuth, Elevation)/2);
+	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(CentralAngle, OpeningAngle)/2);
 
 	if(tree->size != Octree::OctreeMin){
 		radius = tree->size*sqrt2;
@@ -161,8 +158,6 @@ bool USingleBeamSonarSensor::inRange(Octree* tree){
 		SensortoWorld.AddToTranslation( -this->GetForwardVector()*offset );
 	}
 	
-	// --------------------------------------------------------]
-
 	// transform location to sensor frame instead of global (x y z)
 	FVector locLocal = SensortoWorld.GetRotation().UnrotateVector(tree->loc-SensortoWorld.GetTranslation());
 
@@ -170,11 +165,11 @@ bool USingleBeamSonarSensor::inRange(Octree* tree){
 	tree->locSpherical.X = locLocal.Size();
 	if(MinRange+offset-radius >= tree->locSpherical.X || tree->locSpherical.X >= MaxRange+offset+radius) return false; 
 
-	// check if "elevation" is in range. elevation is angle off of x-axis
-	tree->locSpherical.Z = ATan2ApproxSingleBeam(UKismetMathLibrary::Sqrt(UKismetMathLibrary::Square(locLocal.Y)+UKismetMathLibrary::Square(locLocal.Z)), locLocal.X); //elevation of leaf we are inspecting
-	if(minElev >= tree->locSpherical.Z || tree->locSpherical.Z >= maxElev) return false;
+	// check if OpeningAngle is in range. OpeningAngle is angle off of x-axis
+	tree->locSpherical.Z = ATan2ApproxSingleBeam(UKismetMathLibrary::Sqrt(UKismetMathLibrary::Square(locLocal.Y)+UKismetMathLibrary::Square(locLocal.Z)), locLocal.X); //OpeningAngle of leaf we are inspecting
+	if(minOpeningAngle >= tree->locSpherical.Z || tree->locSpherical.Z >= maxOpeningAngle) return false;
 
-	// save azimuth for shadowing later. azimuth goes around the x-axis
+	// save CentralAngle for shadowing later. CentralAngle goes around the x-axis
 	tree->locSpherical.Y = ATan2ApproxSingleBeam(locLocal.Z, locLocal.Y);
 
 	// otherwise it's in!
@@ -214,7 +209,7 @@ void USingleBeamSonarSensor::leavesInRange(Octree* tree, TArray<Octree*>& rLeave
 	}
 }
 
-// findLeaves used for parallizing. will need to call new leavesInRange
+// findLeaves used for parallizing
 void USingleBeamSonarSensor::findLeaves(){
 	// Empty everything out
 	bigLeaves.Reset();
@@ -251,17 +246,17 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 		// Finds leaves in range and puts them in foundLeaves
 		findLeaves();		// does not return anything, saves to foundLeaves
 
-		// SORT THEM INTO AZIMUTH/ELEVATION BINS
+		// SORT THEM INTO CENTRALANGLE/OPENINGANGLE BINS
 		int32 idx;
 		for(TArray<Octree*>& bin : foundLeaves){
 			for(Octree* l : bin){
 				// Compute bins while we're parallelized
-				l->idx.Y = (int32)((l->locSpherical.Y - minAzimuth)/ AzimuthRes);
-				l->idx.Z = (int32)((l->locSpherical.Z - minElev)/ ElevRes);
+				l->idx.Y = (int32)((l->locSpherical.Y - minCentralAngle)/ CentralAngleRes);
+				l->idx.Z = (int32)((l->locSpherical.Z - minOpeningAngle)/ OpeningAngleRes);
 				// Sometimes we get float->int rounding errors
-				if(l->idx.Y == BinsAzimuth) --l->idx.Y;
+				if(l->idx.Y == BinsCentralAngle) --l->idx.Y;
 
-				idx = l->idx.Z*BinsAzimuth + l->idx.Y;
+				idx = l->idx.Z*BinsCentralAngle + l->idx.Y;
 				// array of arrays (the rectangle we split off)
 				sortedLeaves[idx].Emplace(l);
 			}
@@ -269,7 +264,7 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 
 		// HANDLE SHADOWING
 		float eps = 100;
-		ParallelFor(BinsAzimuth*BinsElevation, [&](int32 i){
+		ParallelFor(BinsCentralAngle*BinsOpeningAngle, [&](int32 i){
 			TArray<Octree*>& binLeafs = sortedLeaves.GetData()[i]; 
 
 			// sort from closest to farthest
@@ -279,7 +274,7 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 			});
 
 			// Get the closest cluster in the bin
-			// location of each bin irange, iazimuth, ielevation
+			// location of each bin irange, icentralangle, iOpeningAngle
 			int32 idx;
 			float diff, z_t, R;
 			float z_i = sos_water * density_water;
@@ -288,14 +283,13 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 				jth = binLeafs.GetData()[j];
 				// add noise to range measurements
 				double range_noise = rNoise.sampleExponential();
-				jth->idx.X = (int32)((jth->locSpherical.X - MinRange + range_noise) / RangeRes); //+ rNoise.sampleExponential()
+				jth->idx.X = (int32)((jth->locSpherical.X - MinRange + range_noise) / RangeRes); 
 				idx = jth->idx.X;
 				z_t = jth->sos * jth->density;
 				R = (z_t - z_i) / (z_t + z_i);
 
 				// calculate intesity and add them up
 				result[idx] += jth->val * R; 
-				// number of 
 				++count[idx];
 				
 				// Light up some bins to visualize things. 
@@ -312,7 +306,7 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 		// MOVE THEM INTO BUFFER
 		for (int i = 0; i < BinsRange; i++) {
 			if(count[i] != 0){
-				// actually take the average
+				// actually take the average of the intensities
 				result[i] *= (1 + multNoise.sampleFloat())/count[i];
 				result[i] += addNoise.sampleRayleigh();
 			}
@@ -339,7 +333,7 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 			float DebugNumSides = 6; //change later?
 			float length = (MaxRange - MinRange)*100; //length of cone in cm
 
-			DrawDebugCone(GetWorld(), GetComponentLocation(), GetForwardVector(), length, (Elevation/2)*Pi/180, (Elevation/2)*Pi/180, DebugNumSides, FColor::Green, false, .00, ECC_WorldStatic, debugThickness);
+			DrawDebugCone(GetWorld(), GetComponentLocation(), GetForwardVector(), length, (OpeningAngle/2)*Pi/180, (OpeningAngle/2)*Pi/180, DebugNumSides, FColor::Green, false, .00, ECC_WorldStatic, debugThickness);
 		}		
 	}
 }
