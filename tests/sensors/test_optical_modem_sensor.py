@@ -1,9 +1,7 @@
 import holoocean
 import uuid
-import copy
 import pytest
 
-from numpy import equal
 @pytest.fixture(scope="module")
 def env():
     scenario = {

@@ -680,7 +680,8 @@ class HoloOceanEnvironment:
         Args:
             location (:obj:`list` of :obj:`float`): The ``[x, y, z]`` location to give the camera
                 (see :ref:`coordinate-system`)
-            rotation (:obj:`list` of :obj:`float`): The ``[roll, pitch, yaw]`` rotation to give the camera
+            rotation (:obj:`list` of :obj:`float`): The x-axis that the camera should look down. Other 2 axes are formed 
+                by a horizontal y-aixs, and then the corresponding z-axis.
                 (see :ref:`rotations`)
 
         """
