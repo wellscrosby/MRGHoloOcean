@@ -1,6 +1,5 @@
 """Definition of all of the sensor information"""
 import json
-from multiprocessing.sharedctypes import Value
 
 import numpy as np
 import holoocean
