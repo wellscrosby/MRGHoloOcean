@@ -30,21 +30,21 @@ public:
         for(int i=0;i<N;i++){
             max[i] = max_;
         }
-        uncertain = true;
+        if(max_ != 0) uncertain = true;
     }
     void initBounds(std::array<float,N> max_){
         for(int i=0;i<N;i++){
             max[i] = max_[i];
+            if(max_[i] != 0) uncertain = true;
         }
-        uncertain = true;
     }
     void initBounds(TArray<TSharedPtr<FJsonValue>> max_){
         verifyf(max_.Num() == N, TEXT("Sigma has size %d and should be %d"), max_.Num(), N);
         
         for(int i=0;i<N;i++){
             max[i] = max_[i]->AsNumber();
+            if(max_[i] != 0) uncertain = true;
         }
-        uncertain = true;
     }
 
     /* 
@@ -99,15 +99,22 @@ public:
         verifyf(N == 1, TEXT("Can't use MVN size %d with Exponential Noise"), N);
 
         // sample
-        float x = dist(gen);
-        // https://en.wikipedia.org/wiki/Exponential_distribution#Generating_exponential_variates
-        return -max[0]*std::log(x);
+        if(uncertain){
+            float x = dist(gen);
+            // https://en.wikipedia.org/wiki/Exponential_distribution#Generating_exponential_variates
+            return -max[0]*std::log(x);
+        }
+        else{
+            return 0;
+        }
     }
     float exponentialPDF(float x){
-        return std::exp(-x/max[0]) / max[0];
+        if(uncertain) return std::exp(-x/max[0]) / max[0];
+        else return 1;
     }
     float exponentialScaledPDF(float x){
-        return std::exp(-x/max[0]);
+        if(uncertain) return std::exp(-x/max[0]);
+        else return 1;
     }
 
     bool isUncertain(){ return uncertain;}

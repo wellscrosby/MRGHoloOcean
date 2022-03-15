@@ -17,10 +17,10 @@ void URotationSensor::InitializeSensor() {
 void URotationSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	if (Parent != nullptr && bOn) {
 		FRotator Rotation = this->GetComponentRotation();
-		Rotation = ConvertAngularVector(Rotation, NoScale);
+		FVector EulerAngles = RotatorToRPY(Rotation);
 		float* FloatBuffer = static_cast<float*>(Buffer);
-		FloatBuffer[0] = Rotation.Roll;
-		FloatBuffer[1] = Rotation.Pitch;
-		FloatBuffer[2] = Rotation.Yaw;
+		FloatBuffer[0] = EulerAngles.X;
+		FloatBuffer[1] = EulerAngles.Y;
+		FloatBuffer[2] = EulerAngles.Z;
 	}
 }

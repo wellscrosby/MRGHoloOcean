@@ -10,7 +10,9 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Async/ParallelFor.h"
 #include "MultivariateNormal.h"
+#include "MultivariateUniform.h"
 
+#include <numeric>
 #include "Json.h"
 
 #include "ImagingSonarSensor.generated.h"
@@ -48,24 +50,39 @@ public:
 
 protected:
 	//See HolodeckSensor for the documentation of these overridden functions.
-	int GetNumItems() override { return BinsRange*BinsAzimuth; };
+	int GetNumItems() override { return RangeBins*AzimuthBins; };
 	int GetItemSize() override { return sizeof(float); };
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsRange = 300;
+	int32 RangeBins = 0;
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsAzimuth = 128;
+	float RangeRes = 0;
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsElevation = 0;
+	int32 AzimuthBins = 0;
 
 	UPROPERTY(EditAnywhere)
-	bool ViewRegion = false;
+	float AzimuthRes = 0;
 
 	UPROPERTY(EditAnywhere)
-	int ViewOctree = -10;
+	int32 ElevationBins = 0;
+
+	UPROPERTY(EditAnywhere)
+	float ElevationRes = 0;
+
+	UPROPERTY(EditAnywhere)
+	bool MultiPath = false;
+
+	UPROPERTY(EditAnywhere)
+	int32 ClusterSize = 5;
+
+	UPROPERTY(EditAnywhere)
+	bool ScaleNoise = true;
+
+	UPROPERTY(EditAnywhere)
+	int32 AzimuthStreaks = 0;
 
 private:
 	/*
@@ -75,18 +92,18 @@ private:
 	AActor* Parent;
 
 	// various computations we want to cache
-	float RangeRes;
-	float AzimuthRes;
-	float ElevRes;
+	int32 AzimuthBinScale = 1;
+	float perfectCos;
 
-	// Used to hold leafs when parallelized sorting/binning happens
-	TArray<TArray<Octree*>> sortedLeaves;
+	// Used to hold leaves for multipath
+	TMap<FIntVector,Octree*> mapLeaves;
+	TMap<FIntVector,Octree*> mapSearch;
+	TArray<TArray<Octree*>> cluster;
 	int32* count;
+	int32* hasPerfectNormal;
 	
 	// for adding noise
 	MultivariateNormal<1> addNoise;
 	MultivariateNormal<1> multNoise;
-
-	float density_water = 997;
-	float sos_water = 1480;
+	MultivariateUniform<1> rNoise;
 };

@@ -14,6 +14,7 @@ void UTeleportCameraCommand::Execute() {
 	float UnitsPerMeter = World->GetWorldSettings()->WorldToMeters;
 	FVector Location = FVector(NumberParams[0], NumberParams[1], NumberParams[2]);
 	Location = ConvertLinearVector(Location, ClientToUE);
+	// Not actually a roll, pitch, yaw rotation, but where the axis the viewport should be looking along
 	FVector Rotation = FVector(NumberParams[3], NumberParams[4], NumberParams[5]);
 	Rotation = ConvertAngularVector(Rotation, ClientToUE);
 

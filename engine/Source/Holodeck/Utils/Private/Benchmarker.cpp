@@ -3,16 +3,9 @@
 #include "Holodeck.h"
 #include "Benchmarker.h"
 
-Benchmarker::Benchmarker()
+Benchmarker::Benchmarker(bool manual_start_) : manual_start(manual_start_)
 {
-	first_pass = true;
-	alpha = 0.5f;
-}
-
-Benchmarker::Benchmarker(float Alpha)
-{
-	first_pass = true;
-	alpha = Alpha;
+	t_start = std::chrono::high_resolution_clock::now();
 }
 
 Benchmarker::~Benchmarker()
@@ -31,23 +24,8 @@ void Benchmarker::End()
 
 float Benchmarker::CalcMs()
 {
-	return std::chrono::duration<float, std::milli>(t_end - t_start).count();
-}
-
-void Benchmarker::CalculateAvg()
-{
-	time_span = std::chrono::duration_cast<std::chrono::duration<float>>(t_end - t_start);
-
-	if (first_pass)
-	{
-		avg = (time_span.count());
-		first_pass = false;
-	}
-	else
-		avg = (1 - alpha) * avg + (alpha * time_span.count());
-}
-
-FString Benchmarker::Stat()
-{
-	return FString::SanitizeFloat(avg, 15);
+	if(!manual_start) t_end = std::chrono::high_resolution_clock::now();
+	float duration = std::chrono::duration<float, std::milli>(t_end - t_start).count();
+	if(!manual_start) t_start = std::chrono::high_resolution_clock::now();
+	return duration;
 }
