@@ -295,7 +295,7 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 				// Light up some bins to visualize things. 
 				// Make sure you change the bool at end of ParallelFor to true to turn off running in parallel, since 
 				// this can't be done in parallel
-				DrawDebugPoint(GetWorld(), jth->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
+				// DrawDebugPoint(GetWorld(), jth->loc, 5, FColor::Red, false, DeltaTime*TicksPerCapture);
 
 				diff = FMath::Abs(jth->locSpherical.X - binLeafs.GetData()[j+1]->locSpherical.X);
 				if(diff > eps) break;

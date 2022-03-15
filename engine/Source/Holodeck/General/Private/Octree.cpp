@@ -195,8 +195,8 @@ Octree* Octree::makeOctree(FVector center, float octreeSize, float octreeMin, FS
                 // Get physical material (not used very often)
                 // FString material = hit.PhysMaterial.Get()->GetFName().ToString();
                 // Get material (there is tons of these!)
-                FString mat = hit.GetComponent()->GetMaterial(hit.ElementIndex)->GetFName().ToString();
-                child->fillMaterialProperties(mat);
+                // FString mat = hit.GetComponent()->GetMaterial(hit.ElementIndex)->GetFName().ToString();
+                child->fillMaterialProperties("temp");
 
                 // clean normal
                 if(isnan(child->normal.X)) child->normal.X = sign(child->normal.X); 
