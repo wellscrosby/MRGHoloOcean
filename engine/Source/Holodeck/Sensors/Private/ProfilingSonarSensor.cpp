@@ -11,8 +11,8 @@ UProfilingSonarSensor::UProfilingSonarSensor() {
 // Allows sensor parameters to be set programmatically from client.
 void UProfilingSonarSensor::ParseSensorParms(FString ParmsJson) {
 	Elevation = 1;
-	RangeMin = 0.5;
-	RangeMax = 75;
+	RangeMin = 0.5 * 100;
+	RangeMax = 75 * 100;
 
 	TSharedPtr<FJsonObject> JsonParsed;
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ParmsJson);
