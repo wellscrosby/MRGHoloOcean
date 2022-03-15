@@ -19,16 +19,9 @@ void USingleBeamSonarSensor::BeginDestroy() {
 // Allows sensor parameters to be set programmatically from client.
 void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 
-	// default values
-	OpeningAngle = 30;
-	
-	RangeBins = 200;
-	BinsCentralAngle = 6;
-	BinsOpeningAngle = 5;
-
 	// range in cm
-	RangeMin = 50;
-	RangeMax = 1000;
+	RangeMin = 0.5 * 100;
+	RangeMax = 10 * 100;
 
 	Super::ParseSensorParms(ParmsJson);
 
@@ -37,19 +30,35 @@ void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ParmsJson);
 	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
 		// Geometry Parameters
+		if (JsonParsed->HasTypedField<EJson::Number>("OpeningAngle")) {
+			OpeningAngle = JsonParsed->GetNumberField("OpeningAngle");
+		}
 		if (JsonParsed->HasTypedField<EJson::Number>("RangeBins")) {
 			RangeBins = JsonParsed->GetIntegerField("RangeBins");
 		} 	
-		if (JsonParsed->HasTypedField<EJson::Number>("BinsOpeningAngle")) {
-			BinsOpeningAngle = JsonParsed->GetIntegerField("BinsOpeningAngle");
-		}
-		if (JsonParsed->HasTypedField<EJson::Number>("BinsCentralAngle")) {
-			BinsCentralAngle = JsonParsed->GetIntegerField("BinsCentralAngle");
-		}
-		if (JsonParsed->HasTypedField<EJson::Number>("OpeningAngle")) {
-			OpeningAngle = JsonParsed->GetIntegerField("OpeningAngle");
+		if (JsonParsed->HasTypedField<EJson::Number>("RangeRes")) {
+			RangeRes = JsonParsed->GetNumberField("RangeRes")*100;
 		}
 
+		// Advanced Params
+		if (JsonParsed->HasTypedField<EJson::Number>("OpeningAngleBins")) {
+			OpeningAngleBins = JsonParsed->GetIntegerField("OpeningAngleBins");
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("OpeningAngleRes")) {
+			OpeningAngleRes = JsonParsed->GetNumberField("OpeningAngleRes");
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("CentralAngleBins")) {
+			CentralAngleBins = JsonParsed->GetIntegerField("CentralAngleBins");
+		}
+		if (JsonParsed->HasTypedField<EJson::Number>("CentralAngleRes")) {
+			CentralAngleRes = JsonParsed->GetNumberField("CentralAngleRes");
+		}
+
+		// If the user hasn't set this, this is a better default value
+		// If they have set it, the super class will take care of it
+		if (!JsonParsed->HasTypedField<EJson::Number>("ShadowEpsilon")) {
+			ShadowEpsilon = Octree::OctreeMin;
+		}
 
 		// Noise Parameters
 		if (JsonParsed->HasTypedField<EJson::Number>("AddSigma")) {
@@ -65,18 +74,53 @@ void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 			multNoise.initCov(JsonParsed->GetNumberField("MultCov"));
 		}
 		if (JsonParsed->HasTypedField<EJson::Number>("RangeSigma")) {
-			rNoise.initBounds(JsonParsed->GetNumberField("RangeSigma"));
-		}
-		if (JsonParsed->HasTypedField<EJson::Number>("RangeCov")) {
-			rNoise.initBounds(JsonParsed->GetNumberField("RangeCov"));
+			rNoise.initBounds(JsonParsed->GetNumberField("RangeSigma")*100);
 		}
 	}
 	else {
 		UE_LOG(LogHolodeck, Fatal, TEXT("USingleBeamSonarSensor::ParseSensorParms:: Unable to parse json."));
 	}
 
-	if(BinsOpeningAngle == 0){
-		BinsOpeningAngle = OpeningAngle*10;
+	// Parse through the Range parameters given to us
+	if(RangeBins != 0){
+		RangeRes = (RangeMax - RangeMin) / RangeBins;
+	} 
+	else if(RangeRes != 0){
+		RangeBins = (RangeMax - RangeMin) / RangeRes;
+	}
+	else{
+		RangeBins = 200;
+		RangeRes = (RangeMax - RangeMin) / RangeBins;
+	}
+
+	// Parse through the OpeningAngle parameters given to us
+	if(OpeningAngleBins != 0){
+		OpeningAngleRes = OpeningAngle / OpeningAngleBins;
+	} 
+	else if(OpeningAngleRes != 0){
+		OpeningAngleBins = OpeningAngle / OpeningAngleRes;
+	}
+	else{
+		// Calculate how large our shadowing bins should be
+		float dist = RangeMin;
+		OpeningAngleBins = (dist*OpeningAngle*Pi/180) / Octree::OctreeMin;
+		if(OpeningAngleBins < 1) OpeningAngleBins = 1;
+		OpeningAngleRes = OpeningAngle / OpeningAngleBins;
+	}
+
+	// Parse through the CentralAngle parameters given to us
+	if(CentralAngleBins != 0){
+		CentralAngleRes = CentralAngle / CentralAngleBins;
+	} 
+	else if(CentralAngleRes != 0){
+		CentralAngleBins = CentralAngle / CentralAngleRes;
+	}
+	else{
+		// Calculate how large our shadowing bins should be
+		float dist = RangeMin;
+		CentralAngleBins = (dist*CentralAngle*Pi/180) / Octree::OctreeMin;
+		if(CentralAngleBins < 6) CentralAngleBins = 6;
+		CentralAngleRes = CentralAngle / CentralAngleBins;
 	}
 }
 
@@ -84,27 +128,22 @@ void USingleBeamSonarSensor::InitializeSensor() {
 	Super::InitializeSensor();
 	
 	// Setup bins
-	// TODO: Make these according to octree size
 	CentralAngle = 360;
 
 	minCentralAngle = -180;
 	maxCentralAngle = 180;
 	minOpeningAngle = 0;
 	maxOpeningAngle = OpeningAngle/2;
-
-	// Get size of each bin
-	RangeRes = (RangeMax - RangeMin) / RangeBins;
-	CentralAngleRes = CentralAngle / BinsCentralAngle;
-	OpeningAngleRes = OpeningAngle / BinsOpeningAngle;
 	
 	// setup count of each bin
 	count = new int32[RangeBins]();
 
-	for(int i=0;i<BinsCentralAngle*BinsOpeningAngle;i++){
+	for(int i=0;i<CentralAngleBins*OpeningAngleBins;i++){
 		sortedLeaves.Add(TArray<Octree*>());
 		sortedLeaves[i].Reserve(10000);
 	}
 
+	// Cache some calculations for later
 	sqrt3_2 = UKismetMathLibrary::Sqrt(3)/2;
 	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(CentralAngle, OpeningAngle)/2);
 }
@@ -177,9 +216,9 @@ void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick Tic
 				l->idx.Y = (int32)((l->locSpherical.Y - minCentralAngle)/ CentralAngleRes);
 				l->idx.Z = (int32)((l->locSpherical.Z - minOpeningAngle)/ OpeningAngleRes);
 				// Sometimes we get float->int rounding errors
-				if(l->idx.Y == BinsCentralAngle) --l->idx.Y;
+				if(l->idx.Y == CentralAngleBins) --l->idx.Y;
 
-				idx = l->idx.Z*BinsCentralAngle + l->idx.Y;
+				idx = l->idx.Z*CentralAngleBins + l->idx.Y;
 				// array of arrays (the rectangle we split off)
 				sortedLeaves[idx].Emplace(l);
 			}

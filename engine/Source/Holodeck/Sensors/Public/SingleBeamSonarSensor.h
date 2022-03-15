@@ -58,13 +58,25 @@ protected:
 	virtual bool inRange(Octree* tree) override;
 	
 	UPROPERTY(EditAnywhere)
-	int32 RangeBins = 200;
+	float OpeningAngle = 30;
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsCentralAngle = 6; 
+	int32 RangeBins = 0;
 
 	UPROPERTY(EditAnywhere)
-	int32 BinsOpeningAngle = 5; 
+	float RangeRes = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 CentralAngleBins = 0; 
+
+	UPROPERTY(EditAnywhere)
+	float CentralAngleRes = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 OpeningAngleBins = 0; 
+
+	UPROPERTY(EditAnywhere)
+	float OpeningAngleRes = 0;
 
 private:
 	/*
@@ -74,18 +86,12 @@ private:
 	AActor* Parent;
 
 	// angles unique to SingleBeam
-	float OpeningAngle;
-	float CentralAngle;
+	float CentralAngle = 360;
 
 	float minOpeningAngle;
 	float maxOpeningAngle;
 	float minCentralAngle;
 	float maxCentralAngle;
-
-	// resolutions unique to SingleBeam
-	float RangeRes;
-	float CentralAngleRes;
-	float OpeningAngleRes;
 	
 	// various computations we want to cache
 	float sqrt3_2;

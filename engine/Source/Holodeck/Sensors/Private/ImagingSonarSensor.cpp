@@ -60,19 +60,19 @@ void UImagingSonarSensor::ParseSensorParms(FString ParmsJson) {
 			RangeBins = JsonParsed->GetIntegerField("RangeBins");
 		}
 		if (JsonParsed->HasTypedField<EJson::Number>("RangeRes")) {
-			RangeRes = JsonParsed->GetIntegerField("RangeRes");
+			RangeRes = JsonParsed->GetNumberField("RangeRes")*100;
 		}
 		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthBins")) {
 			AzimuthBins = JsonParsed->GetIntegerField("AzimuthBins");
 		}
 		if (JsonParsed->HasTypedField<EJson::Number>("AzimuthRes")) {
-			AzimuthRes = JsonParsed->GetIntegerField("AzimuthRes");
+			AzimuthRes = JsonParsed->GetNumberField("AzimuthRes");
 		}
 		if (JsonParsed->HasTypedField<EJson::Number>("ElevationBins")) {
 			ElevationBins = JsonParsed->GetIntegerField("ElevationBins");
 		}
 		if (JsonParsed->HasTypedField<EJson::Number>("ElevationRes")) {
-			ElevationRes = JsonParsed->GetIntegerField("ElevationRes");
+			ElevationRes = JsonParsed->GetNumberField("ElevationRes");
 		}
 	}
 	else {
