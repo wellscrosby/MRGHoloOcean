@@ -671,7 +671,7 @@ class ImagingSonarSensor(HoloOceanSensor):
     - ``ClusterSize``: Size of cluster when multipath is enabled. Defaults to 5.
     - ``ScaleNoise``: Whether to scale the returned intensities or not. Defaults to False.
     - ``AzimuthStreaks``: What sort of azimuth artifacts to introduce. -1 is a removal artifact, 0 is no artifact, and 1 is increased gain artifact. Defaults to 0.
-    - ``RangeSigma``: Additive noise std from an exponential distribution that will be added to the range measurements, and the intensitys will be scaled by the pdf. Needs to be a float. Defaults to 0/off.
+    - ``RangeSigma``: Additive noise std from an exponential distribution that will be added to the range measurements, and the intensities will be scaled by the pdf. Needs to be a float. Defaults to 0, or off.
 
     **Advanced Configuration**
 
