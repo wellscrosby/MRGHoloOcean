@@ -260,15 +260,16 @@ class DebugDrawCommand(Command):
             - ``2``: box
             - ``3``: point
 
-        start (:obj:`list` of :obj:`float`): The start  ``[x, y, z]`` location of the object.
+        start (:obj:`list` of :obj:`float`): The start  ``[x, y, z]`` location in meters of the object.
             (see :ref:`coordinate-system`)
-        end (:obj:`list` of :obj:`float`): The end ``[x, y, z]`` location of the object
+        end (:obj:`list` of :obj:`float`): The end ``[x, y, z]`` location in meters of the object
             (not used for point, and extent for box)
-        color (:obj:`list` of :obj:`float`): ``[r, g, b]`` values for the color
+        color (:obj:`list` of :obj:`float`): ``[r, g, b]`` color value (from 0 to 255).
         thickness (:obj:`float`): thickness of the line/object
+        lifetime (:obj:`float`): Number of simulation seconds the object should persist. If 0, makes persistent
 
     """
-    def __init__(self, draw_type, start, end, color, thickness):
+    def __init__(self, draw_type, start, end, color, thickness, lifetime):
         super(DebugDrawCommand, self).__init__()
         self._command_type = "DebugDraw"
 
@@ -277,6 +278,7 @@ class DebugDrawCommand(Command):
         self.add_number_parameters(end)
         self.add_number_parameters(color)
         self.add_number_parameters(thickness)
+        self.add_number_parameters(lifetime)
 
 
 class TeleportCameraCommand(Command):
