@@ -645,7 +645,84 @@ class AbuseSensor(HoloOceanSensor):
         return [1]
 
 ######################## HOLOOCEAN CUSTOM SENSORS ###########################
-#Make sure to also add your new sensor to SensorDefintion below
+#Make sure to also add your new sensor to SensorDefinition below
+
+class SidescanSonarSensor(HoloOceanSensor):
+    """Simulates a sidescan sonar. See :ref:`configure-octree` for more on
+    how to configure the octree that is used.
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts any of 
+    the options in the following sections.
+
+    **Basic Configuration**
+
+    - ``Azimuth``: Azimuth (side to side) angle visible in degrees, defaults to 170.
+    - ``Elevation``: Elevation angle (up and down) visible in degrees, defaults to 0.25.
+    - ``RangeMin``: Minimum range visible in meters, defaults to 0.5.
+    - ``RangeMax``: Maximum range visible in meters, defaults to 35.
+    - ``RangeBins``/``RangeRes``: Number of range bins of resulting image, or resolution (length in meters) of each bin. Set one or the other. Defaults to 0.05 m.
+   
+    **Noise Configuration**
+
+    - ``AddSigma``/``AddCov``: Additive noise std/covariance from a Rayleigh distribution. Needs to be a float. Set one or the other. Defaults to 0, or off.
+    - ``MultSigma``/``MultCov``: Multiplication noise std/covariance from a normal distribution. Needs to be a float. Set one or the other. Defaults to 0, or off.
+
+    **Advanced Configuration**
+
+    - ``AzimuthBins``/``AzimuthRes``: Number of azimuth bins of resulting image, or resolution (length in degrees) of each bin. Set one or the other. By default this is computed based on the OctreeMin.
+    - ``ElevationBins``/``ElevationRes``: Number of elevation bins used when shadowing is done, or resolution (length in degrees) of each bin. Set one or the other. By default this is computed based on the octree size and the min range. Should only be set if shadowing isn't working.
+    - ``InitOctreeRange``: Upon startup, all mid-level octrees within this distance of the agent will be created.
+    - ``ViewRegion``: Turns on green lines to see visible region. Defaults to False.
+    - ``ViewOctree``: What octree leaves to show. Less than -1 means none, -1 means all, and anything greater than or equal to 0 shows the corresponding beam index. Defaults to -10.
+    - ``ShadowEpsilon``: What constitutes a break between clusters when shadowing. Defaults to 4*OctreeMin.
+    - ``WaterDensity``: Density of water in kg/m^3. Defaults to 997.
+    - ``WaterSpeedSound``: Speed of sound in water in m/s. Defaults to 1480.
+
+    """
+    sensor_type = "SidescanSonarSensor"
+
+    def __init__(self, client, agent_name, agent_type, name="SidescanSonarSensor", config=None):
+
+        self.config = {} if config is None else config
+
+        range_min = self.config.get("RangeMin", 0.5)
+        range_max = self.config.get("RangeMax", 35)
+        range_res = 0.05
+
+        if "RangeBins" in self.config and "RangeRes" in self.config:
+            raise ValueError("Can't set both RangeBins and RangeRes, use one of them in your configuration")
+        elif "RangeBins" in self.config:
+            range_bins = self.config["RangeBins"]
+        elif "RangeRes" in self.config:
+            range_bins = int((range_max - range_min) // self.config["RangeRes"])
+        else:
+            range_bins = int((range_max - range_min) // range_res)
+
+        if "AzimuthBins" in self.config and "AzimuthRes" in self.config:
+            raise ValueError("Can't set both AzimuthBins and AzimuthRes, use one of them in your configuration")
+
+        if "ElevationBins" in self.config and "ElevationRes" in self.config:
+            raise ValueError("Can't set both ElevationBins and ElevationRes, use one of them in your configuration")
+
+        if "AddSigma" in self.config and "AddCov" in self.config:
+            raise ValueError("Can't set both AddSigma and AddCov, use one of them in your configuration")
+
+        if "MultSigma" in self.config and "MultCov" in self.config:
+            raise ValueError("Can't set both MultSigma and MultCov, use one of them in your configuration")
+        
+        # Ensure shape of python variable matches what will be sent from the c++ side
+        self.shape = [range_bins]
+
+        super(SidescanSonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+
+    @property
+    def dtype(self):
+        return np.float32
+
+    @property
+    def data_shape(self):
+        return self.shape
+
 
 class ImagingSonarSensor(HoloOceanSensor):
     """Simulates an imaging sonar. See :ref:`configure-octree` for more on
@@ -702,14 +779,14 @@ class ImagingSonarSensor(HoloOceanSensor):
         elif "RangeBins" in self.config:
             b_range = self.config["RangeBins"]
         elif "RangeRes" in self.config:
-            b_range = (max_range - min_range) / self.config["RangeRes"]
+            b_range = int((max_range - min_range) // self.config["RangeRes"])
 
         if "AzimuthBins" in self.config and "AzimuthRes" in self.config:
             raise ValueError("Can't set both AzimuthBins and AzimuthRes, use one of them in your configuration")
         elif "AzimuthBins" in self.config:
             b_azimuth = self.config["AzimuthBins"]
         elif "AzimuthRes" in self.config:
-            b_azimuth = azimuth / self.config["AzimuthRes"]
+            b_azimuth = int(azimuth // self.config["AzimuthRes"])
 
         if "ElevationBins" in self.config and "ElevationRes" in self.config:
             raise ValueError("Can't set both ElevationBins and ElevationRes, use one of them in your configuration")
@@ -1267,6 +1344,7 @@ class SensorDefinition:
         "DepthSensor": DepthSensor,
         "OpticalModemSensor": OpticalModemSensor,
         "ImagingSonarSensor": ImagingSonarSensor,
+        "SidescanSonarSensor": SidescanSonarSensor,
         "ProfilingSonarSensor": ProfilingSonarSensor,
         "GPSSensor": GPSSensor,
         "SingleBeamSonarSensor": SingleBeamSonarSensor,
