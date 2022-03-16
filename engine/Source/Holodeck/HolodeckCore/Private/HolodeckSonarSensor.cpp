@@ -71,13 +71,13 @@ void UHolodeckSonarSensor::ParseSensorParms(FString ParmsJson) {
 
 		// Performance Parameters
 		if (JsonParsed->HasTypedField<EJson::Number>("ShadowEpsilon")) {
-			ShadowEpsilon = JsonParsed->GetIntegerField("ShadowEpsilon");
+			ShadowEpsilon = JsonParsed->GetNumberField("ShadowEpsilon")*100;
 		}
 		if (JsonParsed->HasTypedField<EJson::Number>("WaterDensity")) {
-			WaterDensity = JsonParsed->GetIntegerField("WaterDensity");
+			WaterDensity = JsonParsed->GetNumberField("WaterDensity");
 		}
 		if (JsonParsed->HasTypedField<EJson::Number>("WaterSpeedSound")) {
-			WaterSpeedSound = JsonParsed->GetIntegerField("WaterSpeedSound");
+			WaterSpeedSound = JsonParsed->GetNumberField("WaterSpeedSound");
 		}
 
 

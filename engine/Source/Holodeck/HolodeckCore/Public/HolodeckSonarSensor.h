@@ -92,7 +92,7 @@ protected:
 	// Used to hold leafs when parallelized sorting/binning happens
 	TArray<TArray<Octree*>> sortedLeaves;
 
-	// Water information (Change to parameter?)
+	// Water information
 	float WaterImpedance;
 
 	// use for skipping frames
