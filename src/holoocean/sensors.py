@@ -768,6 +768,7 @@ class ImagingSonarSensor(HoloOceanSensor):
     - ``ClusterSize``: Size of cluster when multipath is enabled. Defaults to 5.
     - ``ScaleNoise``: Whether to scale the returned intensities or not. Defaults to False.
     - ``AzimuthStreaks``: What sort of azimuth artifacts to introduce. -1 is a removal artifact, 0 is no artifact, and 1 is increased gain artifact. Defaults to 0.
+    - ``RangeSigma``: Additive noise std from an exponential distribution that will be added to the range measurements, and the intensities will be scaled by the pdf. Needs to be a float. Defaults to 0, or off.
 
     **Advanced Configuration**
 
@@ -819,6 +820,91 @@ class ImagingSonarSensor(HoloOceanSensor):
         self.shape = (b_range, b_azimuth)
 
         super(ImagingSonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+
+    @property
+    def dtype(self):
+        return np.float32
+
+    @property
+    def data_shape(self):
+        return self.shape
+
+class SingleBeamSonarSensor(HoloOceanSensor):
+    """Simulates an echosounder, which is a sonar sensor with a single cone shaped beam. See :ref:`configure-octree` for more on
+    how to configure the octree that is used.
+
+    Returns a 1D numpy array of the average intensities held in each range bin of the sensor. The length of the array is specified by the number of range bins chosen for the sensor.
+
+    **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the following
+    options:
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts any of 
+    the options in the following sections.
+
+    **Basic Configuration**
+
+    - ``OpeningAngle``: Opening angle of the cone visible in degrees, defaults to 30. In this documentation, the opening angle would be 2 times the semi-vertical angle of the cone.
+    - ``RangeMin``: Minimum range visible in meters, defaults to 0.5.
+    - ``RangeMax``: Maximum range visible in meters, defaults to 10.
+    - ``RangeBins``/``RangeRes``: Number of range bins of resulting image, or resolution (length in meters) of each bin. Set one or the other. Defaults to 200 bins.
+   
+    **Noise Configuration**
+
+    - ``AddSigma``/``AddCov``: Additive noise std/covariance from a Rayleigh distribution. Needs to be a float. Set one or the other. Defaults to 0, or off.
+    - ``MultSigma``/``MultCov``: Multiplication noise std/covariance from a normal distribution. Needs to be a float. Set one or the other. Defaults to 0, or off.
+    - ``RangeSigma``: Additive noise std from an exponential distribution that will be added to the range measurements. Needs to be a float. Defaults to 0/off.
+
+    **Advanced Configuration**
+
+    - ``OpeningAngleBins``/``OpeningAngleRes``: Number of OpeningAngle bins used when shadowing is done, or resolution (length in degrees) of each bin. Set one or the other. By default this is computed based on the octree size and the min/max range. Should only be set if shadowing isn't working.
+    - ``CentralAngleBins``/``CentralAngleRes``: Number of CentralAngle bins used when shadowing is done, or resolution (length in degrees) of each bin. Set one or the other. By default this is computed based on the octree size and the min/max range. Should only be set if shadowing isn't working.
+    - ``InitOctreeRange``: Upon startup, all mid-level octrees within this distance of the agent will be created.
+    - ``ViewRegion``: Turns on green lines to see visible region. Defaults to False.
+    - ``ViewOctree``: What octree leaves to show. Less than -1 means none, -1 means all, and anything greater than or equal to 0 shows the corresponding beam index. Defaults to -10.
+    - ``ShadowEpsilon``: What constitutes a break between clusters when shadowing. Defaults to 4*OctreeMin.
+    - ``WaterDensity``: Density of water in kg/m^3. Defaults to 997.
+    - ``WaterSpeedSound``: Speed of sound in water in m/s. Defaults to 1480.
+    """ 
+    sensor_type = "SingleBeamSonarSensor" 
+
+    def __init__(self, client, agent_name, agent_type, name="SingleBeamSonarSensor", config=None):
+
+        self.config = {} if config is None else config
+
+        # default range for bins
+        b_range = 200
+
+        if "BinsRange" in self.config:
+            b_range = self.config["BinsRange"]
+
+        b_range   = 200
+        min_range = self.config.get("RangeMin", 0.5)
+        max_range = self.config.get("RangeMax", 10)
+
+        if "RangeBins" in self.config and "RangeRes" in self.config:
+            raise ValueError("Can't set both RangeBins and RangeRes, use one of them in your configuration")
+        elif "RangeBins" in self.config:
+            b_range = self.config["RangeBins"]
+        elif "RangeRes" in self.config:
+            b_range = int((max_range - min_range) // self.config["RangeRes"])
+
+        if "OpeningAngleBins" in self.config and "OpeningAngleRes" in self.config:
+            raise ValueError("Can't set both OpeningAngleBins and OpeningAngleRes, use one of them in your configuration")
+
+        if "CentralAngleBins" in self.config and "CentralAngleRes" in self.config:
+            raise ValueError("Can't set both CentralAngleBins and CentralAngleRes, use one of them in your configuration")
+
+        if "AddSigma" in self.config and "AddCov" in self.config:
+            raise ValueError("Can't set both AddSigma and AddCov, use one of them in your configuration")
+
+        if "MultSigma" in self.config and "MultCov" in self.config:
+            raise ValueError("Can't set both MultSigma and MultCov, use one of them in your configuration")
+
+        self.shape = [b_range]
+
+        super(SingleBeamSonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
     @property
     def dtype(self):
@@ -1265,8 +1351,7 @@ class OpticalModemSensor(HoloOceanSensor):
     def reset(self):
         self.__class__.instances = dict()
 
-    
-        
+  
 ######################################################################################
 class SensorDefinition:
     """A class for new sensors and their parameters, to be used for adding new sensors.
@@ -1315,6 +1400,7 @@ class SensorDefinition:
         "SidescanSonarSensor": SidescanSonarSensor,
         "ProfilingSonarSensor": ProfilingSonarSensor,
         "GPSSensor": GPSSensor,
+        "SingleBeamSonarSensor": SingleBeamSonarSensor,
     }
 
     # Sensors that need timeout turned off
