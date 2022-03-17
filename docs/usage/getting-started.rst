@@ -16,7 +16,7 @@ A minimal HoloOcean usage example is below:
    command = np.array([10,10,10,10,0,0,0,0])
 
    for _ in range(180):
-      state, reward, terminal, info = env.step(command)
+      state = env.step(command)
 
 
 Notice that:

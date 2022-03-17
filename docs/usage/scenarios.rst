@@ -200,10 +200,10 @@ Sensors have a couple options for placement.
          "socket": "CameraSocket"
       }
 
-2. **Provide a socket and a location/rotation**
+2. **Provide a socket, location and/or rotation**
 
    The sensor will be placed offset to the socket by the location and rotation. 
-   The rotation is ``[roll, pitch, yaw]``, rotated about XYZ fixed axes,
+   The rotation is ``[roll, pitch, yaw]`` in degrees, rotated about XYZ fixed axes,
    ie R_z R_y R_x.
 
 
@@ -212,10 +212,11 @@ Sensors have a couple options for placement.
       {
          "sensor_type": "RGBCamera",
          "location": [1.0, 2.0, 3.0],
+         "rotation": [1.0, 2.0, 3.0],
          "socket": "CameraSocket"
       }
 
-3. **Provide just a location/rotation**
+3. **Provide just a location and/or rotation**
 
    The sensor will be placed at the given coordinates, offset from the root of
    the agent.
@@ -224,10 +225,11 @@ Sensors have a couple options for placement.
 
       {
          "sensor_type": "RGBCamera",
-         "location": [1.0, 2.0, 3.0]
+         "location": [1.0, 2.0, 3.0],
+         "rotation": [1.0, 2.0, 3.0]
       }
 
-3. **Provide a sensor sample rate**
+4. **Provide a sensor sample rate**
 
    The sensor will be sampled at this rate. Note this must be less then ``ticks_per_sec``, and
    preferably a divisor of ``ticks_per_sec`` as well. See :ref:`configure-framerate` for more info
@@ -240,7 +242,7 @@ Sensors have a couple options for placement.
          "Hz": 20
       }
 
-4 **Publish Message**
+5. **Publish Message**
 
    Currently, HoloOcean supports publishing mesages to LCM (with possible ROS package coming).
    To publish sensor data to LCM, specify the type to publish.

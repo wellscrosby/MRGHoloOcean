@@ -38,7 +38,7 @@ def env():
 def test_actor_rotation(env, num):
     """Make sure the orientation we tell the actor to start at is the correct one
     """
-    angles = np.random.rand(3)*180
+    angles = np.random.rand(3)*45
     R = Rotation.from_euler('xyz', angles, degrees=True).as_matrix()
 
     env._scenario["agents"][0]["rotation"] = angles.tolist()
@@ -48,14 +48,14 @@ def test_actor_rotation(env, num):
 
     state = env.tick()
 
-    assert np.allclose(R, state["OrientationSensor"], atol=1e-4)
+    assert np.allclose(R, state["OrientationSensor"], atol=1e-3)
 
 
 @pytest.mark.parametrize('num', range(3))
 def test_sensor_rotation(env, num):
     """Make sure the orientation we tell the sensor to start at is the correct one
     """
-    angles = np.random.rand(3)*180
+    angles = np.random.rand(3)*45
     
     R = Rotation.from_euler('xyz', angles, degrees=True).as_matrix()
 
@@ -66,14 +66,14 @@ def test_sensor_rotation(env, num):
 
     state = env.tick()
 
-    assert np.allclose(R, state["OrientationSensor"], atol=1e-4)
+    assert np.allclose(R, state["OrientationSensor"], atol=1e-3)
 
 
 @pytest.mark.parametrize('num', range(3))
 def test_teleport_rotation(env, num):
     """Make sure the orientation we teleport the agent to is the correct one
     """
-    angles = np.random.rand(3)*180
+    angles = np.random.rand(3)*45
     
     R = Rotation.from_euler('xyz', angles, degrees=True).as_matrix()
 
@@ -86,4 +86,4 @@ def test_teleport_rotation(env, num):
     env.agents['sphere'].teleport([0,0,0], angles.tolist())
     state = env.tick()
 
-    assert np.allclose(R, state["OrientationSensor"], atol=1e-4)
+    assert np.allclose(R, state["OrientationSensor"], atol=1e-3)

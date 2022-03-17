@@ -40,7 +40,7 @@ def test_orientation_sensor_after_teleport(env, num):
     rotate the agent
     """
     loc = [123, 3740, 1030]
-    rot_deg = np.random.rand(3)*180
+    rot_deg = np.random.rand(3)*45
     R = Rotation.from_euler('xyz', rot_deg, degrees=True).as_matrix()
 
     env.agents["sphere0"].teleport(loc, rot_deg)

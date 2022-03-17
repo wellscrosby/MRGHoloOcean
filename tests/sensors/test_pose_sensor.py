@@ -30,7 +30,7 @@ turtle_config = {
 }
 
 
-def test_dvl_sensor_straight():
+def test_pose_sensor_straight():
     """Make sure pose sensor returns the same values as the orientation and location sensors
     """
 
@@ -43,7 +43,7 @@ def test_dvl_sensor_straight():
         #let it land and then start moving forward
         for _ in range(200):
             command = np.random.random(size=2)
-            state = env.step(command)[0]
+            state = env.step(command)
             assert almost_equal(state['PoseSensor'][:3,:3], state['OrientationSensor']), \
                     f"Rotation in PoseSensor doesn't match that in OrientationSensor at timestep {i}"
             assert almost_equal(state['PoseSensor'][:3,3], state['LocationSensor']), \

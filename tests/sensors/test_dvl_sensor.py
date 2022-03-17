@@ -50,7 +50,7 @@ def test_dvl_sensor_straight():
 
         #Move forward, making sure y is relatively small, and x is increasing
         for i in range(50):
-            new_x_velocity, y_velocity, z_velocity = env.step([150,0])[0]["DVLSensor"][:3]
+            new_x_velocity, y_velocity, z_velocity = env.step([150,0])["DVLSensor"][:3]
             assert new_x_velocity >= last_x_velocity, f"The velocity didn't increase at step {i}!"
             assert y_velocity <= .5
             assert z_velocity <= .5
@@ -62,7 +62,7 @@ def test_dvl_sensor_straight():
 
         #Move backward, making sure y is relatively small, and x is decreasing
         for i in range(50):
-            new_x_velocity, y_velocity, z_velocity = env.step([-150,0])[0]["DVLSensor"][:3]
+            new_x_velocity, y_velocity, z_velocity = env.step([-150,0])["DVLSensor"][:3]
             assert new_x_velocity <= last_x_velocity, f"The velocity didn't decrease at step {i}!"
             assert y_velocity <= .5
             assert z_velocity <= .5
@@ -96,7 +96,7 @@ def test_dvl_sensor_rotated():
 
         #Move forward, making sure y is relatively small, and x is increasing
         for i in range(60):
-            new_x_velocity, y_velocity, z_velocity = env.step([150,0])[0]["DVLSensor"][:3]
+            new_x_velocity, y_velocity, z_velocity = env.step([150,0])["DVLSensor"][:3]
             assert new_x_velocity >= last_x_velocity, f"The velocity didn't increase at step {i}!"
             assert y_velocity <= .5
             assert z_velocity <= .5
@@ -108,7 +108,7 @@ def test_dvl_sensor_rotated():
 
         #Move backward, making sure y is relatively small, and x is decreasing
         for i in range(20):
-            new_x_velocity, y_velocity, z_velocity = env.step([-150,0])[0]["DVLSensor"][:3]
+            new_x_velocity, y_velocity, z_velocity = env.step([-150,0])["DVLSensor"][:3]
             assert new_x_velocity <= last_x_velocity, f"The velocity didn't decrease at step {i}!"
             assert y_velocity <= .5
             assert z_velocity <= .5

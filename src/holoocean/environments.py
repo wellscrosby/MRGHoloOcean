@@ -53,8 +53,7 @@ class HoloOceanEnvironment:
             If engine log output should be printed to stdout
 
         pre_start_steps (:obj:`int`):
-            Number of ticks to call after initializing the world, allows the 
-                level to load and settle.
+            Number of ticks to call after initializing the world, allows the level to load and settle.
 
         show_viewport (:obj:`bool`, optional):
             If the viewport should be shown (Linux only) Defaults to True.
@@ -184,7 +183,7 @@ class HoloOceanEnvironment:
 
         # Whether we need to wait for a sonar to load
         self.start_world = start_world
-        self._loading_sonar = False
+        self._has_sonar = False
 
         if self.num_agents == 1:
             self._default_state_fn = self._get_single_state
@@ -203,8 +202,8 @@ class HoloOceanEnvironment:
     @property
     def _timeout(self):
         # Returns the timeout that should be processed
-        # Make a larger timeout when creating octrees at the start
-        if (self._num_ticks < 20 and self._loading_sonar) or not self.start_world:
+        # Turns off timeout when creating octrees might be made
+        if self._has_sonar or not self.start_world:
             if os.name == "posix":
                 return None
             elif os.name == "nt":
@@ -280,7 +279,7 @@ class HoloOceanEnvironment:
 
                 # set up sensor rates
                 if self._ticks_per_sec < sensor_config['Hz']:
-                    raise ValueError(f"{sensor_config['sensor_name']} is sampled at {sensor_config['Hz']} which is less than ticks_per_sec {self._ticks_per_sec}")
+                    raise ValueError(f"{sensor_config['sensor_name']} is sampled at {sensor_config['Hz']} which is greater than ticks_per_sec {self._ticks_per_sec}")
 
                 # round sensor rate as needed
                 tick_every = self._ticks_per_sec / sensor_config['Hz']
@@ -299,8 +298,8 @@ class HoloOceanEnvironment:
                                                 tick_every=sensor_config['tick_every'],
                                                 lcm_channel=sensor_config['lcm_channel']))
 
-                if sensor_config['sensor_type'] == "ImagingSonarSensor":
-                    self._loading_sonar = True
+                if sensor_config['sensor_type'] in SensorDefinition._sonar_sensors:
+                    self._has_sonar = True
 
                 # Import LCM if needed
                 if sensor_config['lcm_channel'] is not None and self._lcm is None:
@@ -372,10 +371,9 @@ class HoloOceanEnvironment:
         If it is a single agent environment, it returns that state for that agent. Otherwise, it
         returns a dict from agent name to state.
 
-        Returns (tuple or dict):
-            For single agent environment, returns the same as `step`.
-
-            For multi-agent environment, returns the same as `tick`.
+        Returns:
+         :obj:`tuple` or :obj:`dict`:
+            Returns the same as `tick`.
         """
         # Reset level
         self._initial_reset = True
@@ -388,9 +386,9 @@ class HoloOceanEnvironment:
             for sensor_name, sensor in agent.sensors.items():
                 sensor.reset()
 
-        self.tick()  # Must tick once to send reset before sending spawning commands
-        self.tick()  # Bad fix to potential race condition. See issue BYU-PCCL/holodeck#224
-        self.tick()
+        self.tick(publish=False)  # Must tick once to send reset before sending spawning commands
+        self.tick(publish=False)  # Bad fix to potential race condition. See issue BYU-PCCL/holodeck#224
+        self.tick(publish=False)
         # Clear command queue
         if self._command_center.queue_size > 0:
             print("Warning: Reset called before all commands could be sent. Discarding",
@@ -414,7 +412,7 @@ class HoloOceanEnvironment:
             self._default_state_fn = self._get_full_state
 
         for _ in range(self._pre_start_steps + 1):
-            self.tick()
+            self.tick(publish=False)
 
         return self._default_state_fn()
 
@@ -426,15 +424,16 @@ class HoloOceanEnvironment:
             action (:obj:`np.ndarray`): An action for the main agent to carry out on the next tick.
             ticks (:obj:`int`): Number of times to step the environment with this action.
                 If ticks > 1, this function returns the last state generated.
-            publish (:obj: `bool`): Whether or not to publish as defined by scenario. Defaults to True.
+            publish (:obj:`bool`): Whether or not to publish as defined by scenario. Defaults to True.
 
         Returns:
-            (:obj:`dict`, :obj:`float`, :obj:`bool`, info): A 4tuple:
-                - State: Dictionary from sensor enum
-                    (see :class:`~holoocean.sensors.HoloOceanSensor`) to :obj:`np.ndarray`.
-                - Reward (:obj:`float`): Reward returned by the environment.
-                - Terminal: The bool terminal signal returned by the environment.
-                - Info: Any additional info, depending on the world. Defaults to None.
+            :obj:`dict`: 
+                A dictionary from agent name to its full state. The full state is another
+                dictionary from :obj:`holoocean.sensors.Sensors` enum to np.ndarray, containing the
+                sensors information for each sensor. The sensors always include the reward and
+                terminal sensors. Reward and terminals can also be gotten through :meth:`get_reward_terminal`.
+
+                Will return the state from the last tick executed.
         """
         if not self._initial_reset:
             raise HoloOceanException("You must call .reset() before .step()")
@@ -447,15 +446,13 @@ class HoloOceanEnvironment:
             self._client.release()
             self._client.acquire(self._timeout)
 
-            reward, terminal = self._get_reward_terminal()
-            last_state = self._default_state_fn(), reward, terminal, None
+            last_state = self._default_state_fn()
 
             self._tick_sensor()
             self._num_ticks += 1
 
-
-        if publish and self._lcm is not None:
-            self.publish(last_state)
+            if publish and self._lcm is not None:
+                self._publish(last_state)
 
         return last_state
 
@@ -477,20 +474,23 @@ class HoloOceanEnvironment:
                 specified agent and joint. Will return None if the joint does not exist for the agent.
 
         Returns:
-            (:obj )
+            :obj:`np.ndarray`
         """
         return self.agents[agent_name].get_joint_constraints(joint_name)
 
     def tick(self, num_ticks=1, publish=True):
         """Ticks the environment once. Normally used for multi-agent environments.
+
         Args:
             num_ticks (:obj:`int`): Number of ticks to perform. Defaults to 1.
-            publish (:obj: `bool`): Whether or not to publish as defined by scenario. Defaults to True.
+            publish (:obj:`bool`): Whether or not to publish as defined by scenario. Defaults to True.
+
         Returns:
-            :obj:`dict`: A dictionary from agent name to its full state. The full state is another
+            :obj:`dict`: 
+                A dictionary from agent name to its full state. The full state is another
                 dictionary from :obj:`holoocean.sensors.Sensors` enum to np.ndarray, containing the
                 sensors information for each sensor. The sensors always include the reward and
-                terminal sensors.
+                terminal sensors. Reward and terminals can also be gotten through :meth:`get_reward_terminal`.
 
                 Will return the state from the last tick executed.
         """
@@ -508,13 +508,13 @@ class HoloOceanEnvironment:
             self._tick_sensor()
             self._num_ticks += 1
 
-        if publish and self._lcm is not None:
-            self.publish(state)
+            if publish and self._lcm is not None:
+                self._publish(state)
 
         return state
 
-    def publish(self, state):
-        """Publishes current state to channels chosen by the scenario config."""
+    def _publish(self, state):
+        """Publishes given state to channels chosen by the scenario config."""
         # if it was a partial state
         if self._agent.name not in state:
             state = {self._agent.name: state}
@@ -617,59 +617,63 @@ class HoloOceanEnvironment:
         self.send_world_command("SpawnProp", num_params=[location, rotation, scale, sim_physics],
                                 string_params=[prop_type, material, tag])
 
-    def draw_line(self, start, end, color=None, thickness=10.0):
+    def draw_line(self, start, end, color=None, thickness=10.0, lifetime=1.0):
         """Draws a debug line in the world
 
         Args:
-            start (:obj:`list` of :obj:`float`): The start ``[x, y, z]`` location of the line.
+            start (:obj:`list` of :obj:`float`): The start ``[x, y, z]`` location in meters of the line.
                 (see :ref:`coordinate-system`)
-            end (:obj:`list` of :obj:`float`): The end ``[x, y, z]`` location of the line
-            color (:obj:`list``): ``[r, g, b]`` color value
-            thickness (:obj:`float`): thickness of the line
+            end (:obj:`list` of :obj:`float`): The end ``[x, y, z]`` location in meters of the line
+            color (:obj:`list``): ``[r, g, b]`` color value (from 0 to 255). Defaults to [255, 0, 0] (red).
+            thickness (:obj:`float`): Thickness of the line. Defaults to 10.
+            lifetime (:obj:`float`): Number of simulation seconds the object should persist. If 0, makes persistent. Defaults to 1.
         """
         color = [255, 0, 0] if color is None else color
-        command_to_send = DebugDrawCommand(0, start, end, color, thickness)
+        command_to_send = DebugDrawCommand(0, start, end, color, thickness, lifetime)
         self._enqueue_command(command_to_send)
 
-    def draw_arrow(self, start, end, color=None, thickness=10.0):
+    def draw_arrow(self, start, end, color=None, thickness=10.0, lifetime=1.0):
         """Draws a debug arrow in the world
 
         Args:
-            start (:obj:`list` of :obj:`float`): The start ``[x, y, z]`` location of the line.
+            start (:obj:`list` of :obj:`float`): The start ``[x, y, z]`` location in meters of the line.
                 (see :ref:`coordinate-system`)
-            end (:obj:`list` of :obj:`float`): The end ``[x, y, z]`` location of the arrow
-            color (:obj:`list`): ``[r, g, b]`` color value
-            thickness (:obj:`float`): thickness of the arrow
+            end (:obj:`list` of :obj:`float`): The end ``[x, y, z]`` location in meters of the arrow
+            color (:obj:`list`): ``[r, g, b]`` color value (from 0 to 255). Defaults to [255, 0, 0] (red).
+            thickness (:obj:`float`): Thickness of the arrow. Defaults to 10.
+            lifetime (:obj:`float`): Number of simulation seconds the object should persist. If 0, makes persistent. Defaults to 1.
         """
         color = [255, 0, 0] if color is None else color
-        command_to_send = DebugDrawCommand(1, start, end, color, thickness)
+        command_to_send = DebugDrawCommand(1, start, end, color, thickness, lifetime)
         self._enqueue_command(command_to_send)
 
-    def draw_box(self, center, extent, color=None, thickness=10.0):
+    def draw_box(self, center, extent, color=None, thickness=10.0, lifetime=1.0):
         """Draws a debug box in the world
 
         Args:
-            center (:obj:`list` of :obj:`float`): The start ``[x, y, z]`` location of the box.
+            center (:obj:`list` of :obj:`float`): The start ``[x, y, z]`` location in meters of the box.
                 (see :ref:`coordinate-system`)
             extent (:obj:`list` of :obj:`float`): The ``[x, y, z]`` extent of the box
-            color (:obj:`list`): ``[r, g, b]`` color value
-            thickness (:obj:`float`): thickness of the lines
+            color (:obj:`list`): ``[r, g, b]`` color value (from 0 to 255). Defaults to [255, 0, 0] (red).
+            thickness (:obj:`float`): Thickness of the lines. Defaults to 10.
+            lifetime (:obj:`float`): Number of simulation seconds the object should persist. If 0, makes persistent. Defaults to 1.
         """
         color = [255, 0, 0] if color is None else color
-        command_to_send = DebugDrawCommand(2, center, extent, color, thickness)
+        command_to_send = DebugDrawCommand(2, center, extent, color, thickness, lifetime)
         self._enqueue_command(command_to_send)
 
-    def draw_point(self, loc, color=None, thickness=10.0):
+    def draw_point(self, loc, color=None, thickness=10.0, lifetime=1.0):
         """Draws a debug point in the world
 
         Args:
             loc (:obj:`list` of :obj:`float`): The ``[x, y, z]`` start of the box.
                 (see :ref:`coordinate-system`)
-            color (:obj:`list` of :obj:`float`): ``[r, g, b]`` color value
-            thickness (:obj:`float`): thickness of the point
+            color (:obj:`list` of :obj:`float`): ``[r, g, b]`` color value (from 0 to 255). Defaults to [255, 0, 0] (red).
+            thickness (:obj:`float`): Thickness of the point. Defaults to 10.
+            lifetime (:obj:`float`): Number of simulation seconds the object should persist. If 0, makes persistent. Defaults to 1.
         """
         color = [255, 0, 0] if color is None else color
-        command_to_send = DebugDrawCommand(3, loc, [0, 0, 0], color, thickness)
+        command_to_send = DebugDrawCommand(3, loc, [0, 0, 0], color, thickness, lifetime)
         self._enqueue_command(command_to_send)
 
     def move_viewport(self, location, rotation):
@@ -893,7 +897,17 @@ class HoloOceanEnvironment:
 
         return state
 
-    def _get_reward_terminal(self):
+    def get_reward_terminal(self):
+        """Returns the reward and terminal state
+
+        Returns:
+            (:obj:`float`, :obj:`bool`): 
+                A 2tuple:
+
+                - Reward (:obj:`float`): Reward returned by the environment.
+                - Terminal: The bool terminal signal returned by the environment.
+
+        """
         reward = None
         terminal = None
         if self._agent is not None:
