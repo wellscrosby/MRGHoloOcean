@@ -370,16 +370,16 @@ class IMUSensor(HoloOceanSensor):
         return_bias = self.config.get("ReturnBias", False)
 
         if "AccelSigma" in self.config and "AccelCov" in self.config:
-            raise ValueError("Can't set both AccelSigma and AccelCov in IMUSensor")
+            raise ValueError("Can't set both AccelSigma and AccelCov in IMUSensor, use one of them in your configuration")
 
         if "AngVelSigma" in self.config and "AngVelCov" in self.config:
-            raise ValueError("Can't set both AngVelSigma and AngVelCov in IMUSensor")
+            raise ValueError("Can't set both AngVelSigma and AngVelCov in IMUSensor, use one of them in your configuration")
 
         if "AccelBiasSigma" in self.config and "AccelBiasCov" in self.config:
-            raise ValueError("Can't set both AccelBiasSigma and AccelBiasCov in IMUSensor")
+            raise ValueError("Can't set both AccelBiasSigma and AccelBiasCov in IMUSensor, use one of them in your configuration")
 
         if "AngVelBiasSigma" in self.config and "AngVelBiasCov" in self.config:
-            raise ValueError("Can't set both AngVelBiasSigma and AngVelBiasCov in IMUSensor")
+            raise ValueError("Can't set both AngVelBiasSigma and AngVelBiasCov in IMUSensor, use one of them in your configuration")
 
         self.shape = [4,3] if return_bias else [2,3]
 
@@ -507,7 +507,7 @@ class LocationSensor(HoloOceanSensor):
         self.config = {} if config is None else config
 
         if "Sigma" in self.config and "Cov" in self.config:
-            raise ValueError("Can't set both Sigma and Cov in LocationSensor")
+            raise ValueError("Can't set both Sigma and Cov in LocationSensor, use one of them in your configuration")
 
         super(LocationSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
@@ -710,7 +710,7 @@ class SidescanSonarSensor(HoloOceanSensor):
         range_res = 0.05
 
         if "RangeBins" in self.config and "RangeRes" in self.config:
-            raise ValueError("Can't set both RangeBins and RangeRes, use one of them in your configuration")
+            raise ValueError("Can't set both RangeBins and RangeRes in SidescanSonarSensor, use one of them in your configuration")
         elif "RangeBins" in self.config:
             range_bins = self.config["RangeBins"]
         elif "RangeRes" in self.config:
@@ -719,16 +719,16 @@ class SidescanSonarSensor(HoloOceanSensor):
             range_bins = int((range_max - range_min) // range_res)
 
         if "AzimuthBins" in self.config and "AzimuthRes" in self.config:
-            raise ValueError("Can't set both AzimuthBins and AzimuthRes, use one of them in your configuration")
+            raise ValueError("Can't set both AzimuthBins and AzimuthRes in SidescanSonarSensor, use one of them in your configuration")
 
         if "ElevationBins" in self.config and "ElevationRes" in self.config:
-            raise ValueError("Can't set both ElevationBins and ElevationRes, use one of them in your configuration")
+            raise ValueError("Can't set both ElevationBins and ElevationRes in SidescanSonarSensor, use one of them in your configuration")
 
         if "AddSigma" in self.config and "AddCov" in self.config:
-            raise ValueError("Can't set both AddSigma and AddCov, use one of them in your configuration")
+            raise ValueError("Can't set both AddSigma and AddCov in SidescanSonarSensor, use one of them in your configuration")
 
         if "MultSigma" in self.config and "MultCov" in self.config:
-            raise ValueError("Can't set both MultSigma and MultCov, use one of them in your configuration")
+            raise ValueError("Can't set both MultSigma and MultCov in SidescanSonarSensor, use one of them in your configuration")
         
         # Ensure shape of python variable matches what will be sent from the c++ side
         self.shape = [range_bins]
@@ -795,27 +795,27 @@ class ImagingSonarSensor(HoloOceanSensor):
         azimuth = self.config.get("Azimuth", 120)
 
         if "RangeBins" in self.config and "RangeRes" in self.config:
-            raise ValueError("Can't set both RangeBins and RangeRes, use one of them in your configuration")
+            raise ValueError("Can't set both RangeBins and RangeRes in ImagingSonarSensor, use one of them in your configuration")
         elif "RangeBins" in self.config:
             b_range = self.config["RangeBins"]
         elif "RangeRes" in self.config:
             b_range = int((max_range - min_range) // self.config["RangeRes"])
 
         if "AzimuthBins" in self.config and "AzimuthRes" in self.config:
-            raise ValueError("Can't set both AzimuthBins and AzimuthRes, use one of them in your configuration")
+            raise ValueError("Can't set both AzimuthBins and AzimuthRes in ImagingSonarSensor, use one of them in your configuration")
         elif "AzimuthBins" in self.config:
             b_azimuth = self.config["AzimuthBins"]
         elif "AzimuthRes" in self.config:
             b_azimuth = int(azimuth // self.config["AzimuthRes"])
 
         if "ElevationBins" in self.config and "ElevationRes" in self.config:
-            raise ValueError("Can't set both ElevationBins and ElevationRes, use one of them in your configuration")
+            raise ValueError("Can't set both ElevationBins and ElevationRes in ImagingSonarSensor, use one of them in your configuration")
 
         if "AddSigma" in self.config and "AddCov" in self.config:
-            raise ValueError("Can't set both AddSigma and AddCov, use one of them in your configuration")
+            raise ValueError("Can't set both AddSigma and AddCov in ImagingSonarSensor, use one of them in your configuration")
 
         if "MultSigma" in self.config and "MultCov" in self.config:
-            raise ValueError("Can't set both MultSigma and MultCov, use one of them in your configuration")
+            raise ValueError("Can't set both MultSigma and MultCov in ImagingSonarSensor, use one of them in your configuration")
 
         self.shape = (b_range, b_azimuth)
 
@@ -884,23 +884,23 @@ class SingleBeamSonarSensor(HoloOceanSensor):
         max_range = self.config.get("RangeMax", 10)
 
         if "RangeBins" in self.config and "RangeRes" in self.config:
-            raise ValueError("Can't set both RangeBins and RangeRes, use one of them in your configuration")
+            raise ValueError("Can't set both RangeBins and RangeRes in SingleBeamSonarSensor, use one of them in your configuration")
         elif "RangeBins" in self.config:
             b_range = self.config["RangeBins"]
         elif "RangeRes" in self.config:
             b_range = int((max_range - min_range) // self.config["RangeRes"])
 
         if "OpeningAngleBins" in self.config and "OpeningAngleRes" in self.config:
-            raise ValueError("Can't set both OpeningAngleBins and OpeningAngleRes, use one of them in your configuration")
+            raise ValueError("Can't set both OpeningAngleBins and OpeningAngleRes in SingleBeamSonarSensor, use one of them in your configuration")
 
         if "CentralAngleBins" in self.config and "CentralAngleRes" in self.config:
-            raise ValueError("Can't set both CentralAngleBins and CentralAngleRes, use one of them in your configuration")
+            raise ValueError("Can't set both CentralAngleBins and CentralAngleRes in SingleBeamSonarSensor, use one of them in your configuration")
 
         if "AddSigma" in self.config and "AddCov" in self.config:
-            raise ValueError("Can't set both AddSigma and AddCov, use one of them in your configuration")
+            raise ValueError("Can't set both AddSigma and AddCov in SingleBeamSonarSensor, use one of them in your configuration")
 
         if "MultSigma" in self.config and "MultCov" in self.config:
-            raise ValueError("Can't set both MultSigma and MultCov, use one of them in your configuration")
+            raise ValueError("Can't set both MultSigma and MultCov in SingleBeamSonarSensor, use one of them in your configuration")
 
         self.shape = [b_range]
 
@@ -1001,10 +1001,10 @@ class DVLSensor(HoloOceanSensor):
         return_range = self.config.get("ReturnRange", True)
 
         if "VelSigma" in self.config and "VelCov" in self.config:
-            raise ValueError("Can't set both VelSigma and VelCov in DVLSensor")
+            raise ValueError("Can't set both VelSigma and VelCov in DVLSensor, use one of them in your configuration")
 
         if "RangeSigma" in self.config and "RangeCov" in self.config:
-            raise ValueError("Can't set both RangeSigma and RangeCov in DVLSensor")
+            raise ValueError("Can't set both RangeSigma and RangeCov in DVLSensor, use one of them in your configuration")
 
         self.shape = [7] if return_range else [3]
 
@@ -1042,7 +1042,7 @@ class DepthSensor(HoloOceanSensor):
         self.config = {} if config is None else config
 
         if "Sigma" in self.config and "Cov" in self.config:
-            raise ValueError("Can't set both Sigma and Cov in DepthSensor")
+            raise ValueError("Can't set both Sigma and Cov in DepthSensor, use one of them in your configuration")
 
         super(DepthSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
@@ -1077,10 +1077,10 @@ class GPSSensor(HoloOceanSensor):
         self.config = {} if config is None else config
 
         if "Sigma" in self.config and "Cov" in self.config:
-            raise ValueError("Can't set both Sigma and Cov in GPSSensor")
+            raise ValueError("Can't set both Sigma and Cov in GPSSensor, use one of them in your configuration")
 
         if "DepthSigma" in self.config and "DepthCov" in self.config:
-            raise ValueError("Can't set both DepthSigma and DepthCov in GPSSensor")
+            raise ValueError("Can't set both DepthSigma and DepthCov in GPSSensor, use one of them in your configuration")
 
         super(GPSSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
@@ -1289,10 +1289,10 @@ class OpticalModemSensor(HoloOceanSensor):
         self.config = {} if config is None else config
 
         if "DistanceSigma" in self.config and "DistanceCov" in self.config:
-            raise ValueError("Can't set both DistanceSigma and DistanceCov in OpticalModemSensor")
+            raise ValueError("Can't set both DistanceSigma and DistanceCov in OpticalModemSensor, use one of them in your configuration")
 
         if "AngleSigma" in self.config and "AngleCov" in self.config:
-            raise ValueError("Can't set both AngleSigma and AngleCov in OpticalModemSensor")
+            raise ValueError("Can't set both AngleSigma and AngleCov in OpticalModemSensor, use one of them in your configuration")
 
         self.sending_to = []
         

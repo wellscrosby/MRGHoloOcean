@@ -48,7 +48,7 @@ def test_actor_rotation(env, num):
 
     state = env.tick()
 
-    assert np.allclose(R, state["OrientationSensor"], atol=1e-4)
+    assert np.allclose(R, state["OrientationSensor"], atol=1e-3)
 
 
 @pytest.mark.parametrize('num', range(3))
@@ -66,7 +66,7 @@ def test_sensor_rotation(env, num):
 
     state = env.tick()
 
-    assert np.allclose(R, state["OrientationSensor"], atol=1e-4)
+    assert np.allclose(R, state["OrientationSensor"], atol=1e-3)
 
 
 @pytest.mark.parametrize('num', range(3))
@@ -86,4 +86,4 @@ def test_teleport_rotation(env, num):
     env.agents['sphere'].teleport([0,0,0], angles.tolist())
     state = env.tick()
 
-    assert np.allclose(R, state["OrientationSensor"], atol=1e-4)
+    assert np.allclose(R, state["OrientationSensor"], atol=1e-3)
