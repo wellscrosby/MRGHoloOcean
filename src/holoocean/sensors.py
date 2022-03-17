@@ -1404,7 +1404,7 @@ class SensorDefinition:
     }
 
     # Sensors that need timeout turned off
-    _sonar_sensors = ["ImagingSonarSensor"]
+    _sonar_sensors = ["ImagingSonarSensor", "ProfilingSonarSensor", "SidescanSonarSensor", "SingleBeamSonarSensor"]
 
     # Sensors that are ticked at their rate on the C++ too
     # Generally sensors with a heavy computational cost
