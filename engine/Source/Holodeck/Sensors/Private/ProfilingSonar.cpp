@@ -1,15 +1,15 @@
 // MIT License (c) 2021 BYU FRoStLab see LICENSE file
 
 #include "Holodeck.h"
-#include "ProfilingSonarSensor.h"
+#include "ProfilingSonar.h"
 // #pragma warning (disable : 4101)
 
-UProfilingSonarSensor::UProfilingSonarSensor() {
-	SensorName = "ProfilingSonarSensor";
+UProfilingSonar::UProfilingSonar() {
+	SensorName = "ProfilingSonar";
 }
 
 // Allows sensor parameters to be set programmatically from client.
-void UProfilingSonarSensor::ParseSensorParms(FString ParmsJson) {
+void UProfilingSonar::ParseSensorParms(FString ParmsJson) {
 	Elevation = 1;
 	RangeMin = 0.5 * 100;
 	RangeMax = 75 * 100;

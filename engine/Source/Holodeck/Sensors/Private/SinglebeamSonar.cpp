@@ -3,21 +3,21 @@
 #include "Holodeck.h"
 #include "Benchmarker.h"
 #include "HolodeckBuoyantAgent.h"
-#include "SingleBeamSonarSensor.h"
+#include "SinglebeamSonar.h"
 // #pragma warning (disable : 4101)
 
-USingleBeamSonarSensor::USingleBeamSonarSensor() {
-	SensorName = "SingleBeamSonarSensor";
+USinglebeamSonar::USinglebeamSonar() {
+	SensorName = "SinglebeamSonar";
 } 
 
-void USingleBeamSonarSensor::BeginDestroy() {
+void USinglebeamSonar::BeginDestroy() {
 	Super::BeginDestroy();
 
 	delete[] count;
 }
 
 // Allows sensor parameters to be set programmatically from client.
-void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
+void USinglebeamSonar::ParseSensorParms(FString ParmsJson) {
 
 	// range in cm
 	RangeMin = 0.5 * 100;
@@ -78,7 +78,7 @@ void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 		}
 	}
 	else {
-		UE_LOG(LogHolodeck, Fatal, TEXT("USingleBeamSonarSensor::ParseSensorParms:: Unable to parse json."));
+		UE_LOG(LogHolodeck, Fatal, TEXT("USinglebeamSonar::ParseSensorParms:: Unable to parse json."));
 	}
 
 	// Parse through the Range parameters given to us
@@ -124,7 +124,7 @@ void USingleBeamSonarSensor::ParseSensorParms(FString ParmsJson) {
 	}
 }
 
-void USingleBeamSonarSensor::InitializeSensor() {
+void USinglebeamSonar::InitializeSensor() {
 	Super::InitializeSensor();
 	
 	// Setup bins
@@ -150,7 +150,7 @@ void USingleBeamSonarSensor::InitializeSensor() {
 
 
 // determine if a single leaf is in your tree
-bool USingleBeamSonarSensor::inRange(Octree* tree){
+bool USinglebeamSonar::inRange(Octree* tree){
 	FTransform SensortoWorld = this->GetComponentTransform();
 	// if it's not a leaf, we use a bigger search area
 	float offset = 0;
@@ -181,7 +181,7 @@ bool USingleBeamSonarSensor::inRange(Octree* tree){
 }	
 
 
-void USingleBeamSonarSensor::showRegion(float DeltaTime){
+void USinglebeamSonar::showRegion(float DeltaTime){
 	if(ViewRegion){
 		float debugThickness = 3.0f;
 		float DebugNumSides = 6; //change later?
@@ -191,7 +191,7 @@ void USingleBeamSonarSensor::showRegion(float DeltaTime){
 	}		
 }
 
-void USingleBeamSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
+void USinglebeamSonar::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	Super::TickSensorComponent(DeltaTime, TickType, ThisTickFunction);
 
 	if(TickCounter == 0){

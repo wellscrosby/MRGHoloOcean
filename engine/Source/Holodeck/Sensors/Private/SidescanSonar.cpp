@@ -3,21 +3,21 @@
 #include "Holodeck.h"
 #include "Benchmarker.h"
 #include "HolodeckBuoyantAgent.h"
-#include "SidescanSonarSensor.h"
+#include "SidescanSonar.h"
 // #pragma warning (disable : 4101)
 
-USidescanSonarSensor::USidescanSonarSensor() {
-	SensorName = "SidescanSonarSensor";
+USidescanSonar::USidescanSonar() {
+	SensorName = "SidescanSonar";
 }
 
-void USidescanSonarSensor::BeginDestroy() {
+void USidescanSonar::BeginDestroy() {
 	Super::BeginDestroy();
 
 	delete[] count;
 }
 
 // Allows sensor parameters to be set programmatically from client.
-void USidescanSonarSensor::ParseSensorParms(FString ParmsJson) {
+void USidescanSonar::ParseSensorParms(FString ParmsJson) {
 
 	// Override the Parent Class defaults for some key parameters
 	Azimuth = 170; 			// degrees
@@ -71,7 +71,7 @@ void USidescanSonarSensor::ParseSensorParms(FString ParmsJson) {
 		}
 	}
 	else {
-		UE_LOG(LogHolodeck, Fatal, TEXT("USidescanSonarSensor::ParseSensorParms:: Unable to parse json."));
+		UE_LOG(LogHolodeck, Fatal, TEXT("USidescanSonar::ParseSensorParms:: Unable to parse json."));
 	}
 
 	// Parse through the Range parameters given to us
@@ -114,7 +114,7 @@ void USidescanSonarSensor::ParseSensorParms(FString ParmsJson) {
 	}
 }
 
-void USidescanSonarSensor::InitializeSensor() {
+void USidescanSonar::InitializeSensor() {
 	Super::InitializeSensor();
 	
 	// setup count of each bin
@@ -135,7 +135,7 @@ FVector spherToEucSS(float r, float theta, float phi, FTransform SensortoWorld){
 }
 
 
-void USidescanSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
+void USidescanSonar::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	Super::TickSensorComponent(DeltaTime, TickType, ThisTickFunction);
 
 	if(TickCounter == 0){

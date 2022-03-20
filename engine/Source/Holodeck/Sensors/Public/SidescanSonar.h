@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HolodeckCore/Public/HolodeckSonarSensor.h"
+#include "HolodeckCore/Public/HolodeckSonar.h"
 
 #include "GenericPlatform/GenericPlatformMath.h"
 #include "Octree.h"
@@ -13,14 +13,14 @@
 
 #include "Json.h"
 
-#include "SidescanSonarSensor.generated.h"
+#include "SidescanSonar.generated.h"
 
 #define Pi 3.1415926535897932384626433832795
 /**
- * USidescanSonarSensor
+ * USidescanSonar
  */
 UCLASS()
-class HOLODECK_API USidescanSonarSensor : public UHolodeckSonarSensor
+class HOLODECK_API USidescanSonar : public UHolodeckSonar
 {
     GENERATED_BODY()
 
@@ -28,7 +28,7 @@ public:
     /*
     * Default Constructor
     */
-   USidescanSonarSensor();
+   USidescanSonar();
 
 	/**
 	* InitializeSensor

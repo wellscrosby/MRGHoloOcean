@@ -4,7 +4,6 @@
 #include "HolodeckGameMode.h"
 #include "AddSensorCommand.h"
 #include "HolodeckSensor.h"
-#include "SingleBeamSonarSensor.h"
 
 void UAddSensorCommand::Execute() {
 	UE_LOG(LogHolodeck, Log, TEXT("UAddSensorCommand::Add sensor"));
@@ -48,13 +47,13 @@ void UAddSensorCommand::Execute() {
 										{ "DVLSensor", UDVLSensor::StaticClass() },
 										{ "PoseSensor", UPoseSensor::StaticClass() },
 										{ "AcousticBeaconSensor", UAcousticBeaconSensor::StaticClass() },
-										{ "ImagingSonarSensor", UImagingSonarSensor::StaticClass() },
-										{ "SidescanSonarSensor", USidescanSonarSensor::StaticClass() },
-										{ "ProfilingSonarSensor", UProfilingSonarSensor::StaticClass() },
+										{ "ImagingSonar", UImagingSonar::StaticClass() },
+										{ "SidescanSonar", USidescanSonar::StaticClass() },
+										{ "SinglebeamSonar", USinglebeamSonar::StaticClass() },
+										{ "ProfilingSonar", UProfilingSonar::StaticClass() },
 										{ "GPSSensor", UGPSSensor::StaticClass() },
 										{ "DepthSensor", UDepthSensor::StaticClass() },
 										{ "OpticalModemSensor", UOpticalModemSensor::StaticClass() },
-										{ "SingleBeamSonarSensor", USingleBeamSonarSensor::StaticClass() },
 									};
 
 	FString AgentName = StringParams[0].c_str();
