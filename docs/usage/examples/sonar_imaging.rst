@@ -1,5 +1,5 @@
-Visualizing Sonar Output
-========================
+Visualizing Imaging Sonar
+==========================
 
 It can be useful to visualize the output of the sonar sensor during a simulation. This script will do that, plotting each time sonar data is received.
 
@@ -10,14 +10,14 @@ It can be useful to visualize the output of the sonar sensor during a simulation
     import numpy as np
 
     #### GET SONAR CONFIG
-    scenario = "OpenWater-HoveringSonar"
+    scenario = "PierHarbor-HoveringImagingSonar"
     config = holoocean.packagemanager.get_scenario(scenario)
     config = config['agents'][0]['sensors'][-1]["configuration"]
     azi = config['Azimuth']
-    minR = config['MinRange']
-    maxR = config['MaxRange']
-    binsR = config['BinsRange']
-    binsA = config['BinsAzimuth']
+    minR = config['RangeMin']
+    maxR = config['RangeMax']
+    binsR = config['RangeBins']
+    binsA = config['AzimuthBins']
 
     #### GET PLOT READY
     plt.ion()
@@ -31,8 +31,11 @@ It can be useful to visualize the output of the sonar sensor during a simulation
     T, R = np.meshgrid(theta, r)
     z = np.zeros_like(T)
 
+    plt.grid(False)
     plot = ax.pcolormesh(T, R, z, cmap='gray', shading='auto', vmin=0, vmax=1)
-    plt.subplots_adjust(left=-.15, bottom=-.2, right=1.15, top=1.15)
+    plt.tight_layout()
+    fig.canvas.draw()
+    fig.canvas.flush_events()
 
     #### RUN SIMULATION
     command = np.array([0,0,0,0,-20,-20,-20,-20])
@@ -48,5 +51,6 @@ It can be useful to visualize the output of the sonar sensor during a simulation
                 fig.canvas.draw()
                 fig.canvas.flush_events()
 
-    plt.ioff()   
+    print("Finished Simulation!")
+    plt.ioff()
     plt.show()
