@@ -38,9 +38,9 @@ It can be useful to visualize the output of the sonar sensor during a simulation
             env.act("auv0", command)
             state = env.tick()
 
-            if 'SingleBeamSonarSensor' in state:
+            if 'SinglebeamSonar' in state:
                 data = np.roll(data, 1, axis=1)
-                data[:,0] = state['SingleBeamSonarSensor']
+                data[:,0] = state['SinglebeamSonar']
 
                 plot.set_array(data.ravel())
 

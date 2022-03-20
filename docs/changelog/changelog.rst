@@ -37,7 +37,7 @@ New Features
 - Added agents :class:`~holoocean.agents.HoveringAUV` and :class:`~holoocean.agents.TorpedoAUV`
 - Added a plethora of new sensors, all with optional noise configurations
 
-  - :class:`~holoocean.sensors.ImagingSonarSensor`
+  - :class:`~holoocean.sensors.ImagingSonar`
   - :class:`~holoocean.sensors.DVLSensor`
   - :class:`~holoocean.sensors.DepthSensor`
   - :class:`~holoocean.sensors.GPSSensor`

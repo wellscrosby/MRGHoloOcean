@@ -38,9 +38,9 @@ It can be useful to visualize the output of the sonar sensor during a simulation
             env.act("auv0", command)
             state = env.tick()
 
-            if 'SidescanSonarSensor' in state:
+            if 'SidescanSonar' in state:
                 data = np.roll(data, 1, axis=0)
-                data[0] = state['SidescanSonarSensor']
+                data[0] = state['SidescanSonar']
 
                 plot.set_array(data.ravel())
 

@@ -19,7 +19,7 @@ def pytest_generate_tests(metafunc):
                 config = holoocean.packagemanager.get_scenario(name)
                 for agent in config['agents']:
                     for sensor in agent['sensors']:
-                        if sensor["sensor_type"] == "ImagingSonarSensor":
+                        if sensor["sensor_type"] == "ImagingSonar":
                             use = False
                 if use:
                     scenarios.add(name)
