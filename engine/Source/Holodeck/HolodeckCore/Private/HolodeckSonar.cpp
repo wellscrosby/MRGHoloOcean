@@ -3,9 +3,9 @@
 #include "Holodeck.h"
 #include "Benchmarker.h"
 #include "HolodeckBuoyantAgent.h"
-#include "HolodeckSonarSensor.h"
+#include "HolodeckSonar.h"
 
-float UHolodeckSonarSensor::ATan2Approx(float y, float x){
+float UHolodeckSonar::ATan2Approx(float y, float x){
     //http://pubs.opengroup.org/onlinepubs/009695399/functions/atan2.html
     //Volkan SALMA
 
@@ -33,7 +33,7 @@ float UHolodeckSonarSensor::ATan2Approx(float y, float x){
 
 
 // Allows sensor parameters to be set programmatically from client.
-void UHolodeckSonarSensor::ParseSensorParms(FString ParmsJson) {
+void UHolodeckSonar::ParseSensorParms(FString ParmsJson) {
 	Super::ParseSensorParms(ParmsJson);
 
 	TSharedPtr<FJsonObject> JsonParsed;
@@ -83,7 +83,7 @@ void UHolodeckSonarSensor::ParseSensorParms(FString ParmsJson) {
 
 	}
 	else {
-		UE_LOG(LogHolodeck, Fatal, TEXT("UHolodeckSonarSensor::ParseSensorParms:: Unable to parse json."));
+		UE_LOG(LogHolodeck, Fatal, TEXT("UHolodeckSonar::ParseSensorParms:: Unable to parse json."));
 	}
 
 	if(InitOctreeRange == 0){
@@ -105,16 +105,16 @@ void UHolodeckSonarSensor::ParseSensorParms(FString ParmsJson) {
 	sinOffset = UKismetMathLibrary::DegSin(FGenericPlatformMath::Min(Azimuth, Elevation)/2);
 }
 
-void UHolodeckSonarSensor::BeginDestroy() {
+void UHolodeckSonar::BeginDestroy() {
 	Super::BeginDestroy();
 
 	delete octree;
 }
 
-void UHolodeckSonarSensor::initOctree(){
+void UHolodeckSonar::initOctree(){
 	// We delay making trees till the message has been printed to the screen
 	if(toMake.Num() != 0 && TickCounter >= 8){
-		UE_LOG(LogHolodeck, Log, TEXT("SonarSensor::Initial building num: %d"), toMake.Num());
+		UE_LOG(LogHolodeck, Log, TEXT("Sonar::Initial building num: %d"), toMake.Num());
 		ParallelFor(toMake.Num(), [&](int32 i){
 			toMake.GetData()[i]->load();
 			toMake.GetData()[i]->unload();
@@ -176,7 +176,7 @@ void UHolodeckSonarSensor::initOctree(){
 	}
 }
 
-void UHolodeckSonarSensor::viewLeaves(Octree* tree){
+void UHolodeckSonar::viewLeaves(Octree* tree){
 	if(tree->leaves.Num() == 0){
 		DrawDebugPoint(GetWorld(), tree->loc, 5, FColor::Red, false, .03*TicksPerCapture);
 	}
@@ -187,7 +187,7 @@ void UHolodeckSonarSensor::viewLeaves(Octree* tree){
 	}
 }
 
-bool UHolodeckSonarSensor::inRange(Octree* tree){
+bool UHolodeckSonar::inRange(Octree* tree){
 	FTransform SensortoWorld = this->GetComponentTransform();
 	// if it's not a leaf, we use a bigger search area
 	float offset = 0;
@@ -218,7 +218,7 @@ bool UHolodeckSonarSensor::inRange(Octree* tree){
 	return true;
 }	
 
-void UHolodeckSonarSensor::leavesInRange(Octree* tree, TArray<Octree*>& rLeaves, float stopAt){
+void UHolodeckSonar::leavesInRange(Octree* tree, TArray<Octree*>& rLeaves, float stopAt){
 	bool in = inRange(tree);
 	if(in){
 		if(tree->size == stopAt){
@@ -250,7 +250,7 @@ void UHolodeckSonarSensor::leavesInRange(Octree* tree, TArray<Octree*>& rLeaves,
 	}
 }
 
-void UHolodeckSonarSensor::findLeaves(){
+void UHolodeckSonar::findLeaves(){
 	// Empty everything out
 	bigLeaves.Reset();
 	for(auto& fl: foundLeaves){
@@ -269,7 +269,7 @@ void UHolodeckSonarSensor::findLeaves(){
 	});
 }
 
-void UHolodeckSonarSensor::shadowLeaves(){
+void UHolodeckSonar::shadowLeaves(){
 	ParallelFor(sortedLeaves.Num(), [&](int32 i){
 		TArray<Octree*>& binLeafs = sortedLeaves.GetData()[i]; 
 
@@ -300,7 +300,7 @@ void UHolodeckSonarSensor::shadowLeaves(){
 	});
 }
 
-void UHolodeckSonarSensor::showBeam(float DeltaTime){
+void UHolodeckSonar::showBeam(float DeltaTime){
 	// draw points inside our region
 	if(ViewOctree >= -1){
 		for( TArray<Octree*> bins : sortedLeaves){
@@ -313,7 +313,7 @@ void UHolodeckSonarSensor::showBeam(float DeltaTime){
 	}
 }
 
-void UHolodeckSonarSensor::showRegion(float DeltaTime){
+void UHolodeckSonar::showRegion(float DeltaTime){
 	// draw outlines of our region
 	if(ViewRegion){
 		FTransform tran = this->GetComponentTransform();
@@ -339,14 +339,14 @@ void UHolodeckSonarSensor::showRegion(float DeltaTime){
 	}		
 }
 
-FVector UHolodeckSonarSensor::spherToEuc(float r, float theta, float phi, FTransform SensortoWorld){
+FVector UHolodeckSonar::spherToEuc(float r, float theta, float phi, FTransform SensortoWorld){
 	float x = r*UKismetMathLibrary::DegSin(phi)*UKismetMathLibrary::DegCos(theta);
 	float y = r*UKismetMathLibrary::DegSin(phi)*UKismetMathLibrary::DegSin(theta);
 	float z = r*UKismetMathLibrary::DegCos(phi);
 	return UKismetMathLibrary::TransformLocation(SensortoWorld, FVector(x, y, z));
 }
 
-void UHolodeckSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
+void UHolodeckSonar::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	// We initialize this here to make sure all agents are loaded
 	// This does nothing if it's already been loaded
 	initOctree();

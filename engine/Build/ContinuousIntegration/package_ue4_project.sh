@@ -36,6 +36,7 @@ cd dist
 
 echo "👉 Copying config files into output directory..."
 cp ../Content/Worlds/Config/*.json .
+cp ../Content/Worlds/Config/*.csv .
 
 echo "👉 Compressing contents into $commit.zip..."
 zip -r "$commit.zip" *

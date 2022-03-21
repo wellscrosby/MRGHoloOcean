@@ -5,15 +5,15 @@
 #include "Holodeck.h"
 #include "HolodeckSensor.h"
 
-#include "ImagingSonarSensor.h"
+#include "ImagingSonar.h"
 
-#include "ProfilingSonarSensor.generated.h"
+#include "ProfilingSonar.generated.h"
 
 /**
- * UProfilingSonarSensor
+ * UProfilingSonar
  */
 UCLASS()
-class HOLODECK_API UProfilingSonarSensor : public UImagingSonarSensor
+class HOLODECK_API UProfilingSonar : public UImagingSonar
 {
 	GENERATED_BODY()
 	
@@ -21,7 +21,7 @@ public:
 	/*
 	* Default Constructor
 	*/
-	UProfilingSonarSensor();
+	UProfilingSonar();
 
 	/**
 	* Allows parameters to be set dynamically

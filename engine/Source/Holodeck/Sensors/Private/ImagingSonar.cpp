@@ -3,14 +3,14 @@
 #include "Holodeck.h"
 #include "Benchmarker.h"
 #include "HolodeckBuoyantAgent.h"
-#include "ImagingSonarSensor.h"
+#include "ImagingSonar.h"
 // #pragma warning (disable : 4101)
 
-UImagingSonarSensor::UImagingSonarSensor() {
-	SensorName = "ImagingSonarSensor";
+UImagingSonar::UImagingSonar() {
+	SensorName = "ImagingSonar";
 }
 
-void UImagingSonarSensor::BeginDestroy() {
+void UImagingSonar::BeginDestroy() {
 	Super::BeginDestroy();
 
 	delete[] count;
@@ -18,7 +18,7 @@ void UImagingSonarSensor::BeginDestroy() {
 }
 
 // Allows sensor parameters to be set programmatically from client.
-void UImagingSonarSensor::ParseSensorParms(FString ParmsJson) {
+void UImagingSonar::ParseSensorParms(FString ParmsJson) {
 	Super::ParseSensorParms(ParmsJson);
 
 	TSharedPtr<FJsonObject> JsonParsed;
@@ -76,7 +76,7 @@ void UImagingSonarSensor::ParseSensorParms(FString ParmsJson) {
 		}
 	}
 	else {
-		UE_LOG(LogHolodeck, Fatal, TEXT("UImagingSonarSensor::ParseSensorParms:: Unable to parse json."));
+		UE_LOG(LogHolodeck, Fatal, TEXT("UImagingSonar::ParseSensorParms:: Unable to parse json."));
 	}
 
 	// Parse through the Range parameters given to us
@@ -119,7 +119,7 @@ void UImagingSonarSensor::ParseSensorParms(FString ParmsJson) {
 	}
 }
 
-void UImagingSonarSensor::InitializeSensor() {
+void UImagingSonar::InitializeSensor() {
 	Super::InitializeSensor();
 	
 	// Check if we should shadow with less Azimuth bins 
@@ -145,7 +145,7 @@ void UImagingSonarSensor::InitializeSensor() {
 }
 
 
-void UImagingSonarSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
+void UImagingSonar::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	Super::TickSensorComponent(DeltaTime, TickType, ThisTickFunction);
 
 	if(TickCounter == 0){

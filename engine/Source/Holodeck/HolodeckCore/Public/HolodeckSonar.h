@@ -10,14 +10,14 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Async/ParallelFor.h"
 
-#include "HolodeckSonarSensor.generated.h"
+#include "HolodeckSonar.generated.h"
 
 #define Pi 3.1415926535897932384626433832795
 /**
- * UHolodeckSonarSensor
+ * UHolodeckSonar
  */
 UCLASS()
-class HOLODECK_API UHolodeckSonarSensor : public UHolodeckSensor
+class HOLODECK_API UHolodeckSonar : public UHolodeckSensor
 {
 	GENERATED_BODY()
 	
@@ -25,7 +25,7 @@ public:
 	/*
 	* Default Constructor
 	*/
-	UHolodeckSonarSensor(){}
+	UHolodeckSonar(){}
 
 	/**
 	* Allows parameters to be set dynamically

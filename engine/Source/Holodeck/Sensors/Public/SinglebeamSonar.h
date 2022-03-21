@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HolodeckCore/Public/HolodeckSonarSensor.h"
+#include "HolodeckCore/Public/HolodeckSonar.h"
 
 #include "GenericPlatform/GenericPlatformMath.h"
 #include "Octree.h"
@@ -12,17 +12,16 @@
 #include "MultivariateNormal.h"
 #include "MultivariateUniform.h"
 
-#include <numeric>
 #include "Json.h"
 
-#include "ImagingSonarSensor.generated.h"
+#include "SinglebeamSonar.generated.h"
 
 #define Pi 3.1415926535897932384626433832795
 /**
- * UImagingSonarSensor
+ * USinglebeamSonar
  */
 UCLASS()
-class HOLODECK_API UImagingSonarSensor : public UHolodeckSonarSensor
+class HOLODECK_API USinglebeamSonar : public UHolodeckSonar
 {
 	GENERATED_BODY()
 	
@@ -30,7 +29,7 @@ public:
 	/*
 	* Default Constructor
 	*/
-	UImagingSonarSensor();
+	USinglebeamSonar();
 
 	/**
 	* InitializeSensor
@@ -50,9 +49,16 @@ public:
 
 protected:
 	//See HolodeckSensor for the documentation of these overridden functions.
-	int GetNumItems() override { return RangeBins*AzimuthBins; };
+	int GetNumItems() override { return RangeBins; };
 	int GetItemSize() override { return sizeof(float); };
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	virtual void showRegion(float DeltaTime) override;
+
+	virtual bool inRange(Octree* tree) override;
+	
+	UPROPERTY(EditAnywhere)
+	float OpeningAngle = 30;
 
 	UPROPERTY(EditAnywhere)
 	int32 RangeBins = 0;
@@ -61,28 +67,16 @@ protected:
 	float RangeRes = 0;
 
 	UPROPERTY(EditAnywhere)
-	int32 AzimuthBins = 0;
+	int32 CentralAngleBins = 0; 
 
 	UPROPERTY(EditAnywhere)
-	float AzimuthRes = 0;
+	float CentralAngleRes = 0;
 
 	UPROPERTY(EditAnywhere)
-	int32 ElevationBins = 0;
+	int32 OpeningAngleBins = 0; 
 
 	UPROPERTY(EditAnywhere)
-	float ElevationRes = 0;
-
-	UPROPERTY(EditAnywhere)
-	bool MultiPath = false;
-
-	UPROPERTY(EditAnywhere)
-	int32 ClusterSize = 5;
-
-	UPROPERTY(EditAnywhere)
-	bool ScaleNoise = true;
-
-	UPROPERTY(EditAnywhere)
-	int32 AzimuthStreaks = 0;
+	float OpeningAngleRes = 0;
 
 private:
 	/*
@@ -91,16 +85,20 @@ private:
 	 */
 	AActor* Parent;
 
-	// various computations we want to cache
-	int32 AzimuthBinScale = 1;
-	float perfectCos;
+	// angles unique to Singlebeam
+	float CentralAngle = 360;
 
-	// Used to hold leaves for multipath
-	TMap<FIntVector,Octree*> mapLeaves;
-	TMap<FIntVector,Octree*> mapSearch;
-	TArray<TArray<Octree*>> cluster;
+	float minOpeningAngle;
+	float maxOpeningAngle;
+	float minCentralAngle;
+	float maxCentralAngle;
+	
+	// various computations we want to cache
+	float sqrt3_2;
+	float sinOffset;
+
+	// Used to hold leafs when parallelized sorting/binning happens
 	int32* count;
-	int32* hasPerfectNormal;
 	
 	// for adding noise
 	MultivariateNormal<1> addNoise;
