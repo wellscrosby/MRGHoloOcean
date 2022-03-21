@@ -23,7 +23,6 @@ It can be useful to visualize the output of the sonar sensor during a simulation
     r = np.linspace(-maxR, maxR, binsR)
     R, T = np.meshgrid(r, t)
     data = np.zeros_like(R)
-    print(data.shape)
 
     plt.grid(False)
     plot = plt.pcolormesh(R, T, data, cmap='copper', shading='auto', vmin=0, vmax=1)
@@ -47,5 +46,6 @@ It can be useful to visualize the output of the sonar sensor during a simulation
                 plt.draw()
                 plt.gcf().canvas.flush_events()
 
+    print("Finished Simulation!")
     plt.ioff()
     plt.show()
