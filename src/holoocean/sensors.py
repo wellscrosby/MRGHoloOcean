@@ -667,7 +667,7 @@ class AbuseSensor(HoloOceanSensor):
 ######################## HOLOOCEAN CUSTOM SENSORS ###########################
 #Make sure to also add your new sensor to SensorDefinition below
 
-class SidescanSonarSensor(HoloOceanSensor):
+class SidescanSonar(HoloOceanSensor):
     """Simulates a sidescan sonar. See :ref:`configure-octree` for more on
     how to configure the octree that is used.
 
@@ -699,9 +699,9 @@ class SidescanSonarSensor(HoloOceanSensor):
     - ``WaterSpeedSound``: Speed of sound in water in m/s. Defaults to 1480.
 
     """
-    sensor_type = "SidescanSonarSensor"
+    sensor_type = "SidescanSonar"
 
-    def __init__(self, client, agent_name, agent_type, name="SidescanSonarSensor", config=None):
+    def __init__(self, client, agent_name, agent_type, name="SidescanSonar", config=None):
 
         self.config = {} if config is None else config
 
@@ -710,7 +710,7 @@ class SidescanSonarSensor(HoloOceanSensor):
         range_res = 0.05
 
         if "RangeBins" in self.config and "RangeRes" in self.config:
-            raise ValueError("Can't set both RangeBins and RangeRes in SidescanSonarSensor, use one of them in your configuration")
+            raise ValueError("Can't set both RangeBins and RangeRes in SidescanSonar, use one of them in your configuration")
         elif "RangeBins" in self.config:
             range_bins = self.config["RangeBins"]
         elif "RangeRes" in self.config:
@@ -719,21 +719,21 @@ class SidescanSonarSensor(HoloOceanSensor):
             range_bins = int((range_max - range_min) // range_res)
 
         if "AzimuthBins" in self.config and "AzimuthRes" in self.config:
-            raise ValueError("Can't set both AzimuthBins and AzimuthRes in SidescanSonarSensor, use one of them in your configuration")
+            raise ValueError("Can't set both AzimuthBins and AzimuthRes in SidescanSonar, use one of them in your configuration")
 
         if "ElevationBins" in self.config and "ElevationRes" in self.config:
-            raise ValueError("Can't set both ElevationBins and ElevationRes in SidescanSonarSensor, use one of them in your configuration")
+            raise ValueError("Can't set both ElevationBins and ElevationRes in SidescanSonar, use one of them in your configuration")
 
         if "AddSigma" in self.config and "AddCov" in self.config:
-            raise ValueError("Can't set both AddSigma and AddCov in SidescanSonarSensor, use one of them in your configuration")
+            raise ValueError("Can't set both AddSigma and AddCov in SidescanSonar, use one of them in your configuration")
 
         if "MultSigma" in self.config and "MultCov" in self.config:
-            raise ValueError("Can't set both MultSigma and MultCov in SidescanSonarSensor, use one of them in your configuration")
+            raise ValueError("Can't set both MultSigma and MultCov in SidescanSonar, use one of them in your configuration")
         
         # Ensure shape of python variable matches what will be sent from the c++ side
         self.shape = [range_bins]
 
-        super(SidescanSonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+        super(SidescanSonar, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
     @property
     def dtype(self):
@@ -744,7 +744,7 @@ class SidescanSonarSensor(HoloOceanSensor):
         return self.shape
 
 
-class ImagingSonarSensor(HoloOceanSensor):
+class ImagingSonar(HoloOceanSensor):
     """Simulates an imaging sonar. See :ref:`configure-octree` for more on
     how to configure the octree that is used.
 
@@ -782,9 +782,9 @@ class ImagingSonarSensor(HoloOceanSensor):
 
     """
 
-    sensor_type = "ImagingSonarSensor"
+    sensor_type = "ImagingSonar"
 
-    def __init__(self, client, agent_name, agent_type, name="ImagingSonarSensor", config=None):
+    def __init__(self, client, agent_name, agent_type, name="ImagingSonar", config=None):
 
         self.config = {} if config is None else config
 
@@ -795,31 +795,31 @@ class ImagingSonarSensor(HoloOceanSensor):
         azimuth = self.config.get("Azimuth", 120)
 
         if "RangeBins" in self.config and "RangeRes" in self.config:
-            raise ValueError("Can't set both RangeBins and RangeRes in ImagingSonarSensor, use one of them in your configuration")
+            raise ValueError("Can't set both RangeBins and RangeRes in ImagingSonar, use one of them in your configuration")
         elif "RangeBins" in self.config:
             b_range = self.config["RangeBins"]
         elif "RangeRes" in self.config:
             b_range = int((max_range - min_range) // self.config["RangeRes"])
 
         if "AzimuthBins" in self.config and "AzimuthRes" in self.config:
-            raise ValueError("Can't set both AzimuthBins and AzimuthRes in ImagingSonarSensor, use one of them in your configuration")
+            raise ValueError("Can't set both AzimuthBins and AzimuthRes in ImagingSonar, use one of them in your configuration")
         elif "AzimuthBins" in self.config:
             b_azimuth = self.config["AzimuthBins"]
         elif "AzimuthRes" in self.config:
             b_azimuth = int(azimuth // self.config["AzimuthRes"])
 
         if "ElevationBins" in self.config and "ElevationRes" in self.config:
-            raise ValueError("Can't set both ElevationBins and ElevationRes in ImagingSonarSensor, use one of them in your configuration")
+            raise ValueError("Can't set both ElevationBins and ElevationRes in ImagingSonar, use one of them in your configuration")
 
         if "AddSigma" in self.config and "AddCov" in self.config:
-            raise ValueError("Can't set both AddSigma and AddCov in ImagingSonarSensor, use one of them in your configuration")
+            raise ValueError("Can't set both AddSigma and AddCov in ImagingSonar, use one of them in your configuration")
 
         if "MultSigma" in self.config and "MultCov" in self.config:
-            raise ValueError("Can't set both MultSigma and MultCov in ImagingSonarSensor, use one of them in your configuration")
+            raise ValueError("Can't set both MultSigma and MultCov in ImagingSonar, use one of them in your configuration")
 
         self.shape = (b_range, b_azimuth)
 
-        super(ImagingSonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+        super(ImagingSonar, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
     @property
     def dtype(self):
@@ -829,7 +829,7 @@ class ImagingSonarSensor(HoloOceanSensor):
     def data_shape(self):
         return self.shape
 
-class SingleBeamSonarSensor(HoloOceanSensor):
+class SinglebeamSonar(HoloOceanSensor):
     """Simulates an echosounder, which is a sonar sensor with a single cone shaped beam. See :ref:`configure-octree` for more on
     how to configure the octree that is used.
 
@@ -867,9 +867,9 @@ class SingleBeamSonarSensor(HoloOceanSensor):
     - ``WaterDensity``: Density of water in kg/m^3. Defaults to 997.
     - ``WaterSpeedSound``: Speed of sound in water in m/s. Defaults to 1480.
     """ 
-    sensor_type = "SingleBeamSonarSensor" 
+    sensor_type = "SinglebeamSonar" 
 
-    def __init__(self, client, agent_name, agent_type, name="SingleBeamSonarSensor", config=None):
+    def __init__(self, client, agent_name, agent_type, name="SinglebeamSonar", config=None):
 
         self.config = {} if config is None else config
 
@@ -884,27 +884,27 @@ class SingleBeamSonarSensor(HoloOceanSensor):
         max_range = self.config.get("RangeMax", 10)
 
         if "RangeBins" in self.config and "RangeRes" in self.config:
-            raise ValueError("Can't set both RangeBins and RangeRes in SingleBeamSonarSensor, use one of them in your configuration")
+            raise ValueError("Can't set both RangeBins and RangeRes in SinglebeamSonar, use one of them in your configuration")
         elif "RangeBins" in self.config:
             b_range = self.config["RangeBins"]
         elif "RangeRes" in self.config:
             b_range = int((max_range - min_range) // self.config["RangeRes"])
 
         if "OpeningAngleBins" in self.config and "OpeningAngleRes" in self.config:
-            raise ValueError("Can't set both OpeningAngleBins and OpeningAngleRes in SingleBeamSonarSensor, use one of them in your configuration")
+            raise ValueError("Can't set both OpeningAngleBins and OpeningAngleRes in SinglebeamSonar, use one of them in your configuration")
 
         if "CentralAngleBins" in self.config and "CentralAngleRes" in self.config:
-            raise ValueError("Can't set both CentralAngleBins and CentralAngleRes in SingleBeamSonarSensor, use one of them in your configuration")
+            raise ValueError("Can't set both CentralAngleBins and CentralAngleRes in SinglebeamSonar, use one of them in your configuration")
 
         if "AddSigma" in self.config and "AddCov" in self.config:
-            raise ValueError("Can't set both AddSigma and AddCov in SingleBeamSonarSensor, use one of them in your configuration")
+            raise ValueError("Can't set both AddSigma and AddCov in SinglebeamSonar, use one of them in your configuration")
 
         if "MultSigma" in self.config and "MultCov" in self.config:
-            raise ValueError("Can't set both MultSigma and MultCov in SingleBeamSonarSensor, use one of them in your configuration")
+            raise ValueError("Can't set both MultSigma and MultCov in SinglebeamSonar, use one of them in your configuration")
 
         self.shape = [b_range]
 
-        super(SingleBeamSonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+        super(SinglebeamSonar, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
     @property
     def dtype(self):
@@ -914,8 +914,8 @@ class SingleBeamSonarSensor(HoloOceanSensor):
     def data_shape(self):
         return self.shape
 
-class ProfilingSonarSensor(ImagingSonarSensor):
-    """Simulates a multibeam profiling sonar. This is largely based off of the imaging sonar (:class:`~holoocean.sensors.ImagingSonarSensor`), just with
+class ProfilingSonar(ImagingSonar):
+    """Simulates a multibeam profiling sonar. This is largely based off of the imaging sonar (:class:`~holoocean.sensors.ImagingSonar`), just with
     different defaults. See :ref:`configure-octree` for more on how to configure the octree that is used.
 
     The ``configuration`` block (see :ref:`configuration-block`) accepts any of 
@@ -951,9 +951,9 @@ class ProfilingSonarSensor(ImagingSonarSensor):
 
     """
 
-    sensor_type = "ProfilingSonarSensor"
+    sensor_type = "ProfilingSonar"
 
-    def __init__(self, client, agent_name, agent_type, name="ProfilingSonarSensor", config=None):
+    def __init__(self, client, agent_name, agent_type, name="ProfilingSonar", config=None):
         if "RangeMin" not in config:
             config["RangeMin"] = 0.5
 
@@ -966,7 +966,7 @@ class ProfilingSonarSensor(ImagingSonarSensor):
         if "AzimuthBins" not in config and "AzimuthRes" not in config:
             config["AzimuthBins"] = 480
 
-        super(ProfilingSonarSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+        super(ProfilingSonar, self).__init__(client, agent_name, agent_type, name=name, config=config)
 
 class DVLSensor(HoloOceanSensor):
     """Doppler Velocity Log Sensor.
@@ -1396,15 +1396,15 @@ class SensorDefinition:
         "AcousticBeaconSensor": AcousticBeaconSensor,
         "DepthSensor": DepthSensor,
         "OpticalModemSensor": OpticalModemSensor,
-        "ImagingSonarSensor": ImagingSonarSensor,
-        "SidescanSonarSensor": SidescanSonarSensor,
-        "ProfilingSonarSensor": ProfilingSonarSensor,
+        "ImagingSonar": ImagingSonar,
+        "SidescanSonar": SidescanSonar,
+        "ProfilingSonar": ProfilingSonar,
         "GPSSensor": GPSSensor,
-        "SingleBeamSonarSensor": SingleBeamSonarSensor,
+        "SinglebeamSonar": SinglebeamSonar,
     }
 
     # Sensors that need timeout turned off
-    _sonar_sensors = ["ImagingSonarSensor", "ProfilingSonarSensor", "SidescanSonarSensor", "SingleBeamSonarSensor"]
+    _sonar_sensors = ["ImagingSonar", "ProfilingSonar", "SidescanSonar", "SinglebeamSonar"]
 
     # Sensors that are ticked at their rate on the C++ too
     # Generally sensors with a heavy computational cost

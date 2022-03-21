@@ -17,7 +17,7 @@ def config():
                 "agent_type": "HoveringAUV",
                 "sensors": [
                     {
-                        "sensor_type": "ImagingSonarSensor",
+                        "sensor_type": "ImagingSonar",
                         "configuration": {
                             "MinRange": .1,
                             "MaxRange": 1
@@ -65,5 +65,5 @@ def test_blank(config):
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
         for _ in range(10):
-            state = env.tick()["ImagingSonarSensor"]
+            state = env.tick()["ImagingSonar"]
             assert np.allclose(np.zeros_like(state), state)
