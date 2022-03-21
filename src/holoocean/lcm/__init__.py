@@ -16,3 +16,4 @@ from .RangeFinderSensor import RangeFinderSensor
 from .RotationSensor import RotationSensor
 from .OrientationSensor import OrientationSensor
 from .VelocitySensor import VelocitySensor
+from main import SensorData, gen
