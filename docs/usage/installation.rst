@@ -49,6 +49,11 @@ Or as a single console command,
 Development Installation
 ==========================
 
+.. note::
+   If you had previously installed holoocean before moving to the develop or any other branch,
+   then you will need to uninstall the binary by running ``holoocean.remove("Ocean")`` before proceeding. 
+   Failure to do so may result in unpredictable behavior.
+
 To use the latest version of HoloOcean, you can install and use HoloOcean simply
 by cloning the `bitbucket.org/frostlab/holoocean`_, and ensuring it is on your
 ``sys.path``.
@@ -86,10 +91,6 @@ Or as a single console command,
 .. _docker:
 
 Note you can replace "develop" with whichever branch of HoloOcean-Engine you'd like to install.
-
-.. note::
-   If you had previously installed holoocean before moving to the develop or any other branch,
-   you can uninstall the binary by running ``holoocean.remove("Ocean")``
 
 Docker Installation
 ===================

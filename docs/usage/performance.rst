@@ -69,7 +69,7 @@ Sonar Sensors
 --------------------------
 
 The sonar sensors can also be taxing on performance. There's a number of things that can be
-done to help improve it's performance as well.
+done to help improve their performance as well.
 
 Lowering Octree Resolution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
