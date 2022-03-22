@@ -22,6 +22,7 @@ Highlights
 - 3 new sonar sensors
 - Upgraded noise modeling in Imaging and Profiling Sonar
 - Lots of misc bug fixes!
+- Upgraade to Unreal Engine 4.27
 
 New Features
 ~~~~~~~~~~~~
@@ -34,6 +35,7 @@ New Features
 
 - ImagingSonar now has significantly improved noise modeling
 - Can now specify a lifetime parameter to draw functions
+- Now based on Unreal Engine 4.27
 
 Changes
 ~~~~~~~
