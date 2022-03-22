@@ -9,13 +9,15 @@
 HoloOcean is a high-fidelity simulator for underwater robotics built on top of Unreal Engine 4, and forked from Holodeck by BYU's PCCL Lab.
 
 ## Features
- - 7+ rich worlds for training agents in, and many scenarios for those worlds
- - Linux and Windows support
- - Easily extend and modify training scenarios
- - Train and control more than one agent at once
- - Simple, OpenAI Gym-like Python interface
+ - 3+ rich worlds with various infrastructure for generating data or testing underwater algorithms
+ - Complete with common underwater sensors including DVL, IMU, optical camera, imaging sonar, depth sensor, and more
+ - Highly and easily configurable sensors and missions
+ - Multi-agent missions, including optical and acoustic communications
+ - Novel imaging sonar implementation, produces accurate, realistic sonar data at 2 FPS.
+ - Easy installation and simple, OpenAI Gym-like Python interface
  - High performance - simulation speeds of up to 2x real time are possible. Performance penalty only for what you need
  - Run headless or watch your agents learn
+ - Linux and Windows support
 
 ## Installation
 `pip install holoocean`
