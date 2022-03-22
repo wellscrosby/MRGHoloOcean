@@ -22,7 +22,7 @@ Highlights
 - 3 new sonar sensors
 - Upgraded noise modeling in Imaging and Profiling Sonar
 - Lots of misc bug fixes!
-- Upgraade to Unreal Engine 4.27
+- Upgrade to Unreal Engine 4.27
 
 New Features
 ~~~~~~~~~~~~
@@ -46,7 +46,7 @@ Changes
 
 Bug Fixes
 ~~~~~~~~~
-- Timeouts are turned off for sonars.
+- Timeouts are turned off for sonars to prevent premature termination of the simulation.
 - Specifying a number of ticks to execute at once now ticks for all of them.
 
 
