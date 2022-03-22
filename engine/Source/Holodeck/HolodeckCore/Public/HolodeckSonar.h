@@ -73,6 +73,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float WaterSpeedSound = 1480.0;
 
+	UPROPERTY(EditAnywhere)
+	bool ShowWarning = true;
+
 	// Call at the beginning of every tick, loads octree
 	void initOctree();
 

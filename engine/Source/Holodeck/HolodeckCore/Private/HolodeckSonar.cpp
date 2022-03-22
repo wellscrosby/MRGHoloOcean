@@ -68,6 +68,9 @@ void UHolodeckSonar::ParseSensorParms(FString ParmsJson) {
 		if (JsonParsed->HasTypedField<EJson::Number>("ViewOctree")) {
 			ViewOctree = JsonParsed->GetIntegerField("ViewOctree");
 		}
+		if (JsonParsed->HasTypedField<EJson::Boolean>("ShowWarning")) {
+			ShowWarning = JsonParsed->GetBoolField("ShowWarning");
+		}
 
 		// Performance Parameters
 		if (JsonParsed->HasTypedField<EJson::Number>("ShadowEpsilon")) {
@@ -359,6 +362,10 @@ void UHolodeckSonar::TickSensorComponent(float DeltaTime, ELevelTick TickType, F
 
 	// Count till next sonar timestep
 	TickCounter++;
+	// Show warning when we're about to compute sonar
+	if(ShowWarning && TicksPerCapture - TickCounter <= 3){
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Sonar octree generation may slow down simulation, screen may appear frozen temporarily")));
+	}
 	if(TickCounter % TicksPerCapture == 0 && octree != nullptr && toMake.Num() == 0){
 		TickCounter = 0;
 	}
