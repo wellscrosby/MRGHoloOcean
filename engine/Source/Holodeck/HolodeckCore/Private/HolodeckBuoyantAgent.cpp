@@ -125,9 +125,9 @@ Octree* AHolodeckBuoyantAgent::cleanOctree(Octree* globalFrame){
 	local->loc = GetActorRotation().UnrotateVector(globalFrame->loc - GetActorLocation());
 	local->normal = GetActorRotation().UnrotateVector(globalFrame->normal);
 
-	for( Octree* tree : globalFrame->leafs){
+	for( Octree* tree : globalFrame->leaves){
 		Octree* l = cleanOctree(tree);
-		local->leafs.Add(l);
+		local->leaves.Add(l);
 	}
 
 	return local;
@@ -137,7 +137,7 @@ void AHolodeckBuoyantAgent::updateOctree(Octree* localFrame, Octree* globalFrame
 	globalFrame->loc = GetActorLocation() + GetActorRotation().RotateVector(localFrame->loc);
 	globalFrame->normal = GetActorRotation().RotateVector(localFrame->normal);
 
-	for(int i=0;i<globalFrame->leafs.Num();i++){
-		updateOctree(localFrame->leafs[i], globalFrame->leafs[i]);
+	for(int i=0;i<globalFrame->leaves.Num();i++){
+		updateOctree(localFrame->leaves[i], globalFrame->leaves[i]);
 	}
 }

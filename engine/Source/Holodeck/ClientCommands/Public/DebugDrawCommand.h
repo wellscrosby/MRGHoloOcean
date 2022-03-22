@@ -11,7 +11,7 @@
 * Command used to draw debug objects in the world. 
 *
 * StringParameters are expected to be empty.
-* NumberParameters is expected to be length 11 and of the format [func_type, vector1[3], vector2[3], color[3], thickness/size]
+* NumberParameters is expected to be length 12 and of the format [func_type, vector1[3], vector2[3], color[3], thickness/size, lifetime]
 */
 UCLASS(ClassGroup = (Custom))
 class HOLODECK_API UDebugDrawCommand : public UCommand

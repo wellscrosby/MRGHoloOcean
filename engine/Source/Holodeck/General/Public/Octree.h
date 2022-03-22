@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// MIT License (c) 2021 BYU FRoStLab see LICENSE file
 
 #pragma once
 
@@ -6,9 +6,12 @@
 #include "Engine/World.h"
 #include "Misc/FileHelper.h"
 #include "HAL/FileManagerGeneric.h"
+#include "Containers/Map.h"
+#include "Containers/DiscardableKeyValueCache.h"
 #include "DrawDebugHelpers.h"
-#include "Conversion.h"
+#include "LandscapeProxy.h"
 
+#include "Conversion.h"
 #include "gason.h"
 #include "jsonbuilder.h"
 #include <string>
@@ -23,11 +26,11 @@ class Octree
         static TArray<FVector> corners;
         static TArray<FVector> sides;
         static FCollisionQueryParams params;
-        static FVector offset;
         static float cornerSize;
         static FVector EnvMin;
         static FVector EnvMax;
         static UWorld* World;
+        static TDiscardableKeyValueCache<FString,float> materials;
 
         static FVector EnvCenter;
 
@@ -38,9 +41,14 @@ class Octree
             FCollisionQueryParams p;
             p.bTraceComplex = false;
             p.TraceTag = "";
-            p.bFindInitialOverlaps = true;
+            // p.bFindInitialOverlaps = true;
+            // p.bReturnPhysicalMaterial = true;
+            // p.bReturnFaceIndex = true;
             return p;
         }
+
+        static FString getMaterialName(FHitResult hit);
+        void fillMaterialProperties(FString mat);
 
     public:
         static float OctreeRoot;
@@ -50,10 +58,10 @@ class Octree
         Octree(){};
 		Octree(FVector loc, float size, FString file="") : size(size), loc(loc), file(file) {};
 		~Octree(){ 
-            for(Octree* leaf : leafs){
+            for(Octree* leaf : leaves){
                 delete leaf;
             }
-            leafs.Reset();
+            leaves.Reset();
         }
 
         // Used to setup octree globals
@@ -77,7 +85,7 @@ class Octree
         }
         static void resetParams(){ params = init_params(); }
 
-        int numLeafs();
+        int numLeaves();
 
         // Used to check if it's a dynamic octree for an agent
         bool isAgent = false;
@@ -91,13 +99,21 @@ class Octree
         float makeTill;
 
         // Given to each non-leaf
-        TArray<Octree*> leafs;
+        TArray<Octree*> leaves;
 
         // Given to each leaf 
         FVector normal;
+        FString material;
+        // impedance
+        float z = 1.0f;
 
         // Used during computations
+        // Value of Range, Elevation, and Azimuth in that order (in cm/degrees/degrees).
         FVector locSpherical;
+        FVector normalImpact;
+        // Index of Range, Elevation, and Azimuth in that order.
         FIntVector idx;
+        // Holds cos of angle, and value to put in
+        float cos;
         float val;
 };

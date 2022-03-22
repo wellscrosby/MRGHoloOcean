@@ -6,7 +6,7 @@ If you're here, you're probably interested in working on HoloOcean instead of ju
 it helpful to consult the [Developer Wiki](https://github.com/BYU-PCCL/holodeck/wiki/Holodeck-Onboarding)
 
 ## About
-HoloOcean is an open source project built primarily for training reinforcement learning agents in the unreal engine. It is built for use with Unreal Engine 4.22, with bindings for python to communicate with the agents in the environments. For best results, use windows.
+Holodeck is an open source project built primarily for training reinforcement learning agents in the unreal engine. It is built for use with Unreal Engine 4.27, with bindings for python to communicate with the agents in the environments.
 
 ## Usage
 This repository contains everything you need to build environments in the Unreal Engine for HoloOcean. If you want to use worlds that have already been built that you can communicate with in python, look at the [holoocean repo](https://bitbucket.org/frostlab/holoocean).
@@ -14,9 +14,9 @@ This repository contains everything you need to build environments in the Unreal
 * HoloOcean can be run either from editor or by selecting run from standalone game, however nothing will happen until the python client begins.
 
 ## Requirements
-* [Install Unreal Engine 4.22](https://www.unrealengine.com/en-US/download)
+* [Install Unreal Engine 4.27](https://www.unrealengine.com/en-US/download)
     * After starting the Epic Games Launcher click on the Unreal Engine tab, then the Library option
-    * Select add a new engine version and then version 4.22 and install
+    * Select add a new engine version and then version 4.27 and install
 * [Install Git LFS](https://git-lfs.github.com/)
 * Visual Studio 2017 including "Game development with C++" and "Unreal Engine installer" modules as outlined [here.](https://docs.unrealengine.com/en-us/Programming/Development/VisualStudioSetup)
 
@@ -24,7 +24,7 @@ This repository contains everything you need to build environments in the Unreal
 * Clone the repository:
 `git clone https://bitbucket.org/frostlab/holoocean`
 * Navigate to the root folder and right click Holodeck.uproject -> Generate Visual Studio project files
-* Right click Holodeck.uproject -> Switch Unreal Engine Version -> 4.22
+* Right click Holodeck.uproject -> Switch Unreal Engine Version -> 4.27
 * Run Holodeck.uproject (It will ask you to rebuild, click yes)
   - If you get a "ExampleLevel.umap appears to be an asset file" error you have not configured git-lfs correctly.
     Try `git lfs pull`.

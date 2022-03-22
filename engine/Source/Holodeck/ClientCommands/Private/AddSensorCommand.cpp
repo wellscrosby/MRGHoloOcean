@@ -47,10 +47,14 @@ void UAddSensorCommand::Execute() {
 										{ "DVLSensor", UDVLSensor::StaticClass() },
 										{ "PoseSensor", UPoseSensor::StaticClass() },
 										{ "AcousticBeaconSensor", UAcousticBeaconSensor::StaticClass() },
-										{ "SonarSensor", USonarSensor::StaticClass() },
+										{ "ImagingSonar", UImagingSonar::StaticClass() },
+										{ "SidescanSonar", USidescanSonar::StaticClass() },
+										{ "SinglebeamSonar", USinglebeamSonar::StaticClass() },
+										{ "ProfilingSonar", UProfilingSonar::StaticClass() },
 										{ "GPSSensor", UGPSSensor::StaticClass() },
 										{ "DepthSensor", UDepthSensor::StaticClass() },
-										{ "OpticalModemSensor", UOpticalModemSensor::StaticClass() }, };
+										{ "OpticalModemSensor", UOpticalModemSensor::StaticClass() },
+									};
 
 	FString AgentName = StringParams[0].c_str();
 	FString SensorName = StringParams[1].c_str();
@@ -61,10 +65,7 @@ void UAddSensorCommand::Execute() {
 	float LocationY = NumberParams[1];
 	float LocationZ = NumberParams[2];
 
-	// Note that we have to re-order the parameters since FRotator takes pitch, yaw, roll
-	// but the coordinates from the Python side com in roll, pitch, yaw order
-	FRotator Rotation = FRotator(NumberParams[4], NumberParams[5], NumberParams[3]);
-	Rotation = ConvertAngularVector(Rotation, ClientToUE);
+	FRotator Rotation = RPYToRotator(NumberParams[3], NumberParams[4], NumberParams[5]);
 
 	AHolodeckAgent* Agent = GetAgent(AgentName);
 

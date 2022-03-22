@@ -118,8 +118,7 @@ void AHolodeckPawnController::ExecuteTeleport() {
 
 	FRotator NewRotation;
 	if (*ShouldChangeStateBuffer & 0x2) {
-		NewRotation = FRotator(FloatPtr[4], FloatPtr[5], FloatPtr[3]);
-		NewRotation = ConvertAngularVector(NewRotation, ClientToUE);
+		NewRotation = RPYToRotator(FloatPtr[3], FloatPtr[4], FloatPtr[5]);
 	} else {
 		NewRotation = ControlledAgent->GetActorRotation();
 	}
@@ -139,13 +138,12 @@ void AHolodeckPawnController::ExecuteSetState() {
 
 	float* FloatPtr = static_cast<float*>(TeleportBuffer);
 	FVector TeleportLocation = FVector(FloatPtr[0], FloatPtr[1], FloatPtr[2]);
-	FRotator NewRotation = FRotator(FloatPtr[4], FloatPtr[5], FloatPtr[3]);
+	FRotator NewRotation = RPYToRotator(FloatPtr[3], FloatPtr[4], FloatPtr[5]);
 	FVector NewVelocity = FVector(FloatPtr[6], FloatPtr[7], FloatPtr[8]);
 	FVector NewAngVelocity = FVector(FloatPtr[9], FloatPtr[10], FloatPtr[11]);
 
 	// Perform conversion
 	TeleportLocation = ConvertLinearVector(TeleportLocation, ClientToUE);
-	NewRotation = ConvertAngularVector(NewRotation, NoScale);
 	NewVelocity = ConvertLinearVector(NewVelocity, ClientToUE);
 	NewAngVelocity = ConvertAngularVector(NewAngVelocity, NoScale);
 
