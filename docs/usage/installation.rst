@@ -87,6 +87,10 @@ Or as a single console command,
 
 Note you can replace "develop" with whichever branch of HoloOcean-Engine you'd like to install.
 
+.. note::
+   If you had previously installed holoocean before moving to the develop or any other branch,
+   you can uninstall the binary by running ``holoocean.remove("Ocean")``
+
 Docker Installation
 ===================
 

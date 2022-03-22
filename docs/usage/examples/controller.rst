@@ -36,12 +36,14 @@ Here's an example of controlling the :ref:`hovering-auv-agent` using the followi
 
     def on_press(key):
         global pressed_keys
-        pressed_keys.append(key.char)
-        pressed_keys = list(set(pressed_keys))
+        if hasattr(key, 'char'):
+            pressed_keys.append(key.char)
+            pressed_keys = list(set(pressed_keys))
 
     def on_release(key):
         global pressed_keys
-        pressed_keys.remove(key.char)
+        if hasattr(key, 'char'):
+            pressed_keys.remove(key.char)
 
     listener = keyboard.Listener(
         on_press=on_press,

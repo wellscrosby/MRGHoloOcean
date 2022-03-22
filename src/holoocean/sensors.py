@@ -689,6 +689,7 @@ class SidescanSonar(HoloOceanSensor):
 
     **Advanced Configuration**
 
+    - ``ShowWarning``: Whether to show on screen warning about sonar computation happening. Defaults to True.
     - ``AzimuthBins``/``AzimuthRes``: Number of azimuth bins of resulting image, or resolution (length in degrees) of each bin. Set one or the other. By default this is computed based on the OctreeMin.
     - ``ElevationBins``/``ElevationRes``: Number of elevation bins used when shadowing is done, or resolution (length in degrees) of each bin. Set one or the other. By default this is computed based on the octree size and the min range. Should only be set if shadowing isn't working.
     - ``InitOctreeRange``: Upon startup, all mid-level octrees within this distance of the agent will be created.
@@ -772,6 +773,7 @@ class ImagingSonar(HoloOceanSensor):
 
     **Advanced Configuration**
 
+    - ``ShowWarning``: Whether to show on screen warning about sonar computation happening. Defaults to True.
     - ``ElevationBins``/``ElevationRes``: Number of elevation bins used when shadowing is done, or resolution (length in degrees) of each bin. Set one or the other. By default this is computed based on the octree size and the min/max range. Should only be set if shadowing isn't working.
     - ``InitOctreeRange``: Upon startup, all mid-level octrees within this distance of the agent will be created.
     - ``ViewRegion``: Turns on green lines to see visible region. Defaults to False.
@@ -858,6 +860,7 @@ class SinglebeamSonar(HoloOceanSensor):
 
     **Advanced Configuration**
 
+    - ``ShowWarning``: Whether to show on screen warning about sonar computation happening. Defaults to True.
     - ``OpeningAngleBins``/``OpeningAngleRes``: Number of OpeningAngle bins used when shadowing is done, or resolution (length in degrees) of each bin. Set one or the other. By default this is computed based on the octree size and the min/max range. Should only be set if shadowing isn't working.
     - ``CentralAngleBins``/``CentralAngleRes``: Number of CentralAngle bins used when shadowing is done, or resolution (length in degrees) of each bin. Set one or the other. By default this is computed based on the octree size and the min/max range. Should only be set if shadowing isn't working.
     - ``InitOctreeRange``: Upon startup, all mid-level octrees within this distance of the agent will be created.
@@ -941,6 +944,7 @@ class ProfilingSonar(ImagingSonar):
 
     **Advanced Configuration**
 
+    - ``ShowWarning``: Whether to show on screen warning about sonar computation happening. Defaults to True.
     - ``ElevationBins``/``ElevationRes``: Number of elevation bins used when shadowing is done, or resolution (length in degrees) of each bin. Set one or the other. By default this is computed based on the octree size and the min/max range. Should only be set if shadowing isn't working.
     - ``InitOctreeRange``: Upon startup, all mid-level octrees within this distance of the agent will be created.
     - ``ViewRegion``: Turns on green lines to see visible region. Defaults to False.

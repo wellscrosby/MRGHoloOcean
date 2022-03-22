@@ -24,10 +24,8 @@ Example
 ~~~~~~~
 
 .. code-block:: python
-   :emphasize-lines: 27
-   :linenos:
 
-   import holoocean
+    import holoocean
 
     cfg = {
         "name": "test_rgb_camera",
