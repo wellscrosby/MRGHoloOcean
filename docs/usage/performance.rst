@@ -65,11 +65,11 @@ Changing ticks per capture
 The camera sample rate can be reduced to increase the average frames per second.
 See :ref:`configure-sensors` and the ``Hz`` parameter for more info.
 
-SonarSensor
+Sonar Sensors
 --------------------------
 
-The SonarSensor can also be taxing on performance. There's a number of things that can be
-done to help improve it's performance as well.
+The sonar sensors can also be taxing on performance. There's a number of things that can be
+done to help improve their performance as well.
 
 Lowering Octree Resolution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

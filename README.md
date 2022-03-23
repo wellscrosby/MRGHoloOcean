@@ -56,13 +56,10 @@ env.reset()
 command = [0, 0, 0, 0, 10, 10, 10, 10]   
 
 for i in range(30):
-    state, reward, terminal, info = env.step(command)  
+    state = env.step(command)  
 ```
 
 - `state`: dict of sensor name to the sensor's value (nparray).
-- `reward`: the reward received from the previous action
-- `terminal`: indicates whether the current state is a terminal state.
-- `info`: contains additional environment specific information.
 
 If you want to access the data of a specific sensor, import sensors and
 retrieving the correct value from the state dictionary:

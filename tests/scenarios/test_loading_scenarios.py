@@ -4,6 +4,8 @@ import holoocean
 def test_load_scenario(scenario):
     """Tests that every scenario can be loaded without any errors
 
+    Also test that every agent has every sensor that is present in the config file
+
     TODO: We need some way of communicating with the engine to verify that the expected level was loaded.
           If the level isn't found, then Unreal just picks a default one, so we're missing that case
 
@@ -12,21 +14,13 @@ def test_load_scenario(scenario):
 
     """
     env = holoocean.make(scenario, show_viewport=False, frames_per_sec=False)
-    for _ in range(30):
-        env.tick()
-    env.__on_exit__()
-
-
-def test_all_agents_and_sensors_present(env_scenario):
-    """Test that every agent has every sensor that is present in the config file
-
-    Args:
-        env_scenario ((HoloOceanEnvironment, str)): environment and scenario we are testing
-
-    """
-    env, scenario = env_scenario
     scenario = holoocean.packagemanager.get_scenario(scenario)
 
+    # make sure it works!
+    for _ in range(20):
+        env.tick()
+
+    # make sure everything is there
     assert len(env.agents) == len(scenario['agents']), \
         "Length of agents did not match!"
 

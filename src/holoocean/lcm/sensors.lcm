@@ -36,7 +36,7 @@ struct AcousticBeaconSensor
 
 // TODO: Optical Modem once we solidifed data types for it
 
-struct SonarSensor
+struct ImagingSonar
 {
     int64_t timestamp;
 

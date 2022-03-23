@@ -41,9 +41,18 @@ Or as a single console command,
 
    python -c `import holoocean; holoocean.install("Ocean")`
 
+.. note::
+   There is a bug on Windows with the package ``pywin32`` that occurs occasionally. If you see 
+   "ImportError: DLL load failed while importing win32event: The specified module could not be found.",
+   it can be fixed by running ``pip install pywin32==225``
 
 Development Installation
 ==========================
+
+.. note::
+   If you had previously installed holoocean before moving to the develop or any other branch,
+   then you will need to uninstall the binary by running ``holoocean.remove("Ocean")`` before proceeding. 
+   Failure to do so may result in unpredictable behavior.
 
 To use the latest version of HoloOcean, you can install and use HoloOcean simply
 by cloning the `bitbucket.org/frostlab/holoocean`_, and ensuring it is on your

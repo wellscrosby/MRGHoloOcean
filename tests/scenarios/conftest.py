@@ -4,6 +4,7 @@ import holoocean
 import pytest
 from holoocean import packagemanager as pm
 from holoocean.environments import HoloOceanEnvironment
+from holoocean.sensors import SensorDefinition
 
 
 def pytest_generate_tests(metafunc):
@@ -19,36 +20,10 @@ def pytest_generate_tests(metafunc):
                 config = holoocean.packagemanager.get_scenario(name)
                 for agent in config['agents']:
                     for sensor in agent['sensors']:
-                        if sensor["sensor_type"] == "SonarSensor":
+                        if sensor["sensor_type"] in SensorDefinition._sonar_sensors:
                             use = False
                 if use:
                     scenarios.add(name)
 
     if "scenario" in metafunc.fixturenames:
         metafunc.parametrize("scenario", scenarios)
-    elif "env_scenario" in metafunc.fixturenames:
-        metafunc.parametrize("env_scenario", scenarios, indirect=True)
-
-
-# Envs contains a mapping of scenario key -> HoloOceanEnvironment so that
-# between different tests the same environment doesn't have to be created
-# over and over
-envs = {}
-
-
-@pytest.fixture
-def env_scenario(request):
-    """Gets an environment for the scenario matching request.param. Creates the
-    env or uses a cached one. Calls .reset() for you.
-    """
-    global envs
-    scenario = request.param
-    if scenario in envs:
-        env = envs[scenario]
-        env.reset()
-        return env, scenario
-
-    env = holoocean.make(scenario, show_viewport=False, frames_per_sec=False)
-    env.reset()
-    envs[scenario] = env
-    return env, scenario

@@ -9,7 +9,7 @@ except ImportError:
     from io import BytesIO
 import struct
 
-class SonarSensor(object):
+class ImagingSonar(object):
     __slots__ = ["timestamp", "bins_azimuth", "bins_range", "image"]
 
     __typenames__ = ["int64_t", "int32_t", "int32_t", "float"]
@@ -24,7 +24,7 @@ class SonarSensor(object):
 
     def encode(self):
         buf = BytesIO()
-        buf.write(SonarSensor._get_packed_fingerprint())
+        buf.write(ImagingSonar._get_packed_fingerprint())
         self._encode_one(buf)
         return buf.getvalue()
 
@@ -38,13 +38,13 @@ class SonarSensor(object):
             buf = data
         else:
             buf = BytesIO(data)
-        if buf.read(8) != SonarSensor._get_packed_fingerprint():
+        if buf.read(8) != ImagingSonar._get_packed_fingerprint():
             raise ValueError("Decode error")
-        return SonarSensor._decode_one(buf)
+        return ImagingSonar._decode_one(buf)
     decode = staticmethod(decode)
 
     def _decode_one(buf):
-        self = SonarSensor()
+        self = ImagingSonar()
         self.timestamp, self.bins_azimuth, self.bins_range = struct.unpack(">qii", buf.read(16))
         self.image = []
         for i0 in range(self.bins_range):
@@ -53,7 +53,7 @@ class SonarSensor(object):
     _decode_one = staticmethod(_decode_one)
 
     def _get_hash_recursive(parents):
-        if SonarSensor in parents: return 0
+        if ImagingSonar in parents: return 0
         tmphash = (0x3c5e617d2bbe6ae8) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
@@ -61,12 +61,12 @@ class SonarSensor(object):
     _packed_fingerprint = None
 
     def _get_packed_fingerprint():
-        if SonarSensor._packed_fingerprint is None:
-            SonarSensor._packed_fingerprint = struct.pack(">Q", SonarSensor._get_hash_recursive([]))
-        return SonarSensor._packed_fingerprint
+        if ImagingSonar._packed_fingerprint is None:
+            ImagingSonar._packed_fingerprint = struct.pack(">Q", ImagingSonar._get_hash_recursive([]))
+        return ImagingSonar._packed_fingerprint
     _get_packed_fingerprint = staticmethod(_get_packed_fingerprint)
 
     def get_hash(self):
         """Get the LCM hash of the struct"""
-        return struct.unpack(">Q", SonarSensor._get_packed_fingerprint())[0]
+        return struct.unpack(">Q", ImagingSonar._get_packed_fingerprint())[0]
 

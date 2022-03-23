@@ -11,6 +11,45 @@ Changelog
     merged it at the end in parentheses
   - see https://github.com/BYU-PCCL/holodeck/wiki/Holodeck-Release-Notes-Template
 
+HoloOcean 0.5.0
+----------------
+*3/22/2022*
+
+Large sonar upgrade!
+
+Highlights
+~~~~~~~~~~
+- 3 new sonar sensors
+- Upgraded noise modeling in Imaging and Profiling Sonar
+- Lots of misc bug fixes!
+- Upgrade to Unreal Engine 4.27
+
+New Features
+~~~~~~~~~~~~
+- Added many new sonar sensors, including
+
+  - :class:`~holoocean.sensors.ImagingSonar`
+  - :class:`~holoocean.sensors.SidescanSonar`
+  - :class:`~holoocean.sensors.ProfilingSonar`
+  - :class:`~holoocean.sensors.SinglebeamSonar`
+
+- ImagingSonar now has significantly improved noise modeling
+- Can now specify a lifetime parameter to draw functions
+- Now based on Unreal Engine 4.27
+
+Changes
+~~~~~~~
+- SonarSensor is now ImagingSonar
+- Rotations are now a correct [roll, pitch, yaw].
+- step function no longer returns terminal, reward and info. Only state.
+- Environments no longer publish over lcm in pre-start ticks.
+
+Bug Fixes
+~~~~~~~~~
+- Timeouts are turned off for sonars to prevent premature termination of the simulation.
+- Specifying a number of ticks to execute at once now ticks for all of them.
+
+
 HoloOcean 0.4.1
 ----------------
 *9/21/2021*
@@ -37,7 +76,7 @@ New Features
 - Added agents :class:`~holoocean.agents.HoveringAUV` and :class:`~holoocean.agents.TorpedoAUV`
 - Added a plethora of new sensors, all with optional noise configurations
 
-  - :class:`~holoocean.sensors.SonarSensor`
+  - :class:`~holoocean.sensors.ImagingSonar`
   - :class:`~holoocean.sensors.DVLSensor`
   - :class:`~holoocean.sensors.DepthSensor`
   - :class:`~holoocean.sensors.GPSSensor`

@@ -1,4 +1,4 @@
-from holoocean.environments import HoloOceanEnvironment
+# from holoocean.environments import HoloOceanEnvironment
 
 # def test_weather_type_scenario(env_scenario) -> None:
 #     """Test that each weather type can be set in each scenario without errors.
