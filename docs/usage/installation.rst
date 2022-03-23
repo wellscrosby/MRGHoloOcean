@@ -114,6 +114,10 @@ This is an example command to start a holodeck container
 ``nvidia-docker run --rm -it --name holoocean frostlab/holoocean:ocean``
 
 .. note::
+   When ran in docker, HoloOcean can only be ran headless. This means you must pass
+   the parameter ``show_viewport=False`` into :func:`holoocean.make`.
+
+.. note::
    HoloOcean cannot be run with root privileges, so the user ``holooceanuser`` with
    no password is provided in the docker image.
 

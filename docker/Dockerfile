@@ -1,26 +1,28 @@
-FROM nvidia/cudagl:11.4.1-runtime-ubuntu20.04
+FROM adamrehn/ue4-runtime:20.04-cudagl11.2.0-noaudio
 
+USER root
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl git libglib2.0-dev software-properties-common build-essential \
-    python3-dev python3-pip ipython3
+    curl git libglib2.0-dev software-properties-common
 
-# OpenCV's runtime dependencies
+# OpenCV's runtime dependencies (and other dependencies)
 RUN apt-get install -y libglib2.0-0 libsm6 libxrender-dev libxext6
 
-RUN pip3 install setuptools wheel
+# Install all python versions to test on
+RUN apt-get update && apt-get install -y python3-dev python3-pip
+RUN pip3 install setuptools wheel tox posix_ipc numpy
 
-RUN adduser --disabled-password --gecos "" holooceanuser
-USER holooceanuser
+# Setup user
+USER ue4
 
-WORKDIR /home/holooceanuser/source/holoocean/
+WORKDIR /home/ue4/source/holoocean/
 
 # This should be COPY ../ but docker doesn't allow copying files outside the context
 # To copy the project files either run the build command in this directory with the
 # previous directory as the context: docker build -t frostlab/holoocean[:tag] -f ./Dockerfile ..
 # or run it from the parent directory and provide the docker file location
 # docker build -t frostlab/holoocean[:tag] -f ./docker/Dockerfile .
-COPY ./ .
+COPY --chown=ue4 ./ .
 RUN pip3 install .
 
 CMD ["/bin/bash"]

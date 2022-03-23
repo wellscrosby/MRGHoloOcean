@@ -3,6 +3,8 @@ Visualizing Imaging Sonar
 
 It can be useful to visualize the output of the sonar sensor during a simulation. This script will do that, plotting each time sonar data is received.
 
+Note, running this script will create octrees while being ran and may cause some pauses. See :ref:`octree` for workarounds and more info.
+
 ::
 
     import holoocean
