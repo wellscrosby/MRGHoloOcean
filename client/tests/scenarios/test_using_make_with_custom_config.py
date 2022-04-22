@@ -1,6 +1,5 @@
 import holoocean
-import random
-
+import uuid
 
 def test_using_make_with_custom_config():
     """
@@ -8,24 +7,33 @@ def test_using_make_with_custom_config():
     of loading it from a config file
     """
 
-    conf = {
-        "name": "test_randomization",
+    sphere_config = {
+        "name": "test_custom_config",
+        "world": "TestWorld",
+        "main_agent": "sphere0",
         "frames_per_sec": False,
         "agents": [
+            {
+                "agent_name": "sphere0",
+                "agent_type": "SphereAgent",
+                "sensors": [
 
+                ],
+                "control_scheme": 0,
+                "location": [.95, -1.75, .5]
+            }
         ]
     }
 
-    # pick a random world from the installed packages
-    pkg = random.choice(list(holoocean.packagemanager._iter_packages()))
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
-    world = random.choice(pkg[0]["worlds"])["name"]
-
-    conf["world"] = world
-    conf["package_name"] = pkg[0]["name"]
-
-    print("world: {} package: {}".format(world, pkg[0]["name"]))
-    with holoocean.make(scenario_cfg=conf, show_viewport=False) as env:
+    with holoocean.environments.HoloOceanEnvironment(scenario=sphere_config,
+                                                   binary_path=binary_path,
+                                                   show_viewport=False,
+                                                   uuid=str(uuid.uuid4())) as env:       
         for _ in range(0, 10):
             env.tick()
+        assert(True)
+        
+
 

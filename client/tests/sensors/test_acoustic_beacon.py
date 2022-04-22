@@ -7,7 +7,7 @@ import pytest
 def env():
     scenario = {
         "name": "PerfectAUV",
-        "world": "SimpleUnderwater",
+        "world": "TestWorld",
         "main_agent": "auv0",
         "frames_per_sec": False,
         "agents":[

@@ -8,7 +8,7 @@ import numpy as np
 def env():
     scenario = {
         "name": "test_imu_sensor",
-        "world": "Rooms",
+        "world": "TestWorld",
         "main_agent": "turtle0",
         "frames_per_sec": False,
         "agents": [
@@ -30,7 +30,7 @@ def env():
                     }
                 ],
                 "control_scheme": 0,
-                "location": [-1.5, -1.50, 3.0],
+                "location": [-1.5, -1.50, 1.0],
                 "rotation": [0, 0, 0]
             }
         ]
@@ -55,11 +55,11 @@ def test_imu_sensor_acceleration(env):
     env.step([150,0])
 
     #Move forward, making sure y is relatively small, and x is increasing
-    for i in range(50):
+    for i in range(30):
         x_accel, y_accel, z_accel = env.step([150,0])["IMUSensor"][0]
         assert x_accel >= 0, f"The acceleration wasn't positive at step {i}!"
         assert y_accel <= .5
-        assert np.isclose(z_accel, 9.81, 1e-2)
+        assert np.isclose(z_accel, 9.81, 1e-2), f"The z_accel wasn't 9.81 at step {i}!"
         last_x_accel = x_accel
 
     #Let it stop
@@ -67,7 +67,7 @@ def test_imu_sensor_acceleration(env):
         env.step([0, 0])
 
     #Move backward, making sure y is relatively small, and x is decreasing
-    for i in range(50):
+    for i in range(30):
         x_accel, y_accel, z_accel = env.step([-150,0])["IMUSensor"][0]
         assert x_accel <= 1e-3, f"The acceleration wasn't negative at step {i}!"
         assert y_accel <= .5

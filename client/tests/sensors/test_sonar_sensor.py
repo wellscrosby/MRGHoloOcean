@@ -8,7 +8,7 @@ import numpy as np
 def config():
     c = {
         "name": "test_location_sensor",
-        "world": "ExampleLevel",
+        "world": "TestWorld",
         "main_agent": "auv0",
         "frames_per_sec": False,
         "agents": [

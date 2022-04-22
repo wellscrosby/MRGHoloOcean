@@ -7,7 +7,7 @@ from holoocean.environments import HoloOceanEnvironment
 
 base_conf = {
     "name": "test_randomization",
-    "world": "ExampleLevel",
+    "world": "TestWorld",
     "package_name": "Ocean",
     "main_agent": "sphere0",
     "frames_per_sec": False,

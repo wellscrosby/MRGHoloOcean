@@ -7,7 +7,7 @@ def pytest_generate_tests(metafunc):
     """Iterate over every scenario
     """
     if 'resolution' in metafunc.fixturenames:
-        metafunc.parametrize('resolution', [256, 512, 1024, 2048])
+        metafunc.parametrize('resolution', [256, 500, 1000])
     elif '1024_env' in metafunc.fixturenames:
         metafunc.parametrize('env_1024', [1024], indirect=True)
     elif 'ticks_per_capture' in metafunc.fixturenames:
@@ -31,7 +31,7 @@ def env_1024(request):
     """
     cfg = {
         "name": "test_viewport_capture",
-        "world": "ExampleLevel",
+        "world": "TestWorld",
         "main_agent": "sphere0",
         "frames_per_sec": False,
         "agents": [
@@ -100,7 +100,7 @@ def rotation_env(request):
     """
     cfg = {
         "name": "test_rotation_sensor",
-        "world": "ExampleLevel",
+        "world": "TestWorld",
         "main_agent": "sphere0",
         "frames_per_sec": False,
         "agents": [
@@ -133,7 +133,7 @@ def rotation_env(request):
 
 abuse_config = {
     "name": "test_abuse_sensor",
-    "world": "ExampleLevel",
+    "world": "TestWorld",
     "main_agent": "uav0",
     "frames_per_sec": False,
     "agents": [

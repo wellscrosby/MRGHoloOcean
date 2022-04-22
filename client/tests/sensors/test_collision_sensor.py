@@ -3,7 +3,7 @@ import uuid
 
 uav_config = {
     "name": "test_collision_sensor",
-    "world": "ExampleLevel",
+    "world": "TestWorld",
     "main_agent": "uav0",
     "frames_per_sec": False,
     "agents": [

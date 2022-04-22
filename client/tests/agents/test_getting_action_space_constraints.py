@@ -25,7 +25,7 @@ agents = [{"agent_name": x["name"], "agent_type": x["type"], "sensors": [],
 
 config = {
     "name": "test_collision_sensor",
-    "world": "ExampleLevel",
+    "world": "TestWorld",
     "main_agent": "UavAgent",
     "frames_per_sec": False,
     "agents": agents

@@ -6,7 +6,7 @@ from tests.utils.equality import almost_equal
 
 sphere_config = {
     "name": "test_range_finder_sensor",
-    "world": "ExampleLevel",
+    "world": "TestWorld",
     "main_agent": "sphere0",
     "frames_per_sec": False,
     "agents": [
@@ -53,7 +53,7 @@ def test_range_finder_sensor_max():
 
 uav_config = {
     "name": "test_range_finder_sensor",
-    "world": "ExampleLevel",
+    "world": "TestWorld",
     "main_agent": "uav0",
     "frames_per_sec": False,
     "agents": [

@@ -29,8 +29,8 @@ base_cfg = {
     ]
 }
 
-@pytest.mark.skipif("DefaultWorlds" not in holoocean.installed_packages(),
-                    reason='DefaultWorlds package not installed')
+@pytest.mark.skipif("Ocean" not in holoocean.installed_packages(),
+                    reason='Ocean package not installed')
 def test_viewport_capture(resolution, request):
     """Validates that the ViewportCapture camera is working at the expected resolutions
 
@@ -49,7 +49,7 @@ def test_viewport_capture(resolution, request):
         "CaptureHeight": resolution
     }
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
     with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
@@ -61,13 +61,16 @@ def test_viewport_capture(resolution, request):
         pixels = env.tick()['ViewportCapture'][:, :, 0:3]
 
         assert pixels.shape == (resolution, resolution, 3)
-        baseline = cv2.imread(os.path.join(request.fspath.dirname, "expected", "{}_viewport.png".format(resolution)))
+        filepath = str("/baseline_images/baseline_viewport_" + str(resolution) + ".png")
+        baseline = cv2.imread(str(request.fspath.dirname + filepath))
+        # baseline = cv2.imread(os.path.join(request.fspath.dirname, "expected", "{}_viewport.png".format(resolution)))
+
         err = mean_square_err(pixels, baseline)
 
         assert err < 1000, "The expected screenshot did not match the actual screenshot!"
 
-@pytest.mark.skipif("DefaultWorlds" not in holoocean.installed_packages(),
-                    reason='DefaultWorlds package not installed')
+@pytest.mark.skipif("Ocean" not in holoocean.installed_packages(),
+                    reason='Ocean package not installed')
 def test_viewport_capture_after_teleport(env_1024, request):
     """Validates that the ViewportCapture is updated after teleporting the camera
     to a different location. 
@@ -84,7 +87,9 @@ def test_viewport_capture_after_teleport(env_1024, request):
     
     pixels = env_1024.tick()['ViewportCapture'][:, :, 0:3]
 
-    baseline = cv2.imread(os.path.join(request.fspath.dirname, "expected", "teleport_viewport_test.png"))
+    # baseline = cv2.imread(os.path.join(request.fspath.dirname, "expected", "teleport_viewport_test.png"))
+    filepath = str("/baseline_images/baseline_viewport_moved_1024.png")
+    baseline = cv2.imread(str(request.fspath.dirname + filepath))
     err = mean_square_err(pixels, baseline)
 
     assert err < 1000, "The captured viewport differed from the expected screenshot!"

@@ -3,8 +3,8 @@ from tests.utils.equality import mean_square_err
 import holoocean
 import pytest
 
-@pytest.mark.skipif("DefaultWorlds" not in holoocean.installed_packages(),
-                    reason='DefaultWorlds package not installed')
+@pytest.mark.skipif("Ocean" not in holoocean.installed_packages(),
+                    reason='Ocean package not installed')
 def test_sensor_rotation(rotation_env, request):
     """Validates that calling rotate actually rotates the sensor using the RGBCamera.
 
@@ -15,14 +15,15 @@ def test_sensor_rotation(rotation_env, request):
     rotation_env.agents["sphere0"].sensors["RGBCamera"].rotate([0, 0, 0])
     pixels = rotation_env.tick(10)["RGBCamera"][:, :, 0:3]
 
-    baseline = cv2.imread(os.path.join(request.fspath.dirname, "expected", "256.png"))
+    filepath = str("/baseline_images/baseline_256.png")
+    baseline = cv2.imread(str(request.fspath.dirname + filepath))
 
     err = mean_square_err(pixels, baseline)
     assert err < 2000, \
         "The sensor appeared to not rotate!"
 
-@pytest.mark.skipif("DefaultWorlds" not in holoocean.installed_packages(),
-                    reason='DefaultWorlds package not installed')
+@pytest.mark.skipif("Ocean" not in holoocean.installed_packages(),
+                    reason='Ocean package not installed')
 def test_sensor_rotation_resets_after_reset(rotation_env):
     """Validates that the sensor rotation is reset back to the starting position after calling ``.reset()``.
     """

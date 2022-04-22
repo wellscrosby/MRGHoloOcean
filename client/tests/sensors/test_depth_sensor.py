@@ -7,7 +7,7 @@ from tests.utils.equality import almost_equal
 
 uav_config = {
     "name": "test_depth_sensor",
-    "world": "ExampleLevel",
+    "world": "TestWorld",
     "main_agent": "uav0",
     "agents": [
         {

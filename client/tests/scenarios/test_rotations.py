@@ -8,7 +8,7 @@ from scipy.spatial.transform import Rotation
 def env():
     scenario = {
         "name": "test_location_sensor",
-        "world": "ExampleLevel",
+        "world": "TestWorld",
         "main_agent": "sphere",
         "agents": [
             {

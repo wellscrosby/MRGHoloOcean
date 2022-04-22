@@ -7,7 +7,6 @@ import pytest
 
 from tests.utils.equality import mean_square_err
 
-
 base_cfg = {
     "name": "test_rgb_camera",
     "world": "TestWorld",
@@ -31,8 +30,8 @@ base_cfg = {
     ]
 }
 
-@pytest.mark.skipif("DefaultWorlds" not in holoocean.installed_packages(),
-                    reason='DefaultWorlds package not installed')
+@pytest.mark.skipif("Ocean" not in holoocean.installed_packages(),
+                    reason='Ocean package not installed')
 def test_rgb_camera(resolution, request):
     """Makes sure that the RGB camera is positioned and capturing correctly.
 
@@ -50,7 +49,9 @@ def test_rgb_camera(resolution, request):
         "CaptureHeight": resolution
     }
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    # print("config: ", cfg)
+
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
@@ -60,11 +61,15 @@ def test_rgb_camera(resolution, request):
         for _ in range(5):
             env.tick()
 
-        print(request.fspath.dirname)
         pixels = env.tick()['TestCamera'][:, :, 0:3]
-        baseline = cv2.imread(os.path.join(request.fspath.dirname, "expected", "{}.png".format(resolution)))
+        filepath = str("/baseline_images/baseline_" + str(resolution) + ".png")
+        baseline = cv2.imread(str(request.fspath.dirname + filepath))
         err = mean_square_err(pixels, baseline)
-
+        
+        # Uncomment to visually compare images
+        # cv2.imshow("Baselines", baseline)
+        # cv2.imshow("Pixels", pixels)
+        # cv2.waitKey(0)
         assert err < 2000
 
 
@@ -84,7 +89,7 @@ def make_ticks_per_capture_env():
         "CaptureHeight": 512
     }
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("DefaultWorlds")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
 
     shared_ticks_per_capture_env = holoocean.environments.HoloOceanEnvironment(
         scenario=cfg,

@@ -6,7 +6,7 @@ import pytest
 def env():
     scenario = {
         "name": "test",
-        "world": "Rooms",
+        "world": "TestWorld",
         "main_agent": "uav0",
         "agents": [
             {
@@ -91,12 +91,8 @@ def test_within_max_distance(env):
             "rotation": [0, 0, 90]
         }
     ]
-    print(holoocean.sensors.OpticalModemSensor.instances)
 
     env.reset()
-    print("HERE")
-    print(holoocean.sensors.OpticalModemSensor.instances)
-    print("AFTER")
 
     command = [0, 0, 10, 50]
     state = env.step(command)

@@ -5,7 +5,7 @@ import numpy as np
 
 turtle_config = {
     "name": "test_velocity_sensor",
-    "world": "Rooms",
+    "world": "TestWorld",
     "main_agent": "turtle0",
     "frames_per_sec": False,
     "agents": [
@@ -44,12 +44,12 @@ def test_dvl_sensor_straight():
                                                    show_viewport=False,
                                                    uuid=str(uuid.uuid4())) as env:
         #let it land and then start moving forward
-        for _ in range(100):
+        for _ in range(200):
             last_x_velocity, _, _ = env.tick()["DVLSensor"][:3]
         env.step([150,0])
 
         #Move forward, making sure y is relatively small, and x is increasing
-        for i in range(50):
+        for i in range(30):
             new_x_velocity, y_velocity, z_velocity = env.step([150,0])["DVLSensor"][:3]
             assert new_x_velocity >= last_x_velocity, f"The velocity didn't increase at step {i}!"
             assert y_velocity <= .5
@@ -61,7 +61,7 @@ def test_dvl_sensor_straight():
             env.step([0, 0])
 
         #Move backward, making sure y is relatively small, and x is decreasing
-        for i in range(50):
+        for i in range(30):
             new_x_velocity, y_velocity, z_velocity = env.step([-150,0])["DVLSensor"][:3]
             assert new_x_velocity <= last_x_velocity, f"The velocity didn't decrease at step {i}!"
             assert y_velocity <= .5
@@ -95,7 +95,7 @@ def test_dvl_sensor_rotated():
         env.step([150,0])
 
         #Move forward, making sure y is relatively small, and x is increasing
-        for i in range(60):
+        for i in range(22):
             new_x_velocity, y_velocity, z_velocity = env.step([150,0])["DVLSensor"][:3]
             assert new_x_velocity >= last_x_velocity, f"The velocity didn't increase at step {i}!"
             assert y_velocity <= .5

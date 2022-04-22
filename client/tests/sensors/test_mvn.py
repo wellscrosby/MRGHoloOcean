@@ -11,7 +11,7 @@ eps = 1e-9
 def env():
     scenario = {
         "name": "test_mvn",
-        "world": "Rooms",
+        "world": "TestWorld",
         "main_agent": "turtle0",
         "frames_per_sec": False,
         "agents": [

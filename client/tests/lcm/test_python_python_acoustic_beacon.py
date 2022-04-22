@@ -8,7 +8,7 @@ import numpy as np
 def env():
     scenario = {
         "name": "test",
-        "world": "Rooms",
+        "world": "TestWorld",
         "main_agent": "turtle0",
         "lcm_provider": "memq://",
         "frames_per_sec": False,

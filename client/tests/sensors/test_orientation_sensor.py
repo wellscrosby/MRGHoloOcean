@@ -9,7 +9,7 @@ import pytest
 def env():
     scenario = {
     "name": "test_orientation_sensor",
-    "world": "ExampleLevel",
+    "world": "TestWorld",
     "main_agent": "sphere0",
     "frames_per_sec": False,
     "agents": [

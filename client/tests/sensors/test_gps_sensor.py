@@ -8,7 +8,7 @@ import numpy as np
 def env():
     scenario = {
         "name": "test_location_sensor",
-        "world": "ExampleLevel",
+        "world": "TestWorld",
         "main_agent": "sphere",
         "agents": [
             {

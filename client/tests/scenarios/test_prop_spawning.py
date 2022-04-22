@@ -5,7 +5,7 @@ from tests.utils.equality import almost_equal
 
 uav_config = {
     "name": "test_prop_spawning",
-    "world": "ExampleLevel",
+    "world": "TestWorld",
     "main_agent": "uav0",
     "frames_per_sec": False,
     "agents": [
