@@ -48,7 +48,7 @@ def check_constraints(x, y):
 
 
 def test_min_max_action_space_constraints():
-    binary_path = pm.get_binary_path_for_package("Ocean")
+    binary_path = pm.get_binary_path_for_package("TestWorlds")
 
     with HoloOceanEnvironment(scenario=config,
                              binary_path=binary_path,

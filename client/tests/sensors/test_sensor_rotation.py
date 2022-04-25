@@ -3,7 +3,7 @@ from tests.utils.equality import mean_square_err
 import holoocean
 import pytest
 
-@pytest.mark.skipif("Ocean" not in holoocean.installed_packages(),
+@pytest.mark.skipif("TestWorlds" not in holoocean.installed_packages(),
                     reason='Ocean package not installed')
 def test_sensor_rotation(rotation_env, request):
     """Validates that calling rotate actually rotates the sensor using the RGBCamera.
@@ -22,7 +22,7 @@ def test_sensor_rotation(rotation_env, request):
     assert err < 2000, \
         "The sensor appeared to not rotate!"
 
-@pytest.mark.skipif("Ocean" not in holoocean.installed_packages(),
+@pytest.mark.skipif("TestWorlds" not in holoocean.installed_packages(),
                     reason='Ocean package not installed')
 def test_sensor_rotation_resets_after_reset(rotation_env):
     """Validates that the sensor rotation is reset back to the starting position after calling ``.reset()``.

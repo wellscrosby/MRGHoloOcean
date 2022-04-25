@@ -45,7 +45,7 @@ def test_viewport_capture(resolution):
         "CaptureHeight": resolution
     }
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
     with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
@@ -82,7 +82,7 @@ def test_rgb_camera(resolution):
         "CaptureHeight": resolution
     }
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,

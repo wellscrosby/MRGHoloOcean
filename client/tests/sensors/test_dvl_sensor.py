@@ -36,7 +36,7 @@ def test_dvl_sensor_straight():
     """Make sure when we move forward x is positive, y is close to 0. Make sure when not moving both are close to 0
     """
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
     turtle_config['agents'][0]['rotation'] = [0, 0, 0]
 
     with holoocean.environments.HoloOceanEnvironment(scenario=turtle_config,
@@ -82,7 +82,7 @@ def test_dvl_sensor_rotated():
     """Make sure when we move forward x is positive, y is close to 0. Make sure when not moving both are close to 0
     """
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
     turtle_config['agents'][0]['rotation'] = [0, 0, 90]
 
     with holoocean.environments.HoloOceanEnvironment(scenario=turtle_config,
@@ -126,7 +126,7 @@ def test_dvl_sensor_rotated():
 
 def test_dvl_noise():
     """Make sure turning on noise actually turns it on"""
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
     turtle_config['agents'][0]['rotation'] = [0, 0, 0]
 
     with holoocean.environments.HoloOceanEnvironment(scenario=turtle_config,

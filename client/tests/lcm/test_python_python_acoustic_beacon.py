@@ -40,7 +40,7 @@ def env():
             }
         ]
     }
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
     with holoocean.environments.HoloOceanEnvironment(scenario=scenario,
                                                    binary_path=binary_path,
                                                    show_viewport=False,

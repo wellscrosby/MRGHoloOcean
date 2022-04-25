@@ -30,7 +30,7 @@ base_cfg = {
     ]
 }
 
-@pytest.mark.skipif("Ocean" not in holoocean.installed_packages(),
+@pytest.mark.skipif("TestWorlds" not in holoocean.installed_packages(),
                     reason='Ocean package not installed')
 def test_rgb_camera(resolution, request):
     """Makes sure that the RGB camera is positioned and capturing correctly.
@@ -51,7 +51,7 @@ def test_rgb_camera(resolution, request):
 
     # print("config: ", cfg)
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
@@ -89,7 +89,7 @@ def make_ticks_per_capture_env():
         "CaptureHeight": 512
     }
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     shared_ticks_per_capture_env = holoocean.environments.HoloOceanEnvironment(
         scenario=cfg,

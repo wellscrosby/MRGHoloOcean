@@ -25,7 +25,7 @@ def test_using_make_with_custom_config():
         ]
     }
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=sphere_config,
                                                    binary_path=binary_path,

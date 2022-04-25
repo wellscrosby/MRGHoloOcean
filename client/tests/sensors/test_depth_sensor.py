@@ -40,7 +40,7 @@ def test_depth_sensor_falling():
     # Spawn the UAV 10 meters up
     cfg["agents"][0]["location"] = [0, 0, 10]
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
@@ -70,7 +70,7 @@ def test_depth_sensor_noise():
 
     config = deepcopy(uav_config)
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,

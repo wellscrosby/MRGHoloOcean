@@ -27,7 +27,7 @@ def test_velocity_sensor_uav_z_axis():
     Make sure it zeros out after it hits the ground, and then goes positive on takeoff
     """
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=uav_config,
                                                    binary_path=binary_path,

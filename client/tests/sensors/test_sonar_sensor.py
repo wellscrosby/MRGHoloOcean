@@ -39,7 +39,7 @@ def test_folder_creation(size, config):
     config["octree_min"] = size[0]
     config["octree_max"] = size[1]
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,
@@ -58,7 +58,7 @@ def test_blank(config):
 
     config["agents"][0]["location"] = [-100, -100, -100]
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=config,
                                                    binary_path=binary_path,

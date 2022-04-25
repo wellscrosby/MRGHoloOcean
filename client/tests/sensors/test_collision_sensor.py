@@ -27,7 +27,7 @@ def test_collision_sensor_uav_falling():
     and it turns off when the UAV goes flying into the air
     """
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=uav_config,
                                                    binary_path=binary_path,

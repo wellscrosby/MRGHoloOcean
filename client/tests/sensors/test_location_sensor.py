@@ -29,7 +29,7 @@ def test_location_sensor_after_teleport():
     """Make sure the location sensor updates after a teleport. Also verifies that the coordinates for the teleport
     command match the coordinates used by the location sensor
     """
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=sphere_config,
                                                    binary_path=binary_path,
@@ -77,7 +77,7 @@ def test_location_sensor_falling():
     # Spawn the UAV 10 meters up
     cfg["agents"][0]["location"] = [0, 0, 10]
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,

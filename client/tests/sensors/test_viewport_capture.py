@@ -29,7 +29,7 @@ base_cfg = {
     ]
 }
 
-@pytest.mark.skipif("Ocean" not in holoocean.installed_packages(),
+@pytest.mark.skipif("TestWorlds" not in holoocean.installed_packages(),
                     reason='Ocean package not installed')
 def test_viewport_capture(resolution, request):
     """Validates that the ViewportCapture camera is working at the expected resolutions
@@ -49,7 +49,7 @@ def test_viewport_capture(resolution, request):
         "CaptureHeight": resolution
     }
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
     with holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                    binary_path=binary_path,
                                                    show_viewport=False,
@@ -69,7 +69,7 @@ def test_viewport_capture(resolution, request):
 
         assert err < 1000, "The expected screenshot did not match the actual screenshot!"
 
-@pytest.mark.skipif("Ocean" not in holoocean.installed_packages(),
+@pytest.mark.skipif("TestWorlds" not in holoocean.installed_packages(),
                     reason='Ocean package not installed')
 def test_viewport_capture_after_teleport(env_1024, request):
     """Validates that the ViewportCapture is updated after teleporting the camera

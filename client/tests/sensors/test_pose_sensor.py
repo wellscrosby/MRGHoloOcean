@@ -34,7 +34,7 @@ def test_pose_sensor_straight():
     """Make sure pose sensor returns the same values as the orientation and location sensors
     """
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=turtle_config,
                                                    binary_path=binary_path,

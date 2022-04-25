@@ -8,7 +8,7 @@ from holoocean.environments import HoloOceanEnvironment
 base_conf = {
     "name": "test_randomization",
     "world": "TestWorld",
-    "package_name": "Ocean",
+    "package_name": "TestWorlds",
     "main_agent": "sphere0",
     "frames_per_sec": False,
     "agents": [
@@ -54,7 +54,7 @@ def test_location_with_randomization():
     Returns:
 
     """
-    bin_path = pm.get_binary_path_for_package("Ocean")
+    bin_path = pm.get_binary_path_for_package("TestWorlds")
     conf = copy.deepcopy(base_conf)
 
     with HoloOceanEnvironment(scenario=conf, binary_path=bin_path, show_viewport=False, uuid=str(uuid.uuid4())) as env:
@@ -81,7 +81,7 @@ def test_rotation_with_randomization():
     Returns:
 
     """
-    bin_path = pm.get_binary_path_for_package("Ocean")
+    bin_path = pm.get_binary_path_for_package("TestWorlds")
     conf = copy.deepcopy(base_conf)
 
     with HoloOceanEnvironment(scenario=conf, binary_path=bin_path, show_viewport=False, uuid=str(uuid.uuid4())) as env:

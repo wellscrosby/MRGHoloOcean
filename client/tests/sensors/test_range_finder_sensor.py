@@ -32,7 +32,7 @@ sphere_config = {
 def test_range_finder_sensor_max():
     """Make sure the range sensor set max distance correctly.
     """
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=sphere_config,
                                                    binary_path=binary_path,
@@ -80,7 +80,7 @@ def test_range_finder_sensor_falling():
     """Makes sure that the range sensor updates as the UAV falls, and after it comes to a rest.
     """
 
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=uav_config,
                                                    binary_path=binary_path,

@@ -26,7 +26,7 @@ turtle_config = {
 def test_rates():
     """Make sure our sensor rates are working properly
     """
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
     with holoocean.environments.HoloOceanEnvironment(scenario=turtle_config,
                                                    binary_path=binary_path,

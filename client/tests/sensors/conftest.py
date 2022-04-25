@@ -58,7 +58,7 @@ def env_1024(request):
     global shared_1024_env
 
     if shared_1024_env is None:
-        binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+        binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
         shared_1024_env = holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                                     binary_path=binary_path,
                                                                     show_viewport=False,
@@ -74,7 +74,7 @@ shared_abuse_env = None
 
 def get_abuse_world():
     global shared_abuse_env
-    binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+    binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
     if shared_abuse_env is None:
         shared_abuse_env = holoocean.environments.HoloOceanEnvironment(
             scenario=abuse_config,
@@ -122,7 +122,7 @@ def rotation_env(request):
     global shared_rotation_env
 
     if shared_rotation_env is None:
-        binary_path = holoocean.packagemanager.get_binary_path_for_package("Ocean")
+        binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
         shared_rotation_env = holoocean.environments.HoloOceanEnvironment(scenario=cfg,
                                                                         binary_path=binary_path,
                                                                         show_viewport=False,
