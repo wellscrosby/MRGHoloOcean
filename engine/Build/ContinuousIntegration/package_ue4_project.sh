@@ -4,16 +4,16 @@
 
 ue4 setroot /home/ue4/UnrealEngine
 
-packagename="Ocean"
+packagename="TestWorlds"
 commit="$1"
 
 echo "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
 echo "⚠ Packaging $packagename..."
 echo "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
 
-#move our worlds into it
-mkdir Content/Worlds
-mv our_worlds/* Content/Worlds/
+# #move our worlds into it
+# mkdir Content/Worlds
+# mv our_worlds/* Content/Worlds/
 
 # Package it up
 echo "👉 Starting Packaging Process..."
@@ -35,14 +35,14 @@ chmod 777 dist
 cd dist
 
 echo "👉 Copying config files into output directory..."
-cp ../Content/Worlds/Config/*.json .
-cp ../Content/Worlds/Config/*.csv .
+cp ../Content/Config/*.json .
+cp ../Content/Config/*.csv .
 
 echo "👉 Compressing contents into $commit.zip..."
 zip -r "$commit.zip" *
 
 echo "👉 Deleting config files for $commit..."
-rm *.json
+rm *.json # This may be removable? Or we may want to add in removing the csv files too
 cd ..
 
 echo "👉 Moving $commit.zip into final folder..."
