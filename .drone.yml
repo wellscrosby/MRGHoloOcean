@@ -34,8 +34,8 @@ steps:
         from_secret: minio_username
       secret_key: 
         from_secret: minio_password
-      source: final/*
-      strip_prefix: final/
+      source: engine/final/*
+      strip_prefix: engine/final/
       target: /TestWorlds/${DRONE_BRANCH}
       path_style: true
       endpoint: http://minio:9000/  
@@ -48,8 +48,8 @@ steps:
         from_secret: minio_username
       secret_key: 
         from_secret: minio_password
-      source: tag/*
-      strip_prefix: tag/
+      source: engine/tag/*
+      strip_prefix: engine/tag/
       target: /TestWorlds/${DRONE_TAG}
       path_style: true
       endpoint: http://minio:9000/  
