@@ -1,0 +1,20 @@
+{
+    "name": "Ocean",
+    "platform": "Linux",
+    "version": "0.5.1",
+    "path": "LinuxNoEditor/Holodeck/Binaries/Linux/Holodeck",
+    "worlds": [
+        {
+            "name" : "ExampleLevel",
+            "pre_start_steps": 20,
+            "env_min" : [-5.0, -5.0, -1.0],
+            "env_max" : [5.0, 5.0, 5.0]
+        },
+        {
+            "name" : "TestWorld",
+            "pre_start_steps": 20,
+            "env_min" : [-40.0, -40.0, -10.0],
+            "env_max" : [40.0, 40.0, 10.0]
+        }
+    ]
+}
