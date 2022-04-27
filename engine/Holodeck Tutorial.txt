@@ -1,3 +1,6 @@
+Disclaimer: This 'tutorial' is very old. And this file will likely be removed.
+It only remains for now as it has not yet been verified if any useful information found herein is not accessible elsewhere.
+
 Package for Linux:
 
 Clone Holodeck Project

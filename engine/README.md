@@ -1,7 +1,6 @@
-# HOLODECK
-[![Build Status](https://robots.et.byu.edu:4000/api/badges/frostlab/holoocean-engine/status.svg)](https://robots.et.byu.edu:4000/frostlab/holoocean-engine)
+# HOLOOCEAN
 
-## Devloper Docs
+## Developer Docs
 If you're here, you're probably interested in working on HoloOcean instead of just using it. You might find
 it helpful to consult the [Developer Wiki](https://github.com/BYU-PCCL/holodeck/wiki/Holodeck-Onboarding)
 
@@ -17,17 +16,14 @@ This repository contains everything you need to build environments in the Unreal
 * [Install Unreal Engine 4.27](https://www.unrealengine.com/en-US/download)
     * After starting the Epic Games Launcher click on the Unreal Engine tab, then the Library option
     * Select add a new engine version and then version 4.27 and install
-* [Install Git LFS](https://git-lfs.github.com/)
 * Visual Studio 2017 including "Game development with C++" and "Unreal Engine installer" modules as outlined [here.](https://docs.unrealengine.com/en-us/Programming/Development/VisualStudioSetup)
 
 ## Installation
 * Clone the repository:
 `git clone https://bitbucket.org/frostlab/holoocean`
-* Navigate to the root folder and right click Holodeck.uproject -> Generate Visual Studio project files
+* Navigate to the engine folder and right click Holodeck.uproject -> Generate Visual Studio project files
 * Right click Holodeck.uproject -> Switch Unreal Engine Version -> 4.27
 * Run Holodeck.uproject (It will ask you to rebuild, click yes)
-  - If you get a "ExampleLevel.umap appears to be an asset file" error you have not configured git-lfs correctly.
-    Try `git lfs pull`.
     
 ## Building For Linux
 For a great tutorial, see the [wiki page](https://github.com/byu-pccl/holodeck-engine/wiki/Cross-Compiling-for-Linux)
