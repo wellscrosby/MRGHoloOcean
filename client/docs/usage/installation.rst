@@ -46,7 +46,7 @@ Or as a single console command,
    "ImportError: DLL load failed while importing win32event: The specified module could not be found.",
    it can be fixed by running ``pip install pywin32==225``
 
-Development Installation
+Beta Installation
 ==========================
 
 .. note::
@@ -68,7 +68,7 @@ To install the develop branch, simply run
 ::
 
    git clone https://bitbucket.org/frostlab/holoocean/
-   cd holoocean
+   cd holoocean/clien
    git checkout develop
    pip install .
 

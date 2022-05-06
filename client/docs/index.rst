@@ -15,6 +15,7 @@ built on Unreal Engine 4.
    usage/usage
    packages/packages
    agents/agents
+   develop/develop
    changelog/changelog
 
 .. toctree::
