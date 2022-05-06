@@ -1,6 +1,6 @@
 # HoloOcean
 
-![HoloOcean Image](docs/images/inspect_plane.jpg)
+![HoloOcean Image](client/docs/images/inspect_plane.jpg)
 
 [![Documentation Status](https://readthedocs.org/projects/holoocean/badge/?version=latest)](https://holoocean.readthedocs.io/en/latest/?badge=latest)
  [![Build Status](https://robots.et.byu.edu:4000/api/badges/frostlab/holoocean/status.svg?ref=refs/heads/develop)](https://robots.et.byu.edu:4000/frostlab/holoocean)
