@@ -1,6 +1,6 @@
 # HoloOcean
 
-![HoloOcean Image](docs/images/inspect_plane.jpg)
+![HoloOcean Image](client/docs/images/inspect_plane.jpg)
 
 [![Documentation Status](https://readthedocs.org/projects/holoocean/badge/?version=latest)](https://holoocean.readthedocs.io/en/latest/?badge=latest)
  [![Build Status](https://robots.et.byu.edu:4000/api/badges/frostlab/holoocean/status.svg?ref=refs/heads/develop)](https://robots.et.byu.edu:4000/frostlab/holoocean)
@@ -8,12 +8,26 @@
 
 HoloOcean is a high-fidelity simulator for underwater robotics built on top of Unreal Engine 4, and forked from Holodeck by BYU's PCCL Lab.
 
+If you use HoloOcean for your research, please cite our ICRA publication;
+
+```
+@inproceedings{Potokar22icra,
+  author = {E. Potokar and S. Ashford and M. Kaess and J. Mangelson},
+  title = {Holo{O}cean: An Underwater Robotics Simulator},
+  booktitle = {Proc. IEEE Intl. Conf. on Robotics and Automation, ICRA},
+  address = {Philadelphia, PA, USA},
+  month = may,
+  year = {2022}
+}
+```
+
 ## Features
  - 3+ rich worlds with various infrastructure for generating data or testing underwater algorithms
- - Complete with common underwater sensors including DVL, IMU, optical camera, imaging sonar, depth sensor, and more
+ - Complete with common underwater sensors including DVL, IMU, optical camera, various sonar, depth sensor, and more
  - Highly and easily configurable sensors and missions
  - Multi-agent missions, including optical and acoustic communications
- - Novel imaging sonar implementation, produces accurate, realistic sonar data at 2 FPS.
+ - Novel sonar simulation framework for simulating imaging, profiling, sidescan, and echosounder sonars
+ - Imaging sonar implementation includes realistic noise modeling for small sim-2-real gap
  - Easy installation and simple, OpenAI Gym-like Python interface
  - High performance - simulation speeds of up to 2x real time are possible. Performance penalty only for what you need
  - Run headless or watch your agents learn
