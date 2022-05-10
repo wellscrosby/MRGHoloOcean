@@ -35,7 +35,7 @@ void UMagnetometerSensor::ParseSensorParms(FString ParmsJson) {
 
 			if(b.Num() == 3){
 				MeasuredVector[0] = b[0]->AsNumber();
-				MeasuredVector[1] = b[1]->AsNumber();
+				MeasuredVector[1] = -1*b[1]->AsNumber(); // Switch to left handed
 				MeasuredVector[2] = b[2]->AsNumber();
 			}
 			else{
@@ -67,7 +67,7 @@ void UMagnetometerSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 		measurement += mvn.sampleFVector();
 
 		FloatBuffer[0] = measurement.X;
-		FloatBuffer[1] = measurement.Y;
+		FloatBuffer[1] = -1*measurement.Y; // Switch to right handed
 		FloatBuffer[2] = measurement.Z;
 	}
 }
