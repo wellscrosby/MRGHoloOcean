@@ -37,24 +37,24 @@ SourceArt/**/*.png
 SourceArt/**/*.tga
 
 # Binary Files
-Binaries/*
-Content/Worlds
-dist/
+engine/Binaries/*
+engine/Content/Worlds
+engine/dist/
 
 # Builds
-Build/*
+engine/Build/*
 # Keep the build scripts folder
-!Build/ContinuousIntegration
-dist/*
+!engine/Build/ContinuousIntegration
+engine/dist/*
 
 # Don't ignore icon files in Build
-!Build/**/*.ico
+!engine/Build/**/*.ico
 
 # Compiled source files for the engine to use
-Intermediate/*
+engine/Intermediate/*
 
 # Cache files for the editor to use
-DerivedDataCache/*
+engine/DerivedDataCache/*
 
 # Mac Artifacts
 .DS_Store
