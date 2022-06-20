@@ -1,8 +1,8 @@
 # Content files
-Content/DesertRuins
-Content/ForestCollection
-Content/Worlds
-Content/StarterContent
+engine/Content/DesertRuins
+engine/Content/ForestCollection
+engine/Content/Worlds
+engine/Content/StarterContent
 
 *.VC.db
 
@@ -27,34 +27,34 @@ Content/StarterContent
 *.opensdf
 *.sdf
 # Content folders we don't need
-Content/ForestCollection
+engine/Content/ForestCollection
 
 *.sln
 *.VC.opendb
 
 # Precompiled Assets
-SourceArt/**/*.png
-SourceArt/**/*.tga
+engine/SourceArt/**/*.png
+engine/SourceArt/**/*.tga
 
 # Binary Files
-Binaries/*
-Content/Worlds
-dist/
+engine/Binaries/*
+engine/Content/Worlds
+engine/dist/
 
 # Builds
-Build/*
+engine/Build/*
 # Keep the build scripts folder
-!Build/ContinuousIntegration
-dist/*
+!engine/Build/ContinuousIntegration
+engine/dist/*
 
 # Don't ignore icon files in Build
-!Build/**/*.ico
+!engine/Build/**/*.ico
 
 # Compiled source files for the engine to use
-Intermediate/*
+engine/Intermediate/*
 
 # Cache files for the editor to use
-DerivedDataCache/*
+engine/DerivedDataCache/*
 
 # Mac Artifacts
 .DS_Store

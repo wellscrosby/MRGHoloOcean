@@ -50,7 +50,9 @@ class ControlSchemes:
     HAND_AGENT_MAX_TORQUES_FLOAT = 2
 
     # AUV Control Schemes
-    AUV_DIRECT_TORQUES = 0
+    AUV_THRUSTERS = 0
+    AUV_FORCES = 1
+    AUV_CONTROL = 2
 
 
 class HoloOceanAgent:
@@ -663,20 +665,19 @@ class HoveringAUV(HoloOceanAgent):
 
     @property
     def control_schemes(self):
-        scheme = "[Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]"
-        low = [self.__MIN_ACCEL]*4
-        high = [self.__MAX_ACCEL]*4
-        return [(scheme, ContinuousActionSpace([8], low=low, high=high))]
+        scheme_thrusters = "[Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]"
+        scheme_forces = "[f_x, f_y, f_z, tau_x, tau_y, tau_z]"
+        scheme_control = "[des_x, des_y, des_z, des_roll, des_pitch, des_yaw]"
+        limits_control = [np.NaN, np.NaN, np.NaN, 180, 90, 180]
+        return [(scheme_thrusters, ContinuousActionSpace([8], low=[self.__MIN_ACCEL]*8, high=[self.__MAX_ACCEL]*8)),
+                (scheme_forces, ContinuousActionSpace([6], low=[self.__MIN_ACCEL]*6, high=[self.__MAX_ACCEL]*6)),
+                (scheme_control, ContinuousActionSpace([6], low=[-i for i in limits_control], high=limits_control))]
 
     def get_joint_constraints(self, joint_name):
         return None
 
     def __repr__(self):
         return "HoveringAUV " + self.name
-
-    def __act__(self, action):
-        np.copyto(self._action_buffer, np.array(action))
-        np.copyto(self._action_buffer, action)
         
 
 class TorpedoAUV(HoloOceanAgent):
@@ -713,6 +714,7 @@ class TorpedoAUV(HoloOceanAgent):
     def __act__(self, action):
         np.copyto(self._action_buffer, np.array(action))
         np.copyto(self._action_buffer, action)
+
 
 class AgentDefinition:
     """Represents information needed to initialize agent.

@@ -5,6 +5,7 @@
 #include "Holodeck.h"
 
 #include "HolodeckPawnController.h"
+#include "HoveringAUVControlThrusters.h"
 #include "HoveringAUV.h"
 
 #include "HoveringAUVController.generated.h"
@@ -29,6 +30,11 @@ public:
 	~AHoveringAUVController();
 
 	void AddControlSchemes() override {
-		// No control schemes
+		// Thruster controller
+		UHoveringAUVControlThrusters* Thrusters = NewObject<UHoveringAUVControlThrusters>();
+		Thrusters->SetController(this);
+		ControlSchemes.Insert(Thrusters, 0);
+
+		// Position / orientation controller
 	}
 };

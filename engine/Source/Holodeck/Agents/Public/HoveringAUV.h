@@ -34,7 +34,7 @@ public:
 	*/
 	void Tick(float DeltaSeconds) override;
 
-	unsigned int GetRawActionSizeInBytes() const override { return 8 * sizeof(float); };
+	unsigned int GetRawActionSizeInBytes() const override { return 6 * sizeof(float); };
 	void* GetRawActionBuffer() const override { return (void*)CommandArray; };
 
 	// Allows agent to fall up to ~8 meters
@@ -53,7 +53,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = BuoyancySettings)
 		bool Perfect= true;
 
-	void ApplyThrusters();
+	void ApplyThrusters(float* const ThrusterArray);
+
+	void EnableDamping();
 
 private:
 	/** NOTE: These go counter-clockwise, starting in front right
