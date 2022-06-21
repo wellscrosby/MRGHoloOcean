@@ -12,8 +12,8 @@ void UHoveringAUVControlThrusters::Execute(void* const CommandArray, void* const
 			UE_LOG(LogHolodeck, Error, TEXT("UHoveringAUVControlThrusters couldn't get HoveringAUV reference"));
 			return;
 		}
+		
 		HoveringAUV->EnableDamping();
-
 	}
 
 	float* InputCommandFloat = static_cast<float*>(InputCommand);

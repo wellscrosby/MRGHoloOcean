@@ -3,7 +3,9 @@
 #include "Holodeck.h"
 #include "HoveringAUV.h"
 
-const float AUV_MAX_FORCE = 100;
+const float AUV_MAX_LIN_ACCEL = 10;
+const float AUV_MAX_ANG_ACCEL = 2;
+const float AUV_MAX_THRUST = AUV_MAX_LIN_ACCEL*31.02 / 4
 
 // Sets default values
 AHoveringAUV::AHoveringAUV() {
@@ -48,24 +50,22 @@ void AHoveringAUV::Tick(float DeltaSeconds) {
 	Super::Tick(DeltaSeconds);
 
 	// Convert linear acceleration to force
-	FVector lin_acceleration = FVector(CommandArray[0], CommandArray[1], CommandArray[2]);
-	lin_acceleration = ConvertLinearVector(lin_acceleration, ClientToUE);
-
-	FVector force = lin_acceleration*this->MassInKG;
-	force = ClampVector(force, -FVector(AUV_MAX_FORCE), FVector(AUV_MAX_FORCE));
-
+	FVector linAccel = FVector(CommandArray[0], CommandArray[1], CommandArray[2]);
+	linAccel = ClampVector(linAccel, -FVector(AUV_MAX_LIN_ACCEL), FVector(AUV_MAX_LIN_ACCEL));
+	linAccel = ConvertLinearVector(linAccel, ClientToUE);
 
 	// Convert angular acceleration to torque
-	FVector ang_acceleration = FVector(CommandArray[3], CommandArray[4], CommandArray[5]);
-	ang_acceleration = ConvertTorque(ang_acceleration, ClientToUE);
+	FVector angAccel = FVector(CommandArray[3], CommandArray[4], CommandArray[5]);
+	angAccel = ClampVector(angAccel, -FVector(AUV_MAX_ANG_ACCEL), FVector(AUV_MAX_ANG_ACCEL));
+	angAccel = ConvertAngularVector(angAccel, NoScale);
 
-	FVector torque = RootMesh->ScaleByMomentOfInertia(ang_acceleration);
-	torque = ClampVector(torque, -FVector(AUV_MAX_FORCE), FVector(AUV_MAX_FORCE));
 
-	RootMesh->AddForce(force);
-	RootMesh->AddTorqueInRadians(torque);
+	RootMesh->AddForce(linAccel, "None", true);
+	RootMesh->AddTorqueInRadians(angAccel, "None", true);
 }
 
+// For empty dynamics, damping is disabled
+// Enable it when using thrusters/controller
 void AHoveringAUV::EnableDamping(){
 	RootMesh->SetLinearDamping(1.0);
 	RootMesh->SetAngularDamping(0.75);
@@ -78,7 +78,7 @@ void AHoveringAUV::ApplyThrusters(float* const ThrusterArray){
 
 	// Iterate through vertical thrusters
 	for(int i=0;i<4;i++){
-		float force = FMath::Clamp(ThrusterArray[i], -AUV_MAX_FORCE, AUV_MAX_FORCE);
+		float force = FMath::Clamp(ThrusterArray[i], -AUV_MAX_THRUST, AUV_MAX_THRUST);
 
 		FVector LocalForce = FVector(0, 0, force);
 		LocalForce = ConvertLinearVector(LocalForce, ClientToUE);
@@ -88,7 +88,7 @@ void AHoveringAUV::ApplyThrusters(float* const ThrusterArray){
 
 	// Iterate through angled thrusters
 	for(int i=4;i<8;i++){
-		float force = FMath::Clamp(ThrusterArray[i], -AUV_MAX_FORCE, AUV_MAX_FORCE);
+		float force = FMath::Clamp(ThrusterArray[i], -AUV_MAX_THRUST, AUV_MAX_THRUST);
 
 		// 4 + 6 have negative y
 		FVector LocalForce = FVector(0, 0, 0);
