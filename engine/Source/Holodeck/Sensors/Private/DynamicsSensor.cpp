@@ -74,7 +74,6 @@ void UDynamicsSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, 
 		else{
 			Rotation = this->GetComponentRotation().Quaternion();
 		}
-		// TODO: Flip into right handed frame
 
 		// Fill everything in
 		float* FloatBuffer = static_cast<float*>(Buffer);
@@ -93,9 +92,10 @@ void UDynamicsSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, 
 		FloatBuffer[12] = AngularVelocity.X;
 		FloatBuffer[13] = AngularVelocity.Y;
 		FloatBuffer[14] = AngularVelocity.Z;
-		FloatBuffer[15] = Rotation.W;
-		FloatBuffer[16] = Rotation.X;
-		FloatBuffer[17] = Rotation.Y;
-		FloatBuffer[18] = Rotation.Z;
+		// Flip quaternion y axis
+		FloatBuffer[15] = Rotation.X;
+		FloatBuffer[16] = -1*Rotation.Y;
+		FloatBuffer[17] = Rotation.Z;
+		FloatBuffer[18] = -1*Rotation.W;
 	}
 }
