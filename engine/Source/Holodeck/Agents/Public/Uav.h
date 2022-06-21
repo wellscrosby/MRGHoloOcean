@@ -54,7 +54,7 @@ public:
 	void* GetRawActionBuffer() const override { return (void*)CommandArray; };
 
 	// Allows agent to fall up to ~9 meters
-	float GetAccelerationLimit() override { return 300; }
+	float GetAccelerationLimit() override { return 200; }
 
 protected:
 	//See HolodeckAgent.h for descriptions of these overriden functions
