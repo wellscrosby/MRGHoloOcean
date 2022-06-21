@@ -551,6 +551,21 @@ class VelocitySensor(HoloOceanSensor):
         return [3]
 
 
+class DynamicsSensor(HoloOceanSensor):
+    """Returns the x, y, and z velocity of the sensor in the global frame.
+    
+    """
+    sensor_type = "DynamicsSensor"
+
+    @property
+    def dtype(self):
+        return np.float32
+
+    @property
+    def data_shape(self):
+        return [19]
+
+
 class CollisionSensor(HoloOceanSensor):
     """Returns true if the agent is colliding with anything (including the ground).
     
@@ -1389,6 +1404,7 @@ class SensorDefinition:
         "LocationSensor": LocationSensor,
         "RotationSensor": RotationSensor,
         "VelocitySensor": VelocitySensor,
+        "DynamicsSensor": DynamicsSensor,
         "PressureSensor": PressureSensor,
         "CollisionSensor": CollisionSensor,
         "RangeFinderSensor": RangeFinderSensor,

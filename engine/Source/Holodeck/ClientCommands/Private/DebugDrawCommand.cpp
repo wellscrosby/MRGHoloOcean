@@ -4,8 +4,6 @@
 #include "DebugDrawCommand.h"
 #include "HolodeckGameMode.h"
 
-const float lifetime = 1.f;
-
 void UDebugDrawCommand::Execute() {
 	if (StringParams.size() != 0 || NumberParams.size() != 12) {
 		UE_LOG(LogHolodeck, Error, TEXT("Unexpected argument length found in DebugDrawCommand. Command not executed."));
