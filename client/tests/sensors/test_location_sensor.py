@@ -75,7 +75,7 @@ def test_location_sensor_falling():
     cfg = deepcopy(uav_config)
 
     # Spawn the UAV 10 meters up
-    cfg["agents"][0]["location"] = [0, 0, 10]
+    cfg["agents"][0]["location"] = [0, 0, 20]
 
     binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 
