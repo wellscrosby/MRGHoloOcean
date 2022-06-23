@@ -7,6 +7,9 @@
 #include "HolodeckBuoyantAgent.h"
 #include "HoveringAUV.generated.h"
 
+const float AUV_MAX_LIN_ACCEL = 10;
+const float AUV_MAX_ANG_ACCEL = 2;
+const float AUV_MAX_THRUST = AUV_MAX_LIN_ACCEL*31.02 / 4;
 
 UCLASS()
 /**
