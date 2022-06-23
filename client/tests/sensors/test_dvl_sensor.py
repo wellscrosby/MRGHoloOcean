@@ -46,11 +46,11 @@ def test_dvl_sensor_straight():
         #let it land and then start moving forward
         for _ in range(200):
             last_x_velocity, _, _ = env.tick()["DVLSensor"][:3]
-        env.step([100,0])
+        env.step([150,0])
 
         #Move forward, making sure y is relatively small, and x is increasing
         for i in range(30):
-            new_x_velocity, y_velocity, z_velocity = env.step([100,0])["DVLSensor"][:3]
+            new_x_velocity, y_velocity, z_velocity = env.step([150,0])["DVLSensor"][:3]
             assert new_x_velocity >= last_x_velocity, f"The velocity didn't increase at step {i}!"
             assert y_velocity <= .5
             assert z_velocity <= .5
@@ -62,7 +62,7 @@ def test_dvl_sensor_straight():
 
         #Move backward, making sure y is relatively small, and x is decreasing
         for i in range(30):
-            new_x_velocity, y_velocity, z_velocity = env.step([-100,0])["DVLSensor"][:3]
+            new_x_velocity, y_velocity, z_velocity = env.step([-150,0])["DVLSensor"][:3]
             assert new_x_velocity <= last_x_velocity, f"The velocity didn't decrease at step {i}!"
             assert y_velocity <= .5
             assert z_velocity <= .5
@@ -92,11 +92,11 @@ def test_dvl_sensor_rotated():
         #let it land and then start moving forward
         for _ in range(100):
             last_x_velocity, _, _ = env.tick()["DVLSensor"][:3]
-        env.step([100,0])
+        env.step([150,0])
 
         #Move forward, making sure y is relatively small, and x is increasing
         for i in range(22):
-            new_x_velocity, y_velocity, z_velocity = env.step([100,0])["DVLSensor"][:3]
+            new_x_velocity, y_velocity, z_velocity = env.step([150,0])["DVLSensor"][:3]
             assert new_x_velocity >= last_x_velocity, f"The velocity didn't increase at step {i}!"
             assert y_velocity <= .5
             assert z_velocity <= .5
@@ -108,7 +108,7 @@ def test_dvl_sensor_rotated():
 
         #Move backward, making sure y is relatively small, and x is decreasing
         for i in range(20):
-            new_x_velocity, y_velocity, z_velocity = env.step([-100,0])["DVLSensor"][:3]
+            new_x_velocity, y_velocity, z_velocity = env.step([-150,0])["DVLSensor"][:3]
             assert new_x_velocity <= last_x_velocity, f"The velocity didn't decrease at step {i}!"
             assert y_velocity <= .5
             assert z_velocity <= .5

@@ -60,8 +60,8 @@ void AHoveringAUV::Tick(float DeltaSeconds) {
 	angAccel = ConvertAngularVector(angAccel, NoScale);
 
 
-	RootMesh->AddForce(linAccel, "None", true);
-	RootMesh->AddTorqueInRadians(angAccel, "None", true);
+	RootMesh->GetBodyInstance()->AddForce(linAccel, true, true);
+	RootMesh->GetBodyInstance()->AddTorqueInRadians(angAccel, true, true);
 }
 
 // For empty dynamics, damping is disabled

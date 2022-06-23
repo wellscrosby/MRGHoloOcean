@@ -70,7 +70,7 @@ uav_config = {
                 }
             ],
             "control_scheme": 0,
-            "location": [0, 0, 10]
+            "location": [0, 0, 5]
         }
     ]
 }
