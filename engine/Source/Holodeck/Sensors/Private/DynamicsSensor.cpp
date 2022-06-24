@@ -62,7 +62,7 @@ void UDynamicsSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, 
 
 		// Position
 		if(UseCOM){
-			Rotation = this->GetAttachParent()->GetComponentLocation();
+			Position = this->GetAttachParent()->GetComponentLocation();
 		}
 		else{
 			Position = this->GetComponentLocation();
