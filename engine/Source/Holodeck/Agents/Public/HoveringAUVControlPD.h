@@ -10,11 +10,14 @@
 
 #include "HoveringAUVControlPD.generated.h"
 
-const float AUV_CONTROLL_MAX_LIN_ACCEL = 1;
-const float AUV_CONTROLL_MAX_ANG_ACCEL = 0.2;
-const float AUV_POS_ZETA = 0.707;
-const float AUV_POS_WN = 10;
+const float AUV_CONTROL_MAX_LIN_ACCEL = 1;
+const float AUV_CONTROL_MAX_ANG_ACCEL = 1;
 
+const float AUV_POS_P = 100;
+const float AUV_POS_D = 50;
+
+const float AUV_ROT_P = 0.1;
+const float AUV_ROT_D = 0.1;
 
 /**
 * UHoveringAUVControlPD
@@ -39,5 +42,5 @@ private:
 	AHoveringAUV* HoveringAUV;
 
 	SimplePID PositionController;
-	SimplePID OrientationController;
+	SimplePID RotationController;
 };

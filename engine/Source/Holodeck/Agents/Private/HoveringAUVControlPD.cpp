@@ -3,13 +3,7 @@
 
 
 UHoveringAUVControlPD::UHoveringAUVControlPD(const FObjectInitializer& ObjectInitializer) :
-		Super(ObjectInitializer) {
-
-	float pos_p = FMath::Sqrt(AUV_POS_WN);
-	float pos_d = 2*AUV_POS_ZETA*AUV_POS_WN;
-	PositionController = SimplePID(pos_p, 0.0, pos_d);
-
-}
+		Super(ObjectInitializer), PositionController(AUV_POS_P, 0, AUV_POS_D), RotationController(AUV_ROT_P, 0, AUV_ROT_D) { }
 
 void UHoveringAUVControlPD::Execute(void* const CommandArray, void* const InputCommand, float DeltaSeconds) {
 	if (HoveringAUV == nullptr) {
@@ -28,28 +22,56 @@ void UHoveringAUVControlPD::Execute(void* const CommandArray, void* const InputC
 	float* InputCommandFloat = static_cast<float*>(InputCommand);
 	float* CommandArrayFloat = static_cast<float*>(CommandArray);
 
-	// Get desired location
+	// ALL calculations here are done in HoloOcean frame & units. 
+
+	// Get desired information
 	FVector DesiredPosition = FVector(InputCommandFloat[0], InputCommandFloat[1], InputCommandFloat[2]);
+	FVector DesiredOrientation = FVector(InputCommandFloat[3], InputCommandFloat[4], InputCommandFloat[5]);
 
-	// Get current COM (frame we're moving) & velocity
-	FVector CurrentPosition = HoveringAUV->RootMesh->GetCenterOfMass();
-	CurrentPosition = ConvertLinearVector(CurrentPosition, UEToClient);
+	// Get current COM (frame we're moving), velocity, orientation, & ang. velocity
+	FVector Position = HoveringAUV->RootMesh->GetCenterOfMass();
+	Position = ConvertLinearVector(Position, UEToClient);
 
-	FVector CurrentVelocity = HoveringAUV->RootMesh->GetPhysicsLinearVelocity();
-	CurrentVelocity = ConvertLinearVector(CurrentVelocity, UEToClient);
+	FVector LinearVelocity = HoveringAUV->RootMesh->GetPhysicsLinearVelocity();
+	LinearVelocity = ConvertLinearVector(LinearVelocity, UEToClient);
+
+	FVector Orientation = RotatorToRPY(HoveringAUV->GetActorRotation());
+
+	FVector AngularVelocity = HoveringAUV->RootMesh->GetPhysicsAngularVelocityInDegrees();
+	AngularVelocity = ConvertAngularVector(AngularVelocity, NoScale);
 
 
 	// Compute accelerations to apply
-	FVector Accel;
+	FVector LinAccel, AngAccel;
 	for(int i=0; i<3; i++){
-		Accel[i] = PositionController.ComputePIDDirect(DesiredPosition[i], CurrentPosition[i], CurrentVelocity[i], DeltaSeconds);
-		Accel[i] = FMath::Clamp(Accel[i], -AUV_CONTROLL_MAX_LIN_ACCEL, AUV_CONTROLL_MAX_LIN_ACCEL);
+		LinAccel[i] = PositionController.ComputePIDDirect(DesiredPosition[i], Position[i], LinearVelocity[i], DeltaSeconds);
+		LinAccel[i] = FMath::Clamp(LinAccel[i], -AUV_CONTROL_MAX_LIN_ACCEL, AUV_CONTROL_MAX_LIN_ACCEL);
+
+		AngAccel[i] = RotationController.ComputePIDDirect(DesiredOrientation[i], Orientation[i], AngularVelocity[i], DeltaSeconds, true, true);
+		AngAccel[i] = FMath::Clamp(AngAccel[i], -AUV_CONTROL_MAX_ANG_ACCEL, AUV_CONTROL_MAX_ANG_ACCEL);
 	}
-	UE_LOG(LogHolodeck, Warning, TEXT("DesPos: %s, CurPos: %s, Accel: %s"), *DesiredPosition.ToString(), *CurrentPosition.ToString(), *Accel.ToString());
+
+	// Feedback linearize torque with buoyancy torque
+	FRotator rotation = HoveringAUV->GetActorRotation();
+
+	FVector e3 = rotation.UnrotateVector(FVector(0,0,1));
+	e3 = ConvertLinearVector(e3, NoScale);
+
+	FVector COB = ConvertLinearVector(HoveringAUV->CenterBuoyancy - HoveringAUV->CenterMass, UEToClient);
+	FVector tau = HoveringAUV->Volume * HoveringAUV->WaterDensity * 9.8 * FVector::CrossProduct(e3, COB);
+
+	AngAccel += tau;
+
+	// Move from body to global frame (have to convert to UE coordinates first, and then back)
+	FVector before = FVector(AngAccel);
+	AngAccel = ConvertAngularVector(AngAccel, ClientToUE);
+	AngAccel = rotation.RotateVector(AngAccel);
+	AngAccel = ConvertAngularVector(AngAccel, UEToClient);
 
 	// Fill in with the PD Control
 	// Command array is then passed to vehicle as acceleration & angular velocity
 	for(int i=0; i<3; i++){
-		CommandArrayFloat[i] = Accel[i];
+		CommandArrayFloat[i] = LinAccel[i];
+		CommandArrayFloat[i+3] = AngAccel[i];
 	}
 }

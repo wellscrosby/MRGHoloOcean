@@ -55,7 +55,7 @@ public:
 	  * @param bIsAngle ?
 	  * @return Force or torque
 	  */
-	float ComputePIDDirect(float XC, float X, float XDot, float Delta, bool bIsAngle);
+	float ComputePIDDirect(float XC, float X, float XDot, float Delta, bool bIsAngle, bool Degrees=false);
 
 
 	/**
