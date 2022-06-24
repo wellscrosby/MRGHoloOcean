@@ -557,13 +557,23 @@ class DynamicsSensor(HoloOceanSensor):
     """
     sensor_type = "DynamicsSensor"
 
+    def __init__(self, client, agent_name, agent_type, name="DynamicsSensor",  config=None):
+
+        self.config = {} if config is None else config
+
+        use_rpy = self.config.get("UseRPY", True)
+
+        self.shape = [18] if use_rpy else [19]
+
+        super(DynamicsSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+
     @property
     def dtype(self):
         return np.float32
 
     @property
     def data_shape(self):
-        return [19]
+        return self.shape
 
 
 class CollisionSensor(HoloOceanSensor):

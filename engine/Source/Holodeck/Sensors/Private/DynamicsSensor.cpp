@@ -18,6 +18,9 @@ void UDynamicsSensor::ParseSensorParms(FString ParmsJson) {
 		if (JsonParsed->HasTypedField<EJson::Boolean>("UseCOM")) {
 			UseCOM = JsonParsed->GetBoolField("UseCOM");
 		}
+		if (JsonParsed->HasTypedField<EJson::Boolean>("UseRPY")) {
+			UseRPY = JsonParsed->GetBoolField("UseRPY");
+		}
 
 	}
 	else {
@@ -40,7 +43,7 @@ void UDynamicsSensor::InitializeSensor() {
 	Position = FVector();
 	AngularAcceleration = FVector();
 	AngularVelocity = FVector();
-	Rotation = FQuat();
+	Rotation = FRotator();
 }
 
 void UDynamicsSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
@@ -69,10 +72,10 @@ void UDynamicsSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, 
 
 		// Rotation
 		if(UseCOM){
-			Rotation = this->GetAttachParent()->GetComponentRotation().Quaternion();
+			Rotation = this->GetAttachParent()->GetComponentRotation();
 		}
 		else{
-			Rotation = this->GetComponentRotation().Quaternion();
+			Rotation = this->GetComponentRotation();
 		}
 
 		// Fill everything in
@@ -92,10 +95,20 @@ void UDynamicsSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, 
 		FloatBuffer[12] = AngularVelocity.X;
 		FloatBuffer[13] = AngularVelocity.Y;
 		FloatBuffer[14] = AngularVelocity.Z;
-		// Flip quaternion y axis
-		FloatBuffer[15] = Rotation.X;
-		FloatBuffer[16] = -1*Rotation.Y;
-		FloatBuffer[17] = Rotation.Z;
-		FloatBuffer[18] = -1*Rotation.W;
+		if(UseRPY){
+			RPY = RotatorToRPY(Rotation);
+			FloatBuffer[15] = RPY.X;
+			FloatBuffer[16] = RPY.Y;
+			FloatBuffer[17] = RPY.Z;
+
+		}
+		else{
+			Quat = Rotation.Quaternion();
+			// Flip quaternion y axis
+			FloatBuffer[15] = Quat.X;
+			FloatBuffer[16] = -1*Quat.Y;
+			FloatBuffer[17] = Quat.Z;
+			FloatBuffer[18] = -1*Quat.W;
+		}
 	}
 }

@@ -36,12 +36,15 @@ public:
 
 protected:
 	//See HolodeckSensor for the documentation of these overridden functions.
-	int GetNumItems() override { return 19; };
+	int GetNumItems() override { return UseRPY ? 18 : 19; };
 	int GetItemSize() override { return sizeof(float); };
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere)
 	bool UseCOM = true;
+
+	UPROPERTY(EditAnywhere)
+	bool UseRPY = true;
 
 private:
 	/*
@@ -58,5 +61,7 @@ private:
 	FVector Position;
 	FVector AngularAcceleration;
 	FVector AngularVelocity;
-	FQuat Rotation;
+	FRotator Rotation;
+	FQuat Quat;
+	FVector RPY;
 };
