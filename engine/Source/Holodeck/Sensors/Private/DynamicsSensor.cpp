@@ -61,11 +61,17 @@ void UDynamicsSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, 
 		LinearAcceleration = (LinearVelocity - LinearVelocityThen) / DeltaTime;
 
 		// Position
-		Position = this->GetComponentLocation();
+		if(UseCOM){
+			Rotation = this->GetAttachParent()->GetComponentLocation();
+		}
+		else{
+			Position = this->GetComponentLocation();
+		}
 		Position = ConvertLinearVector(Position, UEToClient);
 		
 		// Ang Acceleration & Velocity
 		AngularVelocityThen = AngularVelocity;
+		// Angular velocity doesn't depend on the location on the object
 		AngularVelocity = Parent->GetPhysicsAngularVelocityInRadians();
 		AngularVelocity = ConvertAngularVector(AngularVelocity, NoScale);
 		AngularAcceleration = (AngularVelocity - AngularVelocityThen) / DeltaTime;
