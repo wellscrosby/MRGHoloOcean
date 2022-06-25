@@ -46,6 +46,7 @@ extensions = [
     'sphinx.ext.imgmath',
     'sphinx.ext.ifconfig',
     'sphinx.ext.napoleon',
+    "sphinx_copybutton",
     'autodocsumm',
 ]
 

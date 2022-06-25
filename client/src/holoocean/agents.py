@@ -24,6 +24,10 @@ class ControlSchemes:
         UAV_ROLL_PITCH_YAW_RATE_ALT (int): Control scheme for UAV. Takes roll, pitch, yaw rate, and
             altitude targets.
         HAND_AGENT_MAX_TORQUES (int): Default Android control scheme. Specify a torque for each joint.
+        AUV_THRUSTERS (int): Default HoveringAUV control scheme. Specify 8-vector of forces for each thruster.
+        AUV_CONTROL (int): Implemented PID controller. Specify 6-vector of position and roll,pitch,yaw to go too.
+        AUV_FORCES (int): Used for custom dynamics. All internal dynamics (except collisions) are turned off including
+            buoyancy, gravity, and damping. Specify 6-vector of linear and angular acceleration in the global frame.
     """
     # Android Control Schemes
     ANDROID_DIRECT_TORQUES = 0
@@ -35,7 +39,6 @@ class ControlSchemes:
 
     # Nav Agent Control Schemes
     NAV_TARGET_LOCATION = 0
-
 
     # Turtle agent
     TURTLE_DIRECT_TORQUES = 0
@@ -51,8 +54,8 @@ class ControlSchemes:
 
     # AUV Control Schemes
     AUV_THRUSTERS = 0
-    AUV_FORCES = 1
-    AUV_CONTROL = 2
+    AUV_CONTROL = 1
+    AUV_FORCES = 2
 
 
 class HoloOceanAgent:
@@ -240,7 +243,7 @@ class HoloOceanAgent:
         specified joint. Will return None if the joint does not exist for the agent.
 
         Returns:
-            (:obj )
+            (:obj:)
         """
         raise NotImplementedError("Child class must implement this function")
 
@@ -646,23 +649,59 @@ class TurtleAgent(HoloOceanAgent):
 
 
 class HoveringAUV(HoloOceanAgent):
-    """A simple autonomous underwater vehicle.
+    """A simple autonomous underwater vehicle. All variables are not actually used in simulation,
+    modifying them will have no effect on results. They are exposed for convenience in implementing custom
+    dynamics.
 
-    **Action Space**:::
+    **Action Space**
 
-        [Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, 
-        Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]
+    Has three possible control schemes, as follows
+
+
+    #. Thruster Forces: ``[Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]``
+
+    #. PID Controller: ``[des_pos_x, des_pos_y, des_pos_z, roll, pitch, yaw]``
+
+    #. Accelerations, in global frame: ``[lin_accel_x, lin_accel_y, lin_accel_z, ang_accel_x, ang_accel_y, ang_accel_x]``
+
+    Inherits from :class:`HoloOceanAgent`.
     
-
-    -  All are capped by max acceleration
-
-    Inherits from :class:`HoloOceanAgent`."""
+        
+    :cvar mass: (:obj:`float`): Mass of the vehicle in kg.
+    :cvar water_density: (:obj:`float`): Water density in kg / m^3.
+    :cvar volume: (:obj:`float`): Volume of vehicle in m^3.
+    :cvar cob: (:obj:`np.ndarray`): 3-vecter Center of buoyancy from the center of mass in m.
+    :cvar I: (:obj:`np.ndarray`): 3x3 Inertia matrix."""
     # constants in HoveringAUV.h in holoocean-engine
     __MAX_LIN_ACCEL = 10
     __MAX_ANG_ACCEL = 2
     __MAX_THRUST = __MAX_LIN_ACCEL*31.02/4
 
     agent_type = "HoveringAUV"
+
+    mass = 31.02
+    water_density = 997
+    volume = mass / water_density
+    cob = np.array([0,0,.05])
+    I = np.eye(3)
+
+    thruster_d = np.array([[0, 0, 1],
+                    [0, 0, 1],
+                    [0, 0, 1],
+                    [0, 0, 1],
+                    [1/np.sqrt(2), 1/np.sqrt(2), 0],
+                    [1/np.sqrt(2), -1/np.sqrt(2), 0],
+                    [1/np.sqrt(2), 1/np.sqrt(2), 0],
+                    [1/np.sqrt(2), -1/np.sqrt(2), 0]])
+
+    thruster_p = np.array([[0.25, -0.22, -0.04],
+                            [0.25, 0.22, -0.04],
+                            [-0.25, 0.22, -0.04],
+                            [-0.25, -0.22, -0.04],
+                            [0.14, -0.18, 0],
+                            [0.14, 0.18, 0],
+                            [-0.14, 0.18, 0],
+                            [-0.14, -0.18, 0]])
 
     @property
     def control_schemes(self):
