@@ -28,6 +28,9 @@ class ControlSchemes:
         AUV_CONTROL (int): Implemented PID controller. Specify 6-vector of position and roll,pitch,yaw to go too.
         AUV_FORCES (int): Used for custom dynamics. All internal dynamics (except collisions) are turned off including
             buoyancy, gravity, and damping. Specify 6-vector of linear and angular acceleration in the global frame.
+        TAUV_FINS (int): Default TorpedoAUV control scheme. Specify 5-vector of fin rotations in degrees and propeller value in Newtons.
+        TAUV_FORCES (int): Used for custom dynamics. All internal dynamics (except collisions) are turned off including
+            buoyancy, gravity, and damping. Specify 6-vector of linear and angular acceleration in the global frame.
     """
     # Android Control Schemes
     ANDROID_DIRECT_TORQUES = 0
@@ -52,10 +55,14 @@ class ControlSchemes:
     HAND_AGENT_MAX_SCALED_TORQUES = 1
     HAND_AGENT_MAX_TORQUES_FLOAT = 2
 
-    # AUV Control Schemes
+    # Hovering AUV Control Schemes
     AUV_THRUSTERS = 0
     AUV_CONTROL = 1
     AUV_FORCES = 2
+
+    # Torpedo AUV Control Schemes
+    TAUV_FINS = 0
+    TAUV_FORCES = 1
 
 
 class HoloOceanAgent:
@@ -671,7 +678,9 @@ class HoveringAUV(HoloOceanAgent):
     :cvar water_density: (:obj:`float`): Water density in kg / m^3.
     :cvar volume: (:obj:`float`): Volume of vehicle in m^3.
     :cvar cob: (:obj:`np.ndarray`): 3-vecter Center of buoyancy from the center of mass in m.
-    :cvar I: (:obj:`np.ndarray`): 3x3 Inertia matrix."""
+    :cvar I: (:obj:`np.ndarray`): 3x3 Inertia matrix.
+    :cvar thruster_d: (:obj:`np.ndarray): 8x3 matrix of unit vectors in the direction of thruster propulsion
+    :cvar thruster_p: (:obj:`np.ndarray): 8x3 matrix of positions in local frame of thrusters positions in m."""
     # constants in HoveringAUV.h in holoocean-engine
     __MAX_LIN_ACCEL = 10
     __MAX_ANG_ACCEL = 2
@@ -725,15 +734,27 @@ class HoveringAUV(HoloOceanAgent):
         
 
 class TorpedoAUV(HoloOceanAgent):
-    """A simple foward motion autonomous underwater vehicle.
+    """A simple foward motion autonomous underwater vehicle. All variables are not actually used in simulation,
+    modifying them will have no effect on results. They are exposed for convenience in implementing custom
+    dynamics.
 
     **Action Space**:::
 
-        [left_fin, top_fin, right_fin, bottom_fin, thrust]
+    Has two possible action spaces, as follows:
 
-    -  All are capped by max acceleration
+    #. Fins & Propeller: [left_fin, top_fin, right_fin, bottom_fin, thrust]
 
-    Inherits from :class:`HoloOceanAgent`."""
+    #. Accelerations, in global frame: ``[lin_accel_x, lin_accel_y, lin_accel_z, ang_accel_x, ang_accel_y, ang_accel_x]``
+
+    Inherits from :class:`HoloOceanAgent`.
+    
+    :cvar mass: (:obj:`float`): Mass of the vehicle in kg.
+    :cvar water_density: (:obj:`float`): Water density in kg / m^3.
+    :cvar volume: (:obj:`float`): Volume of vehicle in m^3.
+    :cvar cob: (:obj:`np.ndarray`): 3-vecter Center of buoyancy from the center of mass in m.
+    :cvar I: (:obj:`np.ndarray`): 3x3 Inertia matrix.
+    :cvar thruster_p: (:obj:`np.ndarray): 3 matrix of positions in local frame of propeller position in m.
+    :cvar fin_p: (:obj:`np.ndarray): 4x3 matrix of positions in local frame of fin positions in m."""
     # constants in TorpedoAUV.h in holoocean-engine
     __MAX_THRUST = 100
     __MAX_FIN = 45
@@ -741,6 +762,19 @@ class TorpedoAUV(HoloOceanAgent):
     __MAX_ANG_ACCEL = 2
 
     agent_type = "TorpedoAUV"
+
+    mass = 36
+    water_density = 997
+    volume = mass / water_density
+    cob = np.array([0,0,.07])
+    I = np.diag([2, 1.2, 1.2])
+
+    thruster_p = np.array([-120, 0, 0]) / 100
+
+    fin_p = np.array(  [[-105,-7.07,    0],
+                        [-105,    0, 7.07],
+                        [-105, 7.07,    0],
+                        [-105,    0,-7.07]]) / 100
 
     @property
     def control_schemes(self):
