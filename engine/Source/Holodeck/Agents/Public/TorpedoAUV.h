@@ -73,6 +73,6 @@ private:
 	* 3: Bottom Fin
 	* 4: Thruster
 	*/
-	float CommandArray[5];
+	float CommandArray[6];
 
 };
