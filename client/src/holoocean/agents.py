@@ -679,8 +679,8 @@ class HoveringAUV(HoloOceanAgent):
     :cvar volume: (:obj:`float`): Volume of vehicle in m^3.
     :cvar cob: (:obj:`np.ndarray`): 3-vecter Center of buoyancy from the center of mass in m.
     :cvar I: (:obj:`np.ndarray`): 3x3 Inertia matrix.
-    :cvar thruster_d: (:obj:`np.ndarray): 8x3 matrix of unit vectors in the direction of thruster propulsion
-    :cvar thruster_p: (:obj:`np.ndarray): 8x3 matrix of positions in local frame of thrusters positions in m."""
+    :cvar thruster_d: (:obj:`np.ndarray`): 8x3 matrix of unit vectors in the direction of thruster propulsion
+    :cvar thruster_p: (:obj:`np.ndarray`): 8x3 matrix of positions in local frame of thrusters positions in m."""
     # constants in HoveringAUV.h in holoocean-engine
     __MAX_LIN_ACCEL = 10
     __MAX_ANG_ACCEL = 2
@@ -738,11 +738,11 @@ class TorpedoAUV(HoloOceanAgent):
     modifying them will have no effect on results. They are exposed for convenience in implementing custom
     dynamics.
 
-    **Action Space**:::
+    **Action Space**
 
     Has two possible action spaces, as follows:
 
-    #. Fins & Propeller: [left_fin, top_fin, right_fin, bottom_fin, thrust]
+    #. Fins & Propeller: ``[left_fin, top_fin, right_fin, bottom_fin, thrust]``
 
     #. Accelerations, in global frame: ``[lin_accel_x, lin_accel_y, lin_accel_z, ang_accel_x, ang_accel_y, ang_accel_x]``
 
@@ -753,8 +753,8 @@ class TorpedoAUV(HoloOceanAgent):
     :cvar volume: (:obj:`float`): Volume of vehicle in m^3.
     :cvar cob: (:obj:`np.ndarray`): 3-vecter Center of buoyancy from the center of mass in m.
     :cvar I: (:obj:`np.ndarray`): 3x3 Inertia matrix.
-    :cvar thruster_p: (:obj:`np.ndarray): 3 matrix of positions in local frame of propeller position in m.
-    :cvar fin_p: (:obj:`np.ndarray): 4x3 matrix of positions in local frame of fin positions in m."""
+    :cvar thruster_p: (:obj:`np.ndarray`): 3 matrix of positions in local frame of propeller position in m.
+    :cvar fin_p: (:obj:`np.ndarray`): 4x3 matrix of positions in local frame of fin positions in m."""
     # constants in TorpedoAUV.h in holoocean-engine
     __MAX_THRUST = 100
     __MAX_FIN = 45
