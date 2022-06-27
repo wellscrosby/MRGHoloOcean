@@ -27,18 +27,20 @@ void ATorpedoAUV::InitializeAgent() {
 // Called every frame
 void ATorpedoAUV::Tick(float DeltaSeconds) {
 	Super::Tick(DeltaSeconds);
-	ApplyBuoyantForce();
 
-	// Apply propeller
-	float ThrustToApply = FMath::Clamp(CommandArray[4], TAUV_MIN_THRUST, TAUV_MAX_THRUST);
-	FVector LocalThrust = FVector(ThrustToApply, 0, 0);
-	LocalThrust = ConvertLinearVector(LocalThrust, ClientToUE);
-	RootMesh->AddForceAtLocationLocal(LocalThrust, thruster);
+	// Convert linear acceleration to force
+	FVector linAccel = FVector(CommandArray[0], CommandArray[1], CommandArray[2]);
+	linAccel = ClampVector(linAccel, -FVector(TAUV_MAX_LIN_ACCEL), FVector(TAUV_MAX_LIN_ACCEL));
+	linAccel = ConvertLinearVector(linAccel, ClientToUE);
 
-	// Apply fin forces
-	for(int i=0;i<4;i++){
-		ApplyFin(i);
-	}
+	// Convert angular acceleration to torque
+	FVector angAccel = FVector(CommandArray[3], CommandArray[4], CommandArray[5]);
+	angAccel = ClampVector(angAccel, -FVector(TAUV_MAX_ANG_ACCEL), FVector(TAUV_MAX_ANG_ACCEL));
+	angAccel = ConvertAngularVector(angAccel, NoScale);
+
+
+	RootMesh->GetBodyInstance()->AddForce(linAccel, true, true);
+	RootMesh->GetBodyInstance()->AddTorqueInRadians(angAccel, true, true);
 }
 
 /** Based on the models found in
@@ -46,9 +48,9 @@ void ATorpedoAUV::Tick(float DeltaSeconds) {
 	* 		without a DVL Utilizing a Dynamic Process Model, Section III-3) Control Inputs
 	* 		https://ieeexplore.ieee.org/document/8460970
 */
-void ATorpedoAUV::ApplyFin(int i){
+void ATorpedoAUV::ApplyFin(int i, float command){
 	// Get rotations
-	float commandAngle = FMath::Clamp(CommandArray[i], TAUV_MIN_FIN, TAUV_MAX_FIN);
+	float commandAngle = FMath::Clamp(command, TAUV_MIN_FIN, TAUV_MAX_FIN);
 	FRotator bodyToWorld = this->GetActorRotation();
 	FRotator finToBody = UKismetMathLibrary::ComposeRotators(FRotator(commandAngle, 0, 0), finRotation[i]);
 
@@ -94,4 +96,19 @@ void ATorpedoAUV::ApplyFin(int i){
 	// DrawDebugLine(GetWorld(), finCoord.GetTranslation(), finCoord.GetTranslation()+fWorld*10, FColor::Red, false, .1, ECC_WorldStatic, 1.f);
 	// // View angle of attack coordinate frame
 	// DrawDebugCoordinateSystem(GetWorld(), finCoord.GetTranslation(), finCoord.Rotator(), 15, false, .1, ECC_WorldStatic, 1.f);
+}
+
+void ATorpedoAUV::ApplyThrust(float thrust){
+	// Apply propeller
+	float ThrustToApply = FMath::Clamp(thrust, TAUV_MIN_THRUST, TAUV_MAX_THRUST);
+	FVector LocalThrust = FVector(ThrustToApply, 0, 0);
+	LocalThrust = ConvertLinearVector(LocalThrust, ClientToUE);
+	RootMesh->AddForceAtLocationLocal(LocalThrust, thruster);
+}
+
+// For empty dynamics, damping is disabled
+// Enable it when using thrusters & fins
+void ATorpedoAUV::EnableDamping(){
+	RootMesh->SetLinearDamping(0.75);
+	RootMesh->SetAngularDamping(0.5);
 }

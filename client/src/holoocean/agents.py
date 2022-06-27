@@ -737,27 +737,27 @@ class TorpedoAUV(HoloOceanAgent):
     # constants in TorpedoAUV.h in holoocean-engine
     __MAX_THRUST = 100
     __MAX_FIN = 45
-    __MIN_THRUST = -__MAX_THRUST
-    __MIN_FIN = -__MAX_FIN
+    __MAX_LIN_ACCEL = 10
+    __MAX_ANG_ACCEL = 2
 
     agent_type = "TorpedoAUV"
 
     @property
     def control_schemes(self):
-        scheme = "[right_fin, top_fin, left_fin, bottom_fin, thrust]"
-        low = [self.__MIN_FIN]*4 + [self.__MIN_THRUST]
-        high = [self.__MAX_FIN]*4 + [self.__MAX_THRUST]
-        return [(scheme, ContinuousActionSpace([5], low=low, high=high))]
+        scheme_fins = "[right_fin, top_fin, left_fin, bottom_fin, thrust]"
+        limits_fins = [self.__MAX_FIN]*4 + [self.__MAX_THRUST]
+
+        scheme_accel = "[f_x, f_y, f_z, tau_x, tau_y, tau_z]"
+        limits_accel = [self.__MAX_LIN_ACCEL, self.__MAX_LIN_ACCEL, self.__MAX_LIN_ACCEL, self.__MAX_ANG_ACCEL, self.__MAX_ANG_ACCEL, self.__MAX_ANG_ACCEL]
+        
+        return [(scheme_fins, ContinuousActionSpace([5], low=[-i for i in limits_fins], high=limits_fins)),
+                (scheme_accel, ContinuousActionSpace([6], low=[-i for i in limits_accel], high=limits_accel))]
 
     def get_joint_constraints(self, joint_name):
         return None
 
     def __repr__(self):
         return "TorpedoAUV " + self.name
-
-    def __act__(self, action):
-        np.copyto(self._action_buffer, np.array(action))
-        np.copyto(self._action_buffer, action)
 
 
 class AgentDefinition:

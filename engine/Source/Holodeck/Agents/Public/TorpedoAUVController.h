@@ -6,6 +6,7 @@
 
 #include "HolodeckPawnController.h"
 #include "TorpedoAUV.h"
+#include "TorpedoAUVControlFins.h"
 
 #include "TorpedoAUVController.generated.h"
 
@@ -29,6 +30,11 @@ public:
 	~ATorpedoAUVController();
 
 	void AddControlSchemes() override {
-		// No control schemes
+		// The default controller currently in ControlSchemes index 0 is the dynamics one. We push it back to index 1 with this code.
+
+		// Thruster controller
+		UTorpedoAUVControlFins* Thrusters = NewObject<UTorpedoAUVControlFins>();
+		Thrusters->SetController(this);
+		ControlSchemes.Insert(Thrusters, 0);
 	}
 };
