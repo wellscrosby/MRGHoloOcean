@@ -5,20 +5,20 @@
 #include "Containers/Array.h"
 #include "GameFramework/Pawn.h"
 #include "HolodeckBuoyantAgent.h"
-#include "HoveringAUV.generated.h"
+#include "SurfaceVessel.generated.h"
 
-const float AUV_MAX_LIN_ACCEL = 10;
-const float AUV_MAX_ANG_ACCEL = 2;
-const float AUV_MAX_THRUST = AUV_MAX_LIN_ACCEL*31.02 / 4;
+const float SV_MAX_LIN_ACCEL = 20;
+const float SV_MAX_ANG_ACCEL = 2;
+const float SV_MAX_THRUST = 200;
 
 UCLASS()
 /**
-* AHoveringAUV
+* ASurfaceVessel
 * Inherits from the HolodeckAgent class
 * On any tick this object will apply the given forces.
 * Desired values must be set by a controller.
 */
-class HOLODECK_API AHoveringAUV : public AHolodeckBuoyantAgent
+class HOLODECK_API ASurfaceVessel : public AHolodeckBuoyantAgent
 {
 	GENERATED_BODY()
 
@@ -26,7 +26,7 @@ public:
 	/**
 	* Default Constructor.
 	*/
-	AHoveringAUV();
+	ASurfaceVessel();
 
 	void InitializeAgent() override;
 
@@ -43,15 +43,8 @@ public:
 	// Allows agent to fall up to ~8 meters
 	float GetAccelerationLimit() override { return 400; }
 
-	// Location of all thrusters
-	TArray<FVector> thrusterLocations{ FVector(18.18, 22.14, -4), 
-											FVector(18.18, -22.14, -4),
-											FVector(-31.43, -22.14, -4),
-											FVector(-31.43, 22.14, -4),
-											FVector(7.39, 18.23, -0.21),
-											FVector(7.39, -18.23, -0.21),
-											FVector(-20.64, -18.23, -0.21),
-											FVector(-20.64, 18.23, -0.21) };
+	// Location of all thrusters - Left and Right
+	TArray<FVector> thrusterLocations{ FVector(-75, -60, -10), FVector(-75, 60, -10) };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = BuoyancySettings)
 		bool Perfect= true;
@@ -61,7 +54,6 @@ public:
 	void EnableDamping();
 
 private:
-	// Accelerations
 	float CommandArray[6];
 
 };

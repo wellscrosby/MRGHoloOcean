@@ -733,6 +733,68 @@ class HoveringAUV(HoloOceanAgent):
         return "HoveringAUV " + self.name
         
 
+class SurfaceVessel(HoloOceanAgent):
+    """A simple autonomous underwater vehicle. All variables are not actually used in simulation,
+    modifying them will have no effect on results. They are exposed for convenience in implementing custom
+    dynamics.
+
+    **Action Space**
+
+    Has three possible control schemes, as follows
+
+
+    #. Thruster Forces: ``[Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]``
+
+    #. PID Controller: ``[des_pos_x, des_pos_y, des_pos_z, roll, pitch, yaw]``
+
+    #. Accelerations, in global frame: ``[lin_accel_x, lin_accel_y, lin_accel_z, ang_accel_x, ang_accel_y, ang_accel_x]``
+
+    Inherits from :class:`HoloOceanAgent`.
+    
+        
+    :cvar mass: (:obj:`float`): Mass of the vehicle in kg.
+    :cvar water_density: (:obj:`float`): Water density in kg / m^3.
+    :cvar volume: (:obj:`float`): Volume of vehicle in m^3.
+    :cvar cob: (:obj:`np.ndarray`): 3-vecter Center of buoyancy from the center of mass in m.
+    :cvar I: (:obj:`np.ndarray`): 3x3 Inertia matrix.
+    :cvar thruster_d: (:obj:`np.ndarray`): 8x3 matrix of unit vectors in the direction of thruster propulsion
+    :cvar thruster_p: (:obj:`np.ndarray`): 8x3 matrix of positions in local frame of thrusters positions in m."""
+    # constants in SurfaceVessel.h in holoocean-engine
+    __MAX_LIN_ACCEL = 20
+    __MAX_ANG_ACCEL = 2
+    __MAX_THRUST = 200
+
+    agent_type = "SurfaceVessel"
+
+    mass = 45
+    water_density = 997
+    volume = 4 * mass / water_density
+    cob = np.array([0,0,.1])
+    I = np.diag([2,2,1])
+
+    thruster_p = np.array([[-75, -60, -10], [-75, 60, -10]]) / 100
+
+    @property
+    def control_schemes(self):
+        scheme_thrusters = "[Left thruster, Right thruster]"
+        
+        scheme_accel = "[f_x, f_y, f_z, tau_x, tau_y, tau_z]"
+        limits_accel = [self.__MAX_LIN_ACCEL, self.__MAX_LIN_ACCEL, self.__MAX_LIN_ACCEL, self.__MAX_ANG_ACCEL, self.__MAX_ANG_ACCEL, self.__MAX_ANG_ACCEL]
+        
+        scheme_control = "[des_x, des_y, des_yaw]"
+        limits_control = [np.NaN, np.NaN, 180]
+        
+        return [(scheme_thrusters, ContinuousActionSpace([2], low=[-self.__MAX_THRUST]*8, high=[self.__MAX_THRUST]*8)),
+                (scheme_accel, ContinuousActionSpace([6], low=[-i for i in limits_accel], high=limits_accel)),
+                (scheme_control, ContinuousActionSpace([3], low=[-i for i in limits_control], high=limits_control))]
+
+    def get_joint_constraints(self, joint_name):
+        return None
+
+    def __repr__(self):
+        return "SurfaceVessel " + self.name
+
+
 class TorpedoAUV(HoloOceanAgent):
     """A simple foward motion autonomous underwater vehicle. All variables are not actually used in simulation,
     modifying them will have no effect on results. They are exposed for convenience in implementing custom
@@ -819,6 +881,7 @@ class AgentDefinition:
         "TurtleAgent": TurtleAgent,
         "HoveringAUV": HoveringAUV,
         "TorpedoAUV": TorpedoAUV,
+        "SurfaceVessel": SurfaceVessel,
     }
 
     def __init__(self, agent_name, agent_type, sensors=None, starting_loc=(0, 0, 0),
