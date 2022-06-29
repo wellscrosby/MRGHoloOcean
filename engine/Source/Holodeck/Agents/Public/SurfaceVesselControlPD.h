@@ -10,14 +10,14 @@
 
 #include "SurfaceVesselControlPD.generated.h"
 
-const float SV_CONTROL_MAX_LIN_ACCEL = 1;
-const float SV_CONTROL_MAX_ANG_ACCEL = 1;
+const float SV_CONTROL_MAX_FORCE = 400;
+const float SV_CONTROL_MAX_TORQUE = 100;
 
 const float SV_POS_P = 100;
 const float SV_POS_D = 50;
 
-const float SV_ROT_P = 0.1;
-const float SV_ROT_D = 0.1;
+const float SV_YAW_P = 15;
+const float SV_YAW_D = 7;
 
 /**
 * USurfaceVesselControlPD
@@ -32,7 +32,7 @@ public:
 	void Execute(void* const CommandArray, void* const InputCommand, float DeltaSeconds) override;
 
 	unsigned int GetControlSchemeSizeInBytes() const override {
-		return 3 * sizeof(float);
+		return 2 * sizeof(float);
 	}
 
 	void SetController(AHolodeckPawnController* const Controller) { SurfaceVesselController = Controller; };
@@ -42,5 +42,8 @@ private:
 	ASurfaceVessel* SurfaceVessel;
 
 	SimplePID PositionController;
-	SimplePID RotationController;
+	SimplePID YawController;
+
+	// How far from center thrusters are
+	float d = 0;
 };
