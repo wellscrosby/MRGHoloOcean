@@ -25,11 +25,15 @@ class ControlSchemes:
             altitude targets.
         HAND_AGENT_MAX_TORQUES (int): Default Android control scheme. Specify a torque for each joint.
         AUV_THRUSTERS (int): Default HoveringAUV control scheme. Specify 8-vector of forces for each thruster.
-        AUV_CONTROL (int): Implemented PID controller. Specify 6-vector of position and roll,pitch,yaw to go too.
+        AUV_CONTROL (int): Implemented PD controller. Specify 6-vector of position and roll,pitch,yaw to go too.
         AUV_FORCES (int): Used for custom dynamics. All internal dynamics (except collisions) are turned off including
             buoyancy, gravity, and damping. Specify 6-vector of linear and angular acceleration in the global frame.
         TAUV_FINS (int): Default TorpedoAUV control scheme. Specify 5-vector of fin rotations in degrees and propeller value in Newtons.
         TAUV_FORCES (int): Used for custom dynamics. All internal dynamics (except collisions) are turned off including
+            buoyancy, gravity, and damping. Specify 6-vector of linear and angular acceleration in the global frame.
+        SV_THRUSTERS (int): Default SurfaceVessel control scheme. Specify 2-vector of forces for left and right thruster.
+        SV_CONTROL (int): Implemented PD controller. Specify 2-vector of x and y position to go too.
+        SV_FORCES (int): Used for custom dynamics. All internal dynamics (except collisions) are turned off including
             buoyancy, gravity, and damping. Specify 6-vector of linear and angular acceleration in the global frame.
     """
     # Android Control Schemes
@@ -64,6 +68,10 @@ class ControlSchemes:
     TAUV_FINS = 0
     TAUV_FORCES = 1
 
+    # Surface Vessel Control Schemes
+    SV_THRUSTERS = 0
+    SV_CONTROL = 1
+    SV_FORCES = 2
 
 class HoloOceanAgent:
     """A learning agent in HoloOcean
@@ -248,9 +256,6 @@ class HoloOceanAgent:
     def get_joint_constraints(self, joint_name):
         """Returns the corresponding swing1, swing2 and twist limit values for the
         specified joint. Will return None if the joint does not exist for the agent.
-
-        Returns:
-            (:obj:)
         """
         raise NotImplementedError("Child class must implement this function")
 
@@ -269,19 +274,6 @@ class HoloOceanAgent:
 
 
 class UavAgent(HoloOceanAgent):
-    # constants in Uav.h in holoocean-engine
-    __MAX_ROLL = 6.5080
-    __MIN_ROLL = -__MAX_ROLL
-
-    __MAX_PITCH = 5.087
-    __MIN_PITCH = -__MAX_PITCH
-
-    __MAX_YAW_RATE = .8
-    __MIN_YAW_RATE = -__MAX_YAW_RATE
-
-    __MAX_FORCE = 59.844
-    __MIN_FORCE = -__MAX_FORCE
-
     """A UAV (quadcopter) agent
 
     **Action Space:**
@@ -295,6 +287,18 @@ class UavAgent(HoloOceanAgent):
 
     Inherits from :class:`HoloOceanAgent`.
     """
+    # constants in Uav.h in holoocean-engine
+    __MAX_ROLL = 6.5080
+    __MIN_ROLL = -__MAX_ROLL
+
+    __MAX_PITCH = 5.087
+    __MIN_PITCH = -__MAX_PITCH
+
+    __MAX_YAW_RATE = .8
+    __MIN_YAW_RATE = -__MAX_YAW_RATE
+
+    __MAX_FORCE = 59.844
+    __MIN_FORCE = -__MAX_FORCE
 
     agent_type = "UAV"
 
@@ -316,16 +320,6 @@ class UavAgent(HoloOceanAgent):
 
 
 class SphereAgent(HoloOceanAgent):
-    # constants in SphereRobot.h in holoocean-engine
-    __DISCRETE_MIN = 0
-    __DISCRETE_MAX = 4
-
-    __MAX_ROTATION_SPEED = 20
-    __MIN_ROTATION_SPEED = -__MAX_ROTATION_SPEED
-
-    __MAX_FORWARD_SPEED = 20
-    __MIN_FORWARD_SPEED = -__MAX_FORWARD_SPEED
-
     """A basic sphere robot.
 
     See :ref:`sphere-agent` for more details.
@@ -350,6 +344,15 @@ class SphereAgent(HoloOceanAgent):
 
     Inherits from :class:`HoloOceanAgent`.
     """
+    # constants in SphereRobot.h in holoocean-engine
+    __DISCRETE_MIN = 0
+    __DISCRETE_MAX = 4
+
+    __MAX_ROTATION_SPEED = 20
+    __MIN_ROTATION_SPEED = -__MAX_ROTATION_SPEED
+
+    __MAX_FORWARD_SPEED = 20
+    __MIN_FORWARD_SPEED = -__MAX_FORWARD_SPEED
 
     agent_type = "SphereRobot"
 
@@ -667,7 +670,7 @@ class HoveringAUV(HoloOceanAgent):
 
     #. Thruster Forces: ``[Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]``
 
-    #. PID Controller: ``[des_pos_x, des_pos_y, des_pos_z, roll, pitch, yaw]``
+    #. PD Controller: ``[des_pos_x, des_pos_y, des_pos_z, roll, pitch, yaw]``
 
     #. Accelerations, in global frame: ``[lin_accel_x, lin_accel_y, lin_accel_z, ang_accel_x, ang_accel_y, ang_accel_x]``
 
@@ -745,7 +748,7 @@ class SurfaceVessel(HoloOceanAgent):
 
     #. Thruster Forces: ``[Left thruster, Right thruster]``
 
-    #. PID Controller: ``[des_x, des_y, des_yaw]``
+    #. PD Controller: ``[des_x, des_y, des_yaw]``
 
     #. Accelerations, in global frame: ``[lin_accel_x, lin_accel_y, lin_accel_z, ang_accel_x, ang_accel_y, ang_accel_x]``
 
