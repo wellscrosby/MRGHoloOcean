@@ -35,7 +35,7 @@ def env():
 
 
 def test_manual_dynamics(env):
-    """Make sure if it's above the depth we receive data, and if below we don't
+    """Test to make sure it goes to the linear and angular acceleration we set
     """
     des = [1, 2, 3, 0.1, 0.2, 0.3] 
 

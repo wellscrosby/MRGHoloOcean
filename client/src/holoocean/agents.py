@@ -716,7 +716,7 @@ class HoveringAUV(HoloOceanAgent):
     def control_schemes(self):
         scheme_thrusters = "[Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]"
         
-        scheme_accel = "[f_x, f_y, f_z, tau_x, tau_y, tau_z]"
+        scheme_accel = "[lin_accel_x, lin_accel_y, lin_accel_z, ang_accel_x, ang_accel_y, ang_accel_x]"
         limits_accel = [self.__MAX_LIN_ACCEL, self.__MAX_LIN_ACCEL, self.__MAX_LIN_ACCEL, self.__MAX_ANG_ACCEL, self.__MAX_ANG_ACCEL, self.__MAX_ANG_ACCEL]
         
         scheme_control = "[des_x, des_y, des_z, des_roll, des_pitch, des_yaw]"
@@ -734,7 +734,7 @@ class HoveringAUV(HoloOceanAgent):
         
 
 class SurfaceVessel(HoloOceanAgent):
-    """A simple autonomous underwater vehicle. All variables are not actually used in simulation,
+    """A simple surface vessel. All variables are not actually used in simulation,
     modifying them will have no effect on results. They are exposed for convenience in implementing custom
     dynamics.
 
@@ -743,9 +743,9 @@ class SurfaceVessel(HoloOceanAgent):
     Has three possible control schemes, as follows
 
 
-    #. Thruster Forces: ``[Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]``
+    #. Thruster Forces: ``[Left thruster, Right thruster]``
 
-    #. PID Controller: ``[des_pos_x, des_pos_y, des_pos_z, roll, pitch, yaw]``
+    #. PID Controller: ``[des_x, des_y, des_yaw]``
 
     #. Accelerations, in global frame: ``[lin_accel_x, lin_accel_y, lin_accel_z, ang_accel_x, ang_accel_y, ang_accel_x]``
 
@@ -757,8 +757,7 @@ class SurfaceVessel(HoloOceanAgent):
     :cvar volume: (:obj:`float`): Volume of vehicle in m^3.
     :cvar cob: (:obj:`np.ndarray`): 3-vecter Center of buoyancy from the center of mass in m.
     :cvar I: (:obj:`np.ndarray`): 3x3 Inertia matrix.
-    :cvar thruster_d: (:obj:`np.ndarray`): 8x3 matrix of unit vectors in the direction of thruster propulsion
-    :cvar thruster_p: (:obj:`np.ndarray`): 8x3 matrix of positions in local frame of thrusters positions in m."""
+    :cvar thruster_p: (:obj:`np.ndarray`): 2x3 matrix of positions in local frame of thrusters positions in m."""
     # constants in SurfaceVessel.h in holoocean-engine
     __MAX_LIN_ACCEL = 20
     __MAX_ANG_ACCEL = 2
@@ -778,7 +777,7 @@ class SurfaceVessel(HoloOceanAgent):
     def control_schemes(self):
         scheme_thrusters = "[Left thruster, Right thruster]"
         
-        scheme_accel = "[f_x, f_y, f_z, tau_x, tau_y, tau_z]"
+        scheme_accel = "[lin_accel_x, lin_accel_y, lin_accel_z, ang_accel_x, ang_accel_y, ang_accel_x]"
         limits_accel = [self.__MAX_LIN_ACCEL, self.__MAX_LIN_ACCEL, self.__MAX_LIN_ACCEL, self.__MAX_ANG_ACCEL, self.__MAX_ANG_ACCEL, self.__MAX_ANG_ACCEL]
         
         scheme_control = "[des_x, des_y]"
@@ -843,7 +842,7 @@ class TorpedoAUV(HoloOceanAgent):
         scheme_fins = "[right_fin, top_fin, left_fin, bottom_fin, thrust]"
         limits_fins = [self.__MAX_FIN]*4 + [self.__MAX_THRUST]
 
-        scheme_accel = "[f_x, f_y, f_z, tau_x, tau_y, tau_z]"
+        scheme_accel = "[lin_accel_x, lin_accel_y, lin_accel_z, ang_accel_x, ang_accel_y, ang_accel_x]"
         limits_accel = [self.__MAX_LIN_ACCEL, self.__MAX_LIN_ACCEL, self.__MAX_LIN_ACCEL, self.__MAX_ANG_ACCEL, self.__MAX_ANG_ACCEL, self.__MAX_ANG_ACCEL]
         
         return [(scheme_fins, ContinuousActionSpace([5], low=[-i for i in limits_fins], high=limits_fins)),
