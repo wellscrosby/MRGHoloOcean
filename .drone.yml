@@ -56,45 +56,45 @@ steps:
     path: /var/run/docker.sock
   commands:
   - cd client
-  - docker build -t "${DRONE_REPO}:${DRONE_COMMIT:0:8}" .
+  - docker build -t "${DRONE_REPO}:${DRONE_COMMIT:0:7}" .
 
 - name: install_package
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
   environment:
     HOLODECKPATH: packages
   commands:
   - cd client
   - pip3 install .
-  - python3 -c "import holoocean; holoocean.install(\"TestWorlds\", branch=\"${DRONE_BRANCH}\", commit=\"${DRONE_COMMIT:0:8}\")"
+  - python3 -c "import holoocean; holoocean.install(\"TestWorlds\", branch=\"${DRONE_BRANCH}\", commit=\"${DRONE_COMMIT:0:7}\")"
 
 # iterate through all python versions
 
 - name: py36
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
   commands:
   - cd client
   - tox -e py36
 
 - name: py37
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
   commands:
   - cd client
   - tox -e py37
 
 - name: py38
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
   commands:
   - cd client
   - tox -e py38
 
 - name: py39
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
   commands:
   - cd client
   - tox -e py39
 
 - name: py310
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
   commands:
   - cd client
   - tox -e py310
