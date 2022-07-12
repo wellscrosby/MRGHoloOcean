@@ -35,6 +35,7 @@ scenario files must follow the format ``{WorldName}-{ScenarioName}.json``.
 
    +package.zip
    +-- config.json
+   +-- materials.csv
    +-- WorldName-ScenarioName.json
    +-- LinuxNoEditor
        + UE4 build output
@@ -69,3 +70,24 @@ occur before starting the simulation, to work around world idiosyncrasies.
 
 The ``env_min``/``env_max`` attributes are used to set the upper/lower bounds of the environment,
 used when an octree is made for a sonar sensor.
+
+materials.csv
+--------------
+
+This file contains acoustic properties of the materials found in the environments, used for
+computation of the sonar images. Below is the format the config file is expected to follow:
+
+.. code-block::
+
+   Material, Density kg/m^3, Speed of Sound m/s
+   M_Landscape, 3200, 4500
+   M_URockA, 3000, 5000
+
+At the start of each simulation, this file is read so that it can be edited without needing to recompile the entire unreal binary.
+The first line is ignored, and is just used for reference when editing the file. The first column
+is the name of the material in UE4, the second is the material density in kg/m^3, and the third
+is the speed of sound in m/s. These are used to compute the acoustic intensity of the various materials
+found in the environment.
+
+Note if a material is found in the environment that isn't found in the ``.csv`` file, it will be appended
+to the csv file with a default density and speed of sound of 10,000 (which results in full acoustic reflection).
