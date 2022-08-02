@@ -52,8 +52,8 @@ def test_transmittable(env):
         env.send_optical_message(0, 1, "Message")
         state = env.step(command)
 
-    assert "OpticalModemSensor" in state["uav1"], "Receiving modem did not receive data when it should have."
-    assert state["uav1"]["OpticalModemSensor"] == "Message", "Wrong message received."
+        assert "OpticalModemSensor" in state["uav1"], "Receiving modem did not receive data when it should have."
+        assert state["uav1"]["OpticalModemSensor"] == "Message", "Wrong message received."
 
 
 def test_within_max_distance(env):
@@ -95,11 +95,10 @@ def test_within_max_distance(env):
     env.reset()
 
     command = [0, 0, 10, 50]
-    state = env.step(command)
     for i in range(20):
         env.send_optical_message(0, 1, "Message")
-        env.tick()
-    assert "OpticalModemSensor" not in state["uav1"], "Receiving modem received data when it should not have done so."
+        state = env.tick()
+        assert "OpticalModemSensor" not in state["uav1"], "Receiving modem received data when it should not have done so."
 
 
 def test_not_oriented(env):
@@ -138,7 +137,7 @@ def test_not_oriented(env):
     for i in range(20):
         env.send_optical_message(0, 1, "Message")
         state = env.step(command)
-    assert "OpticalModemSensor" not in state["uav1"], "Receiving modem received data when it should not have done so."
+        assert "OpticalModemSensor" not in state["uav1"], "Receiving modem received data when it should not have done so."
 
 
 def test_obstructed_view(env):
@@ -177,7 +176,7 @@ def test_obstructed_view(env):
     for _ in range(20):
         env.send_optical_message(0, 1, "Message")
         state = env.step(command)
-    assert "OpticalModemSensor" not in state["uav1"], "Receiving modem received data when it should not have done so."
+        assert "OpticalModemSensor" not in state["uav1"], "Receiving modem received data when it should not have done so."
 
 
 def test_distance_noise(env):
@@ -223,7 +222,7 @@ def test_distance_noise(env):
     for _ in range(num_tests):
         env.send_optical_message(0, 1, "Message")
         state = env.step(command)
-        print(state)
+        
         if "OpticalModemSensor" in state["uav1"] and state["uav1"]["OpticalModemSensor"] == "Message":
             tests_passed += 1
 

@@ -1149,8 +1149,8 @@ class AcousticBeaconSensor(HoloOceanSensor):
     following options:
 
     - ``id``: Id of this sensor. If not given, they are numbered sequentially.
-    - ``CheckVisible``: Whether to check for linear line of sight to vehicle when verify message will be received.
-    - ``MaxDistance``: Max Distance in meters of OpticalModem. (default no max distance)
+    - ``CheckVisible``: Whether to check for linear line of sight to vehicle when verify message will be received. Used when sending data. Defaults to false.
+    - ``MaxDistance``: Max Distance in meters of AcousticBeacon. Used when sending data. Defaults to no max distance.
     - ``DistanceSigma``/``DistanceCov``: Determines the standard deviation/covariance of the noise on MaxDistance. Must be scalar value. (default 0 => no noise)
     """
 
@@ -1285,9 +1285,9 @@ class OpticalModemSensor(HoloOceanSensor):
     following options:
 
     - ``id``: Id of this sensor. If not given, they are numbered sequentially.
-    - ``MaxDistance``: Max Distance in meters of OpticalModem. (default 50)
+    - ``MaxDistance``: Max Distance in meters of OpticalModem. Used when sending data. (default 50)
     - ``DistanceSigma``/``DistanceCov``: Determines the standard deviation/covariance of the noise on MaxDistance. Must be scalar value. (default 0 => no noise)
-    - ``LaserAngle``: Angle of lasers from origin. Measured in degrees. (default 60)
+    - ``LaserAngle``: Angle of lasers from origin. Measured in degrees. Used when sending data. (default 60)
     - ``AngleSigma``/``AngleCov``: Determines the standard deviation of the noise on LaserAngle. Must be scalar value. (default 0 => no noise)
     - ``LaserDebug``: Show debug traces. (default false)
     - ``DebugNumSides``: Number of sides on the debug cone. (default 72)
