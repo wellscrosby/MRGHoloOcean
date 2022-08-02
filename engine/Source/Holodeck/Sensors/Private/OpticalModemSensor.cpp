@@ -122,11 +122,11 @@ void UOpticalModemSensor::ParseSensorParms(FString ParmsJson) {
 	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
 
 		if (JsonParsed->HasTypedField<EJson::Number>("MaxDistance")) {
-			MaxDistance = JsonParsed->GetIntegerField("MaxDistance");
+			MaxDistance = JsonParsed->GetNumberField("MaxDistance");
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("LaserAngle")) {
-			LaserAngle = JsonParsed->GetIntegerField("LaserAngle");
+			LaserAngle = JsonParsed->GetNumberField("LaserAngle");
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("DebugNumSides")) {
@@ -154,7 +154,7 @@ void UOpticalModemSensor::ParseSensorParms(FString ParmsJson) {
         }
 	}
 	else {
-		UE_LOG(LogHolodeck, Fatal, TEXT("URangeFinderSensor::ParseSensorParms:: Unable to parse json."));
+		UE_LOG(LogHolodeck, Fatal, TEXT("URangUOpticalModemSensoreFinderSensor::ParseSensorParms:: Unable to parse json."));
 	}
 }
 

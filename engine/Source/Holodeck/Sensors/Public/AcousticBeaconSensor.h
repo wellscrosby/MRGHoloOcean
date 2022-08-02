@@ -6,6 +6,7 @@
 
 #include <limits>
 #include "Kismet/KismetMathLibrary.h"
+#include "MultivariateNormal.h"
 
 #include "AcousticBeaconSensor.generated.h"
 
@@ -32,11 +33,25 @@ public:
 	virtual void InitializeSensor() override;
 	UAcousticBeaconSensor* fromSensor = NULL;
 
+	/**
+	* Allows parameters to be set dynamically
+	*/
+	virtual void ParseSensorParms(FString ParmsJson) override;
+
 protected:
 	//See HolodeckSensor for the documentation of these overridden functions.
 	int GetNumItems() override { return 4; };
 	int GetItemSize() override { return sizeof(float); };
 	void TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	// Max distance of the modem in meters
+	// Negative means turned off 
+    UPROPERTY(EditAnywhere)
+	float MaxDistance = -1;
+
+	// Whether we should check line of sight
+	UPROPERTY(EditAnywhere)
+	bool CheckVisible = false;
 
 private:
 	/**
@@ -44,8 +59,9 @@ private:
 	  * After initialization, Parent contains a pointer to whatever the sensor is attached to.
 	  * Not owned.
 	  */
-	UPrimitiveComponent* Parent;
+    AActor* Parent;
 	float WaitBuffer[4];
 	int WaitTicks = -1;
 	float SpeedOfSound = 1500;
+	MultivariateNormal<1> DistanceNoise;
 };

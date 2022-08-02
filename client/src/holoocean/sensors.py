@@ -1225,6 +1225,11 @@ class AcousticBeaconSensor(HoloOceanSensor):
                 for i in sending:
                     self.__class__.instances[i].sending_to = []
 
+            # If the message failed to be received b/c of obstacles
+            elif np.all(self._sensor_data_buffer == -1):
+                data =  None
+                self.__class__.instances[sending[0]].sending_to = []
+
             # otherwise parse through type
             else:
                 from_sensor = sending[0]
