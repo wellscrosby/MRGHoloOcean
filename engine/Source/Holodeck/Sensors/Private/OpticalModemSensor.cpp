@@ -22,8 +22,10 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 
     if (Parent != nullptr && bOn) {
 		if (FromSensor) {
+            // Add noise to everything
             FromSensor->NoiseMaxDistance = FromSensor->MaxDistance + FromSensor->DistanceNoise.sampleFloat();
             FromSensor->NoiseLaserAngle = FromSensor->LaserAngle + FromSensor->AngleNoise.sampleFloat();
+            NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
 
             // if someone starting transmitting and we're in range, we'll receive
             BoolBuffer[0] = this->CanTransmit();       
