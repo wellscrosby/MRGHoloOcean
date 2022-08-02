@@ -22,8 +22,8 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
 
     if (Parent != nullptr && bOn) {
 		if (FromSensor) {
-            NoiseMaxDistance = FromSensor->MaxDistance + FromSensor->DistanceNoise.sampleFloat();
-            NoiseLaserAngle = FromSensor->LaserAngle + FromSensor->AngleNoise.sampleFloat();
+            FromSensor->NoiseMaxDistance = FromSensor->MaxDistance + FromSensor->DistanceNoise.sampleFloat();
+            FromSensor->NoiseLaserAngle = FromSensor->LaserAngle + FromSensor->AngleNoise.sampleFloat();
 
             // if someone starting transmitting and we're in range, we'll receive
             BoolBuffer[0] = this->CanTransmit();       
@@ -105,7 +105,7 @@ bool UOpticalModemSensor::IsSensorOriented(UOpticalModemSensor* Sensor, FVector 
     float Angle = FMath::RadiansToDegrees(UKismetMathLibrary::Acos(DotProduct));
     UE_LOG(LogHolodeck, Log, TEXT("Optical Modem: angle = %f"), Angle);
 
-    if (-1 * NoiseLaserAngle < Angle && Angle < NoiseLaserAngle) {
+    if (-1 * Sensor->NoiseLaserAngle < Angle && Angle < Sensor->NoiseLaserAngle) {
         return true;
     }
     else {
