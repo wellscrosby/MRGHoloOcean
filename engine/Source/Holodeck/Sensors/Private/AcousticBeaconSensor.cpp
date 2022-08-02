@@ -29,6 +29,9 @@ void UAcousticBeaconSensor::ParseSensorParms(FString ParmsJson) {
         if (JsonParsed->HasTypedField<EJson::Number>("DistanceSigma")) {
 			DistanceNoise.initSigma(JsonParsed->GetNumberField("DistanceSigma"));
         }
+		if (JsonParsed->HasTypedField<EJson::Number>("DistanceCov")) {
+			DistanceNoise.initCov(JsonParsed->GetNumberField("DistanceCov"));
+		}
 
 		if (JsonParsed->HasTypedField<EJson::Boolean>("CheckVisible")) {
 			CheckVisible = JsonParsed->GetBoolField("CheckVisible");

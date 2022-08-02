@@ -13,8 +13,6 @@ void UOpticalModemSensor::InitializeSensor() {
 	Super::InitializeSensor();
 	//You need to get the pointer to the object the sensor is attached to. 
 	Parent = this->GetAttachmentRootActor();
-    NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
-    NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
 }
 
 void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
@@ -23,9 +21,10 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
     BoolBuffer[0] = false;
 
     if (Parent != nullptr && bOn) {
-        NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
-        NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
 		if (FromSensor) {
+            NoiseMaxDistance = FromSensor->MaxDistance + FromSensor->DistanceNoise.sampleFloat();
+            NoiseLaserAngle = FromSensor->LaserAngle + FromSensor->AngleNoise.sampleFloat();
+
             // if someone starting transmitting and we're in range, we'll receive
             BoolBuffer[0] = this->CanTransmit();       
 
