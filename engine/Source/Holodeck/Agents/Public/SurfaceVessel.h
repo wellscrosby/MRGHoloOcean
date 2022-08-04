@@ -9,7 +9,7 @@
 
 const float SV_MAX_LIN_ACCEL = 20;
 const float SV_MAX_ANG_ACCEL = 2;
-const float SV_MAX_THRUST = 200;
+const float SV_MAX_THRUST = 1500;
 
 UCLASS()
 /**
@@ -44,7 +44,7 @@ public:
 	float GetAccelerationLimit() override { return 400; }
 
 	// Location of all thrusters - Left and Right
-	TArray<FVector> thrusterLocations{ FVector(-75, -60, -10), FVector(-75, 60, -10) };
+	TArray<FVector> thrusterLocations{ FVector(-250, -100, 0), FVector(-250, 100, 0) };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = BuoyancySettings)
 		bool Perfect= true;

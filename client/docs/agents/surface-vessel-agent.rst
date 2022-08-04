@@ -6,8 +6,8 @@ SurfaceVessel
 Images
 ------
 
-.. .. image:: images/hovering-auv.png
-..    :scale: 40%
+.. image:: images/surface.png
+   :scale: 40%
 
 Description
 -----------
@@ -30,24 +30,9 @@ Control Schemes
 Sockets
 -------
 
-.. - ``COM`` Center of mass
-.. - ``DVLSocket`` Location of the DVL
-.. - ``IMUSocket`` Location of the IMU.
-.. - ``DepthSocket`` Location of the depth sensor.
-.. - ``SonarSocket`` Location of the sonar sensor.
-.. - ``CameraRightSocket`` Location of the left camera.
-.. - ``CameraLeftSocket`` Location of the right camera.
-.. - ``Origin`` true center of the robot
-.. - ``Viewport`` where the robot is viewed from.
+- ``Payload`` where the payload with sensors will be in the water. Pointed downward.
+- ``Platform`` sensors placed on platform.
+- ``Viewport`` where the robot is viewed from.
 
-.. .. image:: images/hovering-angled.png
-..    :scale: 50%
-
-.. .. image:: images/hovering-top.png
-..    :scale: 50%
-
-.. .. image:: images/hovering-right.png
-..    :scale: 50%
-
-.. .. image:: images/hovering-front.png
-..    :scale: 50%
+.. image:: images/surface-sockets.png
+   :scale: 50%

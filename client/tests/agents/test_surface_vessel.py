@@ -62,7 +62,7 @@ def test_buoyancy(env):
 def test_pid_controller(env):
     """Test to make sure it goes to the orientation and position we command
     """
-    des = [15,15] 
+    des = [20,20] 
     env._scenario["agents"][0]["control_scheme"] = 1
 
     env.reset()
@@ -71,7 +71,7 @@ def test_pid_controller(env):
 
     pos = state["DynamicsSensor"][6:8]
 
-    assert np.allclose(des, pos, 1e-1), "Controller didn't make it to the right position"
+    assert np.allclose(des, pos, 1), "Controller didn't make it to the right position"
 
 
 def test_manual_dynamics(env):

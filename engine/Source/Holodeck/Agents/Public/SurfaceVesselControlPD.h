@@ -10,8 +10,8 @@
 
 #include "SurfaceVesselControlPD.generated.h"
 
-const float SV_CONTROL_MAX_FORCE = 400;
-const float SV_CONTROL_MAX_TORQUE = 100;
+const float SV_CONTROL_MAX_FORCE = 1000;
+const float SV_CONTROL_MAX_TORQUE = 1000;
 
 const float SV_POS_P = 100;
 const float SV_POS_D = 50;

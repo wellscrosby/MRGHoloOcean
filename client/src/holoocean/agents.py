@@ -764,17 +764,17 @@ class SurfaceVessel(HoloOceanAgent):
     # constants in SurfaceVessel.h in holoocean-engine
     __MAX_LIN_ACCEL = 20
     __MAX_ANG_ACCEL = 2
-    __MAX_THRUST = 200
+    __MAX_THRUST = 1500
 
     agent_type = "SurfaceVessel"
 
-    mass = 45
+    mass = 200
     water_density = 997
-    volume = 4 * mass / water_density
+    volume = 6 * mass / water_density
     cob = np.array([0,0,.1])
     I = np.diag([2,2,1])
 
-    thruster_p = np.array([[-75, -60, -10], [-75, 60, -10]]) / 100
+    thruster_p = np.array([[-250, -100, -0], [-250, 100, -0]]) / 100
 
     @property
     def control_schemes(self):

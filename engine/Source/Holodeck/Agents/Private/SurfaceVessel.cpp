@@ -14,11 +14,16 @@ ASurfaceVessel::ASurfaceVessel() {
 	// This values are all pulled from the solidworks file
 	this->CenterBuoyancy = FVector(0, 0, 10); 
 	this->CenterMass = FVector(0, 0, 0);
-	this->MassInKG = 45;
-	this->OffsetToOrigin = FVector(0, 0, -10);
-	this->Volume = 4 * MassInKG / WaterDensity;	
+	this->MassInKG = 200;
+	this->OffsetToOrigin = FVector(0, 0, 20);
+	this->Volume = 6 * MassInKG / WaterDensity;	
 	
-	this->BoundingBox = FBox(-FVector(120, 80, 30), FVector(120, 80, 10));
+	this->BoundingBox = FBox(FVector(-250, -120, -25), FVector(250, 120, 25));
+
+	// Shift thruster locations by offset to the origin
+	for(int i=0;i<2;i++){
+		thrusterLocations[i] += this->OffsetToOrigin;
+	}
 }
 
 // Sets all values that we need

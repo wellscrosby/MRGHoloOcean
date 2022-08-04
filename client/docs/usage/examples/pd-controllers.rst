@@ -10,7 +10,7 @@ state to navigate to. Below is an example of this for the Surface Vessel where i
     import numpy as np
 
     config = {
-        "name": "Test",
+        "name": "SurfaceNavigator",
         "world": "SimpleUnderwater", 
         "package_name": "Ocean",
         "main_agent": "sv",
@@ -32,10 +32,10 @@ state to navigate to. Below is an example of this for the Surface Vessel where i
 
     # Define waypoints
     idx = 0
-    locations = np.array([[10,10],
-                        [-10,10],
-                        [-10,-10],
-                        [10,-10]])
+    locations = np.array([[25,25],
+                        [-25,25],
+                        [-25,-25],
+                        [25,-25]])
 
     # Start simulation
     with holoocean.make(scenario_cfg=config) as env:
