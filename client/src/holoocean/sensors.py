@@ -987,7 +987,7 @@ class DVLSensor(HoloOceanSensor):
     The ``configuration`` block (see :ref:`configuration-block`) accepts the
     following options:
 
-    - ``Elevation``: Angle of each acoustic beam off z-axis pointing down. Only used for noise/visualization. Defaults to 90 => horizontal.
+    - ``Elevation``: Angle in degrees of each acoustic beam off z-axis pointing down. Only used for noise/visualization. Defaults to 22.5 degrees.
     - ``DebugLines``: Whether to show lines of each beam. Defaults to false.
     - ``VelSigma``/``VelCov``: Covariance/Std to be applied to each beam velocity. Can be scalar, 4-vector or 4x4-matrix. Set one or the other. Defaults to 0 => no noise.
     - ``ReturnRange``: Boolean of whether range of beams should also be returned. Defaults to true.
