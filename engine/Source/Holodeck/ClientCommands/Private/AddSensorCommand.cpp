@@ -53,6 +53,7 @@ void UAddSensorCommand::Execute() {
 										{ "ProfilingSonar", UProfilingSonar::StaticClass() },
 										{ "GPSSensor", UGPSSensor::StaticClass() },
 										{ "DepthSensor", UDepthSensor::StaticClass() },
+										{ "MagnetometerSensor", UMagnetometerSensor::StaticClass() },
 										{ "OpticalModemSensor", UOpticalModemSensor::StaticClass() },
 									};
 

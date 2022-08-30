@@ -45,4 +45,4 @@ def test_rotation_sensor_after_teleport(env, num):
     env.agents['sphere0'].teleport(loc, rot_deg)
     rotation = env.tick()["RotationSensor"]
 
-    assert np.allclose(rot_deg, rotation, rtol=1e-4), "The agent rotated in an unexpected manner!"
+    assert np.allclose(rot_deg, rotation, rtol=1e-3), "The agent rotated in an unexpected manner!"
