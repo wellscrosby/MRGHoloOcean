@@ -21,11 +21,11 @@ void URangeFinderSensor::ParseSensorParms(FString ParmsJson) {
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("LaserAngle")) {
-			LaserAngle = -JsonParsed->GetIntegerField("LaserAngle");  // in client positive angles point up
+			LaserAngle = -JsonParsed->GetNumberField("LaserAngle");  // in client positive angles point up
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("LaserMaxDistance")) {
-			LaserMaxDistance = JsonParsed->GetIntegerField("LaserMaxDistance") * 100;  // meters to centimeters
+			LaserMaxDistance = JsonParsed->GetNumberField("LaserMaxDistance") * 100;  // meters to centimeters
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Boolean>("LaserDebug")) {
@@ -53,8 +53,8 @@ void URangeFinderSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTyp
 
 		FVector end = GetForwardVector();
 		FVector right = GetRightVector();
-		end = end.RotateAngleAxis(-360 * i / LaserCount, GetUpVector());
-		right = right.RotateAngleAxis(-360 * i / LaserCount, GetUpVector());
+		end = end.RotateAngleAxis(-360.0 * i / LaserCount, GetUpVector());
+		right = right.RotateAngleAxis(-360.0 * i / LaserCount, GetUpVector());
 		end = end.RotateAngleAxis(LaserAngle, right);
 		end = end * LaserMaxDistance;
 		end = start + end;
@@ -66,7 +66,7 @@ void URangeFinderSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTyp
 
 		bool TraceResult = GetWorld()->LineTraceSingleByChannel(Hit, start, end, ECollisionChannel::ECC_Visibility, QueryParams);
 		
-		FloatBuffer[i] = (TraceResult ? Hit.Distance : LaserMaxDistance) / 100;  // centimeter to meters
+		FloatBuffer[i] = (TraceResult ? Hit.Distance : LaserMaxDistance) / 100.0;  // centimeter to meters
 
 		if (LaserDebug) {
 			DrawDebugLine(GetWorld(), start, end, FColor::Green, false, .01, ECC_WorldStatic, 1.f);

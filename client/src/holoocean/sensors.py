@@ -1025,7 +1025,7 @@ class DVLSensor(HoloOceanSensor):
     The ``configuration`` block (see :ref:`configuration-block`) accepts the
     following options:
 
-    - ``Elevation``: Angle of each acoustic beam off z-axis pointing down. Only used for noise/visualization. Defaults to 90 => horizontal.
+    - ``Elevation``: Angle in degrees of each acoustic beam off z-axis pointing down. Only used for noise/visualization. Defaults to 22.5 degrees.
     - ``DebugLines``: Whether to show lines of each beam. Defaults to false.
     - ``VelSigma``/``VelCov``: Covariance/Std to be applied to each beam velocity. Can be scalar, 4-vector or 4x4-matrix. Set one or the other. Defaults to 0 => no noise.
     - ``ReturnRange``: Boolean of whether range of beams should also be returned. Defaults to true.
@@ -1141,6 +1141,38 @@ class GPSSensor(HoloOceanSensor):
         else:
             return None
             
+class MagnetometerSensor(HoloOceanSensor):
+    """Gets the global x-axis (or given vector) in the local frame.
+
+    **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the
+    following options:
+
+    - ``Sigma``/``Cov``: Covariance/Std of measurement. Can be scalar, 3-vector or 3x3-matrix. Set one or the other. Defaults to 0 => no noise.
+    - ``MagneticVector``: The given 3-vector to measure in the global frame. Defaults to [1,0,0].
+
+    """
+
+    sensor_type = "MagnetometerSensor"
+
+    def __init__(self, client, agent_name, agent_type, name="MagnetometerSensor",  config=None):
+
+        self.config = {} if config is None else config
+
+        if "Sigma" in self.config and "Cov" in self.config:
+            raise ValueError("Can't set both Sigma and Cov in MagnetometerSensor, use one of them in your configuration")
+
+        super(MagnetometerSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+
+    @property
+    def dtype(self):
+        return np.float32
+
+    @property
+    def data_shape(self):
+        return [3]
+
 class PoseSensor(HoloOceanSensor):
     """Gets the forward, right, and up vector for the agent.
     Returns a 2D numpy array of
@@ -1443,6 +1475,7 @@ class SensorDefinition:
         "SidescanSonar": SidescanSonar,
         "ProfilingSonar": ProfilingSonar,
         "GPSSensor": GPSSensor,
+        "MagnetometerSensor": MagnetometerSensor,
         "SinglebeamSonar": SinglebeamSonar,
     }
 

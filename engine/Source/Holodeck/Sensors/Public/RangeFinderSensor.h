@@ -47,10 +47,10 @@ protected:
 	int LaserCount = 1;
 
 	UPROPERTY(EditAnywhere)
-	int LaserAngle = 0;
+	float LaserAngle = 0;
 
 	UPROPERTY(EditAnywhere)
-	int LaserMaxDistance = 1000;
+	float LaserMaxDistance = 1000;
 
 	UPROPERTY(EditAnywhere)
 	bool LaserDebug = false;
