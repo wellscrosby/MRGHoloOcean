@@ -10,6 +10,7 @@ def env():
         "name": "test_location_sensor",
         "world": "TestWorld",
         "main_agent": "sphere",
+        "frames_per_sec": False,
         "agents": [
             {
                 "agent_name": "sphere",

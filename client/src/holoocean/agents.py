@@ -24,6 +24,13 @@ class ControlSchemes:
         UAV_ROLL_PITCH_YAW_RATE_ALT (int): Control scheme for UAV. Takes roll, pitch, yaw rate, and
             altitude targets.
         HAND_AGENT_MAX_TORQUES (int): Default Android control scheme. Specify a torque for each joint.
+        AUV_THRUSTERS (int): Default HoveringAUV control scheme. Specify 8-vector of forces for each thruster.
+        AUV_CONTROL (int): Implemented PID controller. Specify 6-vector of position and roll,pitch,yaw to go too.
+        AUV_FORCES (int): Used for custom dynamics. All internal dynamics (except collisions) are turned off including
+            buoyancy, gravity, and damping. Specify 6-vector of linear and angular acceleration in the global frame.
+        TAUV_FINS (int): Default TorpedoAUV control scheme. Specify 5-vector of fin rotations in degrees and propeller value in Newtons.
+        TAUV_FORCES (int): Used for custom dynamics. All internal dynamics (except collisions) are turned off including
+            buoyancy, gravity, and damping. Specify 6-vector of linear and angular acceleration in the global frame.
     """
     # Android Control Schemes
     ANDROID_DIRECT_TORQUES = 0
@@ -35,7 +42,6 @@ class ControlSchemes:
 
     # Nav Agent Control Schemes
     NAV_TARGET_LOCATION = 0
-
 
     # Turtle agent
     TURTLE_DIRECT_TORQUES = 0
@@ -49,8 +55,14 @@ class ControlSchemes:
     HAND_AGENT_MAX_SCALED_TORQUES = 1
     HAND_AGENT_MAX_TORQUES_FLOAT = 2
 
-    # AUV Control Schemes
-    AUV_DIRECT_TORQUES = 0
+    # Hovering AUV Control Schemes
+    AUV_THRUSTERS = 0
+    AUV_CONTROL = 1
+    AUV_FORCES = 2
+
+    # Torpedo AUV Control Schemes
+    TAUV_FINS = 0
+    TAUV_FORCES = 1
 
 
 class HoloOceanAgent:
@@ -238,7 +250,7 @@ class HoloOceanAgent:
         specified joint. Will return None if the joint does not exist for the agent.
 
         Returns:
-            (:obj )
+            (:obj:)
         """
         raise NotImplementedError("Child class must implement this function")
 
@@ -644,65 +656,136 @@ class TurtleAgent(HoloOceanAgent):
 
 
 class HoveringAUV(HoloOceanAgent):
-    """A simple autonomous underwater vehicle.
+    """A simple autonomous underwater vehicle. All variables are not actually used in simulation,
+    modifying them will have no effect on results. They are exposed for convenience in implementing custom
+    dynamics.
 
-    **Action Space**:::
+    **Action Space**
 
-        [Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, 
-        Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]
+    Has three possible control schemes, as follows
+
+
+    #. Thruster Forces: ``[Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]``
+
+    #. PID Controller: ``[des_pos_x, des_pos_y, des_pos_z, roll, pitch, yaw]``
+
+    #. Accelerations, in global frame: ``[lin_accel_x, lin_accel_y, lin_accel_z, ang_accel_x, ang_accel_y, ang_accel_x]``
+
+    Inherits from :class:`HoloOceanAgent`.
     
-
-    -  All are capped by max acceleration
-
-    Inherits from :class:`HoloOceanAgent`."""
+        
+    :cvar mass: (:obj:`float`): Mass of the vehicle in kg.
+    :cvar water_density: (:obj:`float`): Water density in kg / m^3.
+    :cvar volume: (:obj:`float`): Volume of vehicle in m^3.
+    :cvar cob: (:obj:`np.ndarray`): 3-vecter Center of buoyancy from the center of mass in m.
+    :cvar I: (:obj:`np.ndarray`): 3x3 Inertia matrix.
+    :cvar thruster_d: (:obj:`np.ndarray`): 8x3 matrix of unit vectors in the direction of thruster propulsion
+    :cvar thruster_p: (:obj:`np.ndarray`): 8x3 matrix of positions in local frame of thrusters positions in m."""
     # constants in HoveringAUV.h in holoocean-engine
-    __MAX_ACCEL = 100
-    __MIN_ACCEL = -__MAX_ACCEL
+    __MAX_LIN_ACCEL = 10
+    __MAX_ANG_ACCEL = 2
+    __MAX_THRUST = __MAX_LIN_ACCEL*31.02/4
 
     agent_type = "HoveringAUV"
 
+    mass = 31.02
+    water_density = 997
+    volume = mass / water_density
+    cob = np.array([0,0,.05])
+    I = np.eye(3)
+
+    thruster_d = np.array([[0, 0, 1],
+                    [0, 0, 1],
+                    [0, 0, 1],
+                    [0, 0, 1],
+                    [1/np.sqrt(2), 1/np.sqrt(2), 0],
+                    [1/np.sqrt(2), -1/np.sqrt(2), 0],
+                    [1/np.sqrt(2), 1/np.sqrt(2), 0],
+                    [1/np.sqrt(2), -1/np.sqrt(2), 0]])
+
+    thruster_p = np.array([[0.25, -0.22, -0.04],
+                            [0.25, 0.22, -0.04],
+                            [-0.25, 0.22, -0.04],
+                            [-0.25, -0.22, -0.04],
+                            [0.14, -0.18, 0],
+                            [0.14, 0.18, 0],
+                            [-0.14, 0.18, 0],
+                            [-0.14, -0.18, 0]])
+
     @property
     def control_schemes(self):
-        scheme = "[Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]"
-        low = [self.__MIN_ACCEL]*4
-        high = [self.__MAX_ACCEL]*4
-        return [(scheme, ContinuousActionSpace([8], low=low, high=high))]
+        scheme_thrusters = "[Vertical Front Starboard, Vertical Front Port, Vertical Back Port, Vertical Back Starboard, Angled Front Starboard, Angled Front Port, Angled Back Port, Angled Back Starboard]"
+        
+        scheme_accel = "[f_x, f_y, f_z, tau_x, tau_y, tau_z]"
+        limits_accel = [self.__MAX_LIN_ACCEL, self.__MAX_LIN_ACCEL, self.__MAX_LIN_ACCEL, self.__MAX_ANG_ACCEL, self.__MAX_ANG_ACCEL, self.__MAX_ANG_ACCEL]
+        
+        scheme_control = "[des_x, des_y, des_z, des_roll, des_pitch, des_yaw]"
+        limits_control = [np.NaN, np.NaN, np.NaN, 180, 90, 180]
+        
+        return [(scheme_thrusters, ContinuousActionSpace([8], low=[-self.__MAX_THRUST]*8, high=[self.__MAX_THRUST]*8)),
+                (scheme_accel, ContinuousActionSpace([6], low=[-i for i in limits_accel], high=limits_accel)),
+                (scheme_control, ContinuousActionSpace([6], low=[-i for i in limits_control], high=limits_control))]
 
     def get_joint_constraints(self, joint_name):
         return None
 
     def __repr__(self):
         return "HoveringAUV " + self.name
-
-    def __act__(self, action):
-        np.copyto(self._action_buffer, np.array(action))
-        np.copyto(self._action_buffer, action)
         
 
 class TorpedoAUV(HoloOceanAgent):
-    """A simple foward motion autonomous underwater vehicle.
+    """A simple foward motion autonomous underwater vehicle. All variables are not actually used in simulation,
+    modifying them will have no effect on results. They are exposed for convenience in implementing custom
+    dynamics.
 
-    **Action Space**:::
+    **Action Space**
 
-        [left_fin, top_fin, right_fin, bottom_fin, thrust]
+    Has two possible action spaces, as follows:
 
-    -  All are capped by max acceleration
+    #. Fins & Propeller: ``[left_fin, top_fin, right_fin, bottom_fin, thrust]``
 
-    Inherits from :class:`HoloOceanAgent`."""
+    #. Accelerations, in global frame: ``[lin_accel_x, lin_accel_y, lin_accel_z, ang_accel_x, ang_accel_y, ang_accel_x]``
+
+    Inherits from :class:`HoloOceanAgent`.
+    
+    :cvar mass: (:obj:`float`): Mass of the vehicle in kg.
+    :cvar water_density: (:obj:`float`): Water density in kg / m^3.
+    :cvar volume: (:obj:`float`): Volume of vehicle in m^3.
+    :cvar cob: (:obj:`np.ndarray`): 3-vecter Center of buoyancy from the center of mass in m.
+    :cvar I: (:obj:`np.ndarray`): 3x3 Inertia matrix.
+    :cvar thruster_p: (:obj:`np.ndarray`): 3 matrix of positions in local frame of propeller position in m.
+    :cvar fin_p: (:obj:`np.ndarray`): 4x3 matrix of positions in local frame of fin positions in m."""
     # constants in TorpedoAUV.h in holoocean-engine
     __MAX_THRUST = 100
     __MAX_FIN = 45
-    __MIN_THRUST = -__MAX_THRUST
-    __MIN_FIN = -__MAX_FIN
+    __MAX_LIN_ACCEL = 10
+    __MAX_ANG_ACCEL = 2
 
     agent_type = "TorpedoAUV"
 
+    mass = 36
+    water_density = 997
+    volume = mass / water_density
+    cob = np.array([0,0,.07])
+    I = np.diag([2, 1.2, 1.2])
+
+    thruster_p = np.array([-120, 0, 0]) / 100
+
+    fin_p = np.array(  [[-105,-7.07,    0],
+                        [-105,    0, 7.07],
+                        [-105, 7.07,    0],
+                        [-105,    0,-7.07]]) / 100
+
     @property
     def control_schemes(self):
-        scheme = "[right_fin, top_fin, left_fin, bottom_fin, thrust]"
-        low = [self.__MIN_FIN]*4 + [self.__MIN_THRUST]
-        high = [self.__MAX_FIN]*4 + [self.__MAX_THRUST]
-        return [(scheme, ContinuousActionSpace([5], low=low, high=high))]
+        scheme_fins = "[right_fin, top_fin, left_fin, bottom_fin, thrust]"
+        limits_fins = [self.__MAX_FIN]*4 + [self.__MAX_THRUST]
+
+        scheme_accel = "[f_x, f_y, f_z, tau_x, tau_y, tau_z]"
+        limits_accel = [self.__MAX_LIN_ACCEL, self.__MAX_LIN_ACCEL, self.__MAX_LIN_ACCEL, self.__MAX_ANG_ACCEL, self.__MAX_ANG_ACCEL, self.__MAX_ANG_ACCEL]
+        
+        return [(scheme_fins, ContinuousActionSpace([5], low=[-i for i in limits_fins], high=limits_fins)),
+                (scheme_accel, ContinuousActionSpace([6], low=[-i for i in limits_accel], high=limits_accel))]
 
     def get_joint_constraints(self, joint_name):
         return None
@@ -710,9 +793,6 @@ class TorpedoAUV(HoloOceanAgent):
     def __repr__(self):
         return "TorpedoAUV " + self.name
 
-    def __act__(self, action):
-        np.copyto(self._action_buffer, np.array(action))
-        np.copyto(self._action_buffer, action)
 
 class AgentDefinition:
     """Represents information needed to initialize agent.

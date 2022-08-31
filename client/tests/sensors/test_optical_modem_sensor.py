@@ -8,6 +8,7 @@ def env():
         "name": "test",
         "world": "TestWorld",
         "main_agent": "uav0",
+        "frames_per_sec": False,
         "agents": [
             {
                 "agent_name": "uav0",

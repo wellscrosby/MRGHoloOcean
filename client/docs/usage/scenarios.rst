@@ -71,8 +71,7 @@ Scenario File
    }
 
 ``window_width/height`` control the size of the window opened when an
-environment is created. For more information about weather options, see
-:ref:`weather`.
+environment is created.
 
 .. note::
    The first agent in the ``agents`` array is the "main agent"

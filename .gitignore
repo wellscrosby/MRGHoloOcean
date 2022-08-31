@@ -1,8 +1,8 @@
 # Content files
-Content/DesertRuins
-Content/ForestCollection
-Content/Worlds
-Content/StarterContent
+engine/Content/DesertRuins
+engine/Content/ForestCollection
+engine/Content/Worlds
+engine/Content/StarterContent
 
 *.VC.db
 
@@ -27,14 +27,14 @@ Content/StarterContent
 *.opensdf
 *.sdf
 # Content folders we don't need
-Content/ForestCollection
+engine/Content/ForestCollection
 
 *.sln
 *.VC.opendb
 
 # Precompiled Assets
-SourceArt/**/*.png
-SourceArt/**/*.tga
+engine/SourceArt/**/*.png
+engine/SourceArt/**/*.tga
 
 # Binary Files
 engine/Binaries/*

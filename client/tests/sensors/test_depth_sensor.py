@@ -9,6 +9,7 @@ uav_config = {
     "name": "test_depth_sensor",
     "world": "TestWorld",
     "main_agent": "uav0",
+    "frames_per_sec": False,
     "agents": [
         {
             "agent_name": "uav0",
@@ -38,7 +39,7 @@ def test_depth_sensor_falling():
     cfg = deepcopy(uav_config)
 
     # Spawn the UAV 10 meters up
-    cfg["agents"][0]["location"] = [0, 0, 10]
+    cfg["agents"][0]["location"] = [0, 0, 20]
 
     binary_path = holoocean.packagemanager.get_binary_path_for_package("TestWorlds")
 

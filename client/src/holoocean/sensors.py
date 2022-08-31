@@ -551,6 +551,44 @@ class VelocitySensor(HoloOceanSensor):
         return [3]
 
 
+class DynamicsSensor(HoloOceanSensor):
+    """Gives all relevant information needed for implementing custom dynamics. Returns are all in the global frame and are as follows:
+
+       [acceleration, velocity, position, angular accel., angular velocity, rpy]
+
+    all of which are 3-vectors and rpy is roll, pitch, and yaw. This is the ONLY sensor that by default
+    doesn't operate in its socket, but rather in the COM. This is mostly for convenience since 99% of the 
+    time when doing custom dynamics the information is wanted at the COM.
+    
+    **Configuration**
+
+    The ``configuration`` block (see :ref:`configuration-block`) accepts the
+    following options:
+
+    - ``UseCOM``: Whether to return data relative to the COM or the specified socket. Defaults to true.
+    - ``UseRPY``: Whether to return orientation as roll, pitch, yaw, or as a quaternion. Defaults to true. When true, sensor returns an 18 vector, when false sensor returns as 19 vector. Quaternion is specified with scalar as last value ie x,y,z,w.
+    """
+    sensor_type = "DynamicsSensor"
+
+    def __init__(self, client, agent_name, agent_type, name="DynamicsSensor",  config=None):
+
+        self.config = {} if config is None else config
+
+        use_rpy = self.config.get("UseRPY", True)
+
+        self.shape = [18] if use_rpy else [19]
+
+        super(DynamicsSensor, self).__init__(client, agent_name, agent_type, name=name, config=config)
+
+    @property
+    def dtype(self):
+        return np.float32
+
+    @property
+    def data_shape(self):
+        return self.shape
+
+
 class CollisionSensor(HoloOceanSensor):
     """Returns true if the agent is colliding with anything (including the ground).
     
@@ -1421,6 +1459,7 @@ class SensorDefinition:
         "LocationSensor": LocationSensor,
         "RotationSensor": RotationSensor,
         "VelocitySensor": VelocitySensor,
+        "DynamicsSensor": DynamicsSensor,
         "PressureSensor": PressureSensor,
         "CollisionSensor": CollisionSensor,
         "RangeFinderSensor": RangeFinderSensor,

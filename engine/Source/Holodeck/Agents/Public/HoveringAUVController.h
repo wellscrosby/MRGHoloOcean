@@ -5,6 +5,8 @@
 #include "Holodeck.h"
 
 #include "HolodeckPawnController.h"
+#include "HoveringAUVControlThrusters.h"
+#include "HoveringAUVControlPD.h"
 #include "HoveringAUV.h"
 
 #include "HoveringAUVController.generated.h"
@@ -29,6 +31,16 @@ public:
 	~AHoveringAUVController();
 
 	void AddControlSchemes() override {
-		// No control schemes
+		// The default controller currently in ControlSchemes index 0 is the dynamics one. We push it back to index 2 with this code.
+
+		// Thruster controller
+		UHoveringAUVControlThrusters* Thrusters = NewObject<UHoveringAUVControlThrusters>();
+		Thrusters->SetController(this);
+		ControlSchemes.Insert(Thrusters, 0);
+
+		// Position / orientation controller
+		UHoveringAUVControlPD* PD = NewObject<UHoveringAUVControlPD>();
+		PD->SetController(this);
+		ControlSchemes.Insert(PD, 1);
 	}
 };
