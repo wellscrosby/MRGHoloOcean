@@ -32,6 +32,7 @@
 #include "SinglebeamSonar.h"
 #include "GPSSensor.h"
 #include "DepthSensor.h"
+#include "MagnetometerSensor.h"
 #include "OpticalModemSensor.h"
 
 #include "Command.h"
