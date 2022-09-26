@@ -141,4 +141,4 @@ These variables can be set to customize various aspects of how surface buoyancy 
 
 Debugging Tools
 ~~~~~~~~~~~~~~~~~~~
-To be able to visualize the bounding box and surface points to make sure they're placed currently, you can use the inherited functions ``ShowBoundingBox()`` and ``ShowSurfacePoints()`` functions in your agents tick method. This will display them in red when editing the blueprint, but they aren't shown in actual simulation (so I usually leave them in).
+To be able to visualize the bounding box and surface points to make sure they're placed currently, you can use the inherited functions ``ShowBoundingBox()`` and ``ShowSurfacePoints()`` functions in your agents tick method.

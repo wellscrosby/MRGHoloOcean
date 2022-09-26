@@ -61,16 +61,7 @@ public:
 	void EnableDamping();
 
 private:
-	/** NOTE: These go counter-clockwise, starting in front right
-	* 0: Vertical Front Starboard Thruster
-	* 1: Vertical Front Port Thruster
-	* 2: Vertical Back  Port Thruster
-	* 3: Vertical Back  Starboard Thruster
-	* 4: Angled   Front Starboard Thruster
-	* 5: Angled   Front Port Thruster
-	* 6: Angled   Back  Port Thruster
-	* 7: Angled   Back  Starboard Thruster
-	*/
-	float CommandArray[8];
+	// Accelerations
+	float CommandArray[6];
 
 };

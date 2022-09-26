@@ -66,13 +66,7 @@ public:
 	void EnableDamping();
 
 private:
-	/** NOTE: These go counter-clockwise, starting in front right
-	* 0: Left Fin
-	* 1: Top Fin
-	* 2: Right Fin
-	* 3: Bottom Fin
-	* 4: Thruster
-	*/
+	// Accelerations
 	float CommandArray[6];
 
 };

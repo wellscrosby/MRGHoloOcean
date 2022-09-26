@@ -35,7 +35,7 @@ def env():
 
 
 def test_pid_controller(env):
-    """Make sure if it's above the depth we receive data, and if below we don't
+    """Test to make sure it goes to the orientation and position we command
     """
     des = [2, 2, -12, 0, 20, 45] 
     env._scenario["agents"][0]["control_scheme"] = 1
@@ -52,7 +52,7 @@ def test_pid_controller(env):
 
 
 def test_manual_dynamics(env):
-    """Make sure if it's above the depth we receive data, and if below we don't
+    """Test to make sure it goes to the linear and angular acceleration we set
     """
     des = [1, 2, 3, 0.1, 0.2, 0.3] 
     env._scenario["agents"][0]["control_scheme"] = 2

@@ -21,6 +21,13 @@ public:
 
 	void Execute(void* const CommandArray, void* const InputCommand, float DeltaSeconds) override;
 
+	/** NOTE: These go counter-clockwise, starting in front right
+	* 0: Left Fin
+	* 1: Top Fin
+	* 2: Right Fin
+	* 3: Bottom Fin
+	* 4: Thruster
+	*/
 	unsigned int GetControlSchemeSizeInBytes() const override {
 		return 5 * sizeof(float);
 	}

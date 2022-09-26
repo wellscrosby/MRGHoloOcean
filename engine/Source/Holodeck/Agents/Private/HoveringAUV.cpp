@@ -68,10 +68,6 @@ void AHoveringAUV::EnableDamping(){
 }
 
 void AHoveringAUV::ApplyThrusters(float* const ThrusterArray){
-	//Get all the values we need once
-    FVector ActorLocation = GetActorLocation();
-	FRotator ActorRotation = GetActorRotation();
-
 	// Iterate through vertical thrusters
 	for(int i=0;i<4;i++){
 		float force = FMath::Clamp(ThrusterArray[i], -AUV_MAX_THRUST, AUV_MAX_THRUST);

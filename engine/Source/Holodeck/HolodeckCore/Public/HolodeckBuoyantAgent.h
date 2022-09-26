@@ -49,8 +49,8 @@ public:
 	float SurfaceLevel = 0;
 	
 	void ApplyBuoyantForce();
-	void ShowBoundingBox();
-	void ShowSurfacePoints();
+	void ShowBoundingBox(float DeltaTime);
+	void ShowSurfacePoints(float DeltaTime);
 
 	Octree* makeOctree();
 	// octree in global coordinates in octree
