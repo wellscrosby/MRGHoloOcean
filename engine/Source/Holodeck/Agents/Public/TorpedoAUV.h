@@ -13,6 +13,9 @@ const float TAUV_MAX_THRUST = 100;
 const float TAUV_MIN_FIN = -45;
 const float TAUV_MAX_FIN = 45;
 
+const float TAUV_MAX_LIN_ACCEL = 10;
+const float TAUV_MAX_ANG_ACCEL = 2;
+
 UCLASS()
 /**
 * ATorpedoAUV
@@ -39,11 +42,11 @@ public:
 	*/
 	void Tick(float DeltaSeconds) override;
 
-	unsigned int GetRawActionSizeInBytes() const override { return 5 * sizeof(float); };
+	unsigned int GetRawActionSizeInBytes() const override { return 6 * sizeof(float); };
 	void* GetRawActionBuffer() const override { return (void*)CommandArray; };
 
 	// Allows agent to fall up to ~8 meters
-	float GetAccelerationLimit() override { return 400; }
+	float GetAccelerationLimit() override { return 200; }
 
 	// Location of all forces to apply
 	FVector thruster = FVector(-120,0,0);
@@ -56,16 +59,14 @@ public:
 									FRotator(0,0,-180),
 									FRotator(0,0,-270) };
 
-	void ApplyFin(int i);
+	void ApplyFin(int i, float command);
+
+	void ApplyThrust(float thrust);
+
+	void EnableDamping();
 
 private:
-	/** NOTE: These go counter-clockwise, starting in front right
-	* 0: Left Fin
-	* 1: Top Fin
-	* 2: Right Fin
-	* 3: Bottom Fin
-	* 4: Thruster
-	*/
-	float CommandArray[5];
+	// Accelerations
+	float CommandArray[6];
 
 };

@@ -7,6 +7,9 @@
 #include "HolodeckBuoyantAgent.h"
 #include "HoveringAUV.generated.h"
 
+const float AUV_MAX_LIN_ACCEL = 10;
+const float AUV_MAX_ANG_ACCEL = 2;
+const float AUV_MAX_THRUST = AUV_MAX_LIN_ACCEL*31.02 / 4;
 
 UCLASS()
 /**
@@ -34,7 +37,7 @@ public:
 	*/
 	void Tick(float DeltaSeconds) override;
 
-	unsigned int GetRawActionSizeInBytes() const override { return 8 * sizeof(float); };
+	unsigned int GetRawActionSizeInBytes() const override { return 6 * sizeof(float); };
 	void* GetRawActionBuffer() const override { return (void*)CommandArray; };
 
 	// Allows agent to fall up to ~8 meters
@@ -53,19 +56,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = BuoyancySettings)
 		bool Perfect= true;
 
-	void ApplyThrusters();
+	void ApplyThrusters(float* const ThrusterArray);
+
+	void EnableDamping();
 
 private:
-	/** NOTE: These go counter-clockwise, starting in front right
-	* 0: Vertical Front Starboard Thruster
-	* 1: Vertical Front Port Thruster
-	* 2: Vertical Back  Port Thruster
-	* 3: Vertical Back  Starboard Thruster
-	* 4: Angled   Front Starboard Thruster
-	* 5: Angled   Front Port Thruster
-	* 6: Angled   Back  Port Thruster
-	* 7: Angled   Back  Starboard Thruster
-	*/
-	float CommandArray[8];
+	// Accelerations
+	float CommandArray[6];
 
 };

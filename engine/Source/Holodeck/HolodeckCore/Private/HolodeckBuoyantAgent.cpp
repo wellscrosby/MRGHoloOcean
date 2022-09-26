@@ -73,19 +73,19 @@ void AHolodeckBuoyantAgent::ApplyBuoyantForce(){
 	RootMesh->AddForceAtLocation(GravityVector, RootMesh->GetCenterOfMass());
 }
 
-void AHolodeckBuoyantAgent::ShowBoundingBox(){
+void AHolodeckBuoyantAgent::ShowBoundingBox(float DeltaTime){
 	FVector location = GetActorLocation() + GetActorRotation().RotateVector(OffsetToOrigin + CenterVehicle);
-	DrawDebugBox(GetWorld(), location, BoundingBox.GetExtent(), GetActorQuat(), FColor::Red, false, 0.05, 0, 1);
+	DrawDebugBox(GetWorld(), location, BoundingBox.GetExtent(), GetActorQuat(), FColor::Red, false, DeltaTime, 0, 1);
 }
 
-void AHolodeckBuoyantAgent::ShowSurfacePoints(){
+void AHolodeckBuoyantAgent::ShowSurfacePoints(float DeltaTime){
 	FVector ActorLocation = GetActorLocation();
 	FRotator ActorRotation = GetActorRotation();
 	FVector* points = SurfacePoints.GetData();
 
 	for(int i=0;i<NumSurfacePoints;i++){
 		FVector p_world = ActorLocation + ActorRotation.RotateVector(points[i]);
-		DrawDebugPoint(GetWorld(), p_world, 5, FColor::Red, false, 0.05);
+		DrawDebugPoint(GetWorld(), p_world, 5, FColor::Red, false, DeltaTime);
 	}
 }
 

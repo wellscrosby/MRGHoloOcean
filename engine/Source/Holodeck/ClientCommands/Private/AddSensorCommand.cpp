@@ -35,6 +35,7 @@ void UAddSensorCommand::Execute() {
 										{ "RGBCamera", URGBCamera::StaticClass() },
 										{ "RotationSensor", URotationSensor::StaticClass() },
 										{ "VelocitySensor", UVelocitySensor::StaticClass() },
+										{ "DynamicsSensor", UDynamicsSensor::StaticClass() },
 										{ "AbuseSensor", UAbuseSensor::StaticClass() },
 										{ "ViewportCapture", UViewportCapture::StaticClass() },
 										{ "DistanceTask", UDistanceTask::StaticClass() },
@@ -53,6 +54,7 @@ void UAddSensorCommand::Execute() {
 										{ "ProfilingSonar", UProfilingSonar::StaticClass() },
 										{ "GPSSensor", UGPSSensor::StaticClass() },
 										{ "DepthSensor", UDepthSensor::StaticClass() },
+										{ "MagnetometerSensor", UMagnetometerSensor::StaticClass() },
 										{ "OpticalModemSensor", UOpticalModemSensor::StaticClass() },
 									};
 

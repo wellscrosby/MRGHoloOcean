@@ -61,15 +61,23 @@ float SimplePID::ComputePIDDirect(float XC, float X, float XDot, float Delta) {
 	return P * Error + I * Integrator - D * XDot;
 }
 
-float SimplePID::ComputePIDDirect(float XC, float X, float XDot, float Delta, bool bIsAngle) {
+float SimplePID::ComputePIDDirect(float XC, float X, float XDot, float Delta, bool bIsAngle, bool Degrees) {
 	// XC is the desired, X is the current
 	float Error = XC - X;
 
 	if (bIsAngle) {
-		if (Error >= PI) 
-			Error -= (2.0 * PI);
-		else if (Error <= -PI)
-			Error += (2 * PI);
+		if(Degrees){
+			if (Error >= 180) 
+				Error -= (2.0 * 180);
+			else if (Error <= -180)
+				Error += (2 * 180);
+		}
+		else{
+			if (Error >= PI) 
+				Error -= (2.0 * PI);
+			else if (Error <= -PI)
+				Error += (2 * PI);
+		}
 	}
 
 	if (Delta == 0 || MyAbs(Error) > 9999999) {

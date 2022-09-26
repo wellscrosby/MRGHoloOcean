@@ -86,9 +86,8 @@ FVector RotatorToRPY(FRotator Rot){
 		psi = UKismetMathLibrary::DegAtan2(R32/ct, R33/ct);
 		phi = UKismetMathLibrary::DegAtan2(R21/ct, R11/ct);
 	}
+	
 	// roll, pitch, yaw
-	FVector temp(psi, theta, phi);
-	UE_LOG(LogHolodeck, Warning, TEXT("Euler: %s"), *temp.ToString());
 	return FVector(psi, theta, phi);
 }
 

@@ -3,8 +3,6 @@
 #include "Holodeck.h"
 #include "HoveringAUV.h"
 
-const float AUV_MAX_FORCE = 100;
-
 // Sets default values
 AHoveringAUV::AHoveringAUV() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -46,18 +44,33 @@ void AHoveringAUV::InitializeAgent() {
 // Called every frame
 void AHoveringAUV::Tick(float DeltaSeconds) {
 	Super::Tick(DeltaSeconds);
-	ApplyBuoyantForce();
-	ApplyThrusters();
+
+	// Convert linear acceleration to force
+	FVector linAccel = FVector(CommandArray[0], CommandArray[1], CommandArray[2]);
+	linAccel = ClampVector(linAccel, -FVector(AUV_MAX_LIN_ACCEL), FVector(AUV_MAX_LIN_ACCEL));
+	linAccel = ConvertLinearVector(linAccel, ClientToUE);
+
+	// Convert angular acceleration to torque
+	FVector angAccel = FVector(CommandArray[3], CommandArray[4], CommandArray[5]);
+	angAccel = ClampVector(angAccel, -FVector(AUV_MAX_ANG_ACCEL), FVector(AUV_MAX_ANG_ACCEL));
+	angAccel = ConvertAngularVector(angAccel, NoScale);
+
+
+	RootMesh->GetBodyInstance()->AddForce(linAccel, true, true);
+	RootMesh->GetBodyInstance()->AddTorqueInRadians(angAccel, true, true);
 }
 
-void AHoveringAUV::ApplyThrusters(){
-	//Get all the values we need once
-    FVector ActorLocation = GetActorLocation();
-	FRotator ActorRotation = GetActorRotation();
+// For empty dynamics, damping is disabled
+// Enable it when using thrusters/controller
+void AHoveringAUV::EnableDamping(){
+	RootMesh->SetLinearDamping(1.0);
+	RootMesh->SetAngularDamping(0.75);
+}
 
+void AHoveringAUV::ApplyThrusters(float* const ThrusterArray){
 	// Iterate through vertical thrusters
 	for(int i=0;i<4;i++){
-		float force = FMath::Clamp(CommandArray[i], -AUV_MAX_FORCE, AUV_MAX_FORCE);
+		float force = FMath::Clamp(ThrusterArray[i], -AUV_MAX_THRUST, AUV_MAX_THRUST);
 
 		FVector LocalForce = FVector(0, 0, force);
 		LocalForce = ConvertLinearVector(LocalForce, ClientToUE);
@@ -67,7 +80,7 @@ void AHoveringAUV::ApplyThrusters(){
 
 	// Iterate through angled thrusters
 	for(int i=4;i<8;i++){
-		float force = FMath::Clamp(CommandArray[i], -AUV_MAX_FORCE, AUV_MAX_FORCE);
+		float force = FMath::Clamp(ThrusterArray[i], -AUV_MAX_THRUST, AUV_MAX_THRUST);
 
 		// 4 + 6 have negative y
 		FVector LocalForce = FVector(0, 0, 0);
@@ -79,5 +92,5 @@ void AHoveringAUV::ApplyThrusters(){
 
 		RootMesh->AddForceAtLocationLocal(LocalForce, thrusterLocations[i]);
 	}
-	
+
 }

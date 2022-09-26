@@ -47,7 +47,7 @@ protected:
 	bool DebugLines = false;
 
 	UPROPERTY(EditAnywhere)
-	float elevation = 90;
+	float elevation = 22.5;
 
 	UPROPERTY(EditAnywhere)
 	bool ReturnRange = true;

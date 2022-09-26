@@ -7,22 +7,14 @@ steps:
   image: adamrehn/ue4-full:4.27.2
   commands:
   - cd engine
-  - bash Build/ContinuousIntegration/build_project.sh # check if this script needs any updating
+  - bash Build/ContinuousIntegration/build_project.sh
   - echo "The commit builds"
 
 - name: Package Project
   image: adamrehn/ue4-full:4.27.2
-  # environment:
-  #   USER:
-  #     from_secret: worlds_username
-  #   PASSWORD: 
-  #     from_secret: worlds_password
   commands:
-  # # git thinks our gitea's SSL certs are suspicious
-  # - git config --global http.sslverify "false"
-  # - git clone --depth=1 https://$USER:$PASSWORD@robots.et.byu.edu/gitea/contagon/HoloOcean-Worlds our_worlds
   - cd engine
-  - bash Build/ContinuousIntegration/package_ue4_project.sh ${DRONE_COMMIT:0:8} # Has this bash script been updated? And should I be doing it based off of the commit?
+  - bash Build/ContinuousIntegration/package_ue4_project.sh ${DRONE_COMMIT:0:7}
   - echo "The pull request was successfully packaged"
 
 # Pushes build to minio, after which the python, or client, side can pull the binaries from there
@@ -57,12 +49,6 @@ steps:
     event:
       - tag 
 
-# ---
-# kind: pipeline
-# type: docker
-# name: test
-
-# steps:
 - name: build_docker
   image: docker:latest
   volumes:
@@ -70,50 +56,45 @@ steps:
     path: /var/run/docker.sock
   commands:
   - cd client
-  - docker build -t "${DRONE_REPO}:${DRONE_COMMIT:0:8}" .
+  - docker build -t "${DRONE_REPO}:${DRONE_COMMIT:0:7}" .
 
 - name: install_package
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
   environment:
     HOLODECKPATH: packages
   commands:
-  # # Find what branch we need to pull from
-  # - BRANCH_EXISTS=$(git ls-remote --heads https://bitbucket.org/frostlab/HoloOcean-Engine.git ${DRONE_BRANCH} | wc -l)
-  # - if test "$BRANCH_EXISTS" = "1"; then BRANCH=${DRONE_BRANCH}; else BRANCH=develop; fi
-  # - echo $BRANCH
-  # Install package
   - cd client
   - pip3 install .
-  - python3 -c "import holoocean; holoocean.install(\"TestWorlds\", branch=\"${DRONE_BRANCH}\", commit=\"${DRONE_COMMIT:0:8}\")"
+  - python3 -c "import holoocean; holoocean.install(\"TestWorlds\", branch=\"${DRONE_BRANCH}\", commit=\"${DRONE_COMMIT:0:7}\")"
 
 # iterate through all python versions
 
 - name: py36
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
   commands:
   - cd client
   - tox -e py36
 
 - name: py37
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
   commands:
   - cd client
   - tox -e py37
 
 - name: py38
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
   commands:
   - cd client
   - tox -e py38
 
 - name: py39
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
   commands:
   - cd client
   - tox -e py39
 
 - name: py310
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:8}"
+  image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
   commands:
   - cd client
   - tox -e py310

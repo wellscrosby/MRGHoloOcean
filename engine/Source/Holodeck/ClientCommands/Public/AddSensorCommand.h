@@ -24,6 +24,7 @@
 #include "CleanUpTask.h"
 #include "DVLSensor.h"
 #include "PoseSensor.h"
+#include "DynamicsSensor.h"
 #include "AcousticBeaconSensor.h"
 #include "ImagingSonar.h"
 #include "SidescanSonar.h"
@@ -31,6 +32,7 @@
 #include "SinglebeamSonar.h"
 #include "GPSSensor.h"
 #include "DepthSensor.h"
+#include "MagnetometerSensor.h"
 #include "OpticalModemSensor.h"
 
 #include "Command.h"

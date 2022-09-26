@@ -10,6 +10,8 @@ Documentation on specific agents available in HoloOcean:
    :caption: Agents
 
    hovering-auv-agent
+   surface-vessel-agent
    torpedo-auv-agent
    turtle-agent
+   sphere-agent
    uav-agent

@@ -42,7 +42,7 @@ public:
 	void* GetRawActionBuffer() const override { return (void*)CommandArray; };
 
 	// Allows agent to fall up to ~8 meters
-	float GetAccelerationLimit() override { return 400; }
+	float GetAccelerationLimit() override { return 200; }
 
 private:
 	/**

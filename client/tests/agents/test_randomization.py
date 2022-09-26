@@ -26,15 +26,15 @@ base_conf = {
             "control_scheme": 0,
             "location": [0.95, -1.75, 0.5],
             "rotation": [1.0, 2.0, 3.0],
-            "location_randomization": [10, 10, 10],
-            "rotation_randomization": [10, 10, 10]
+            "location_randomization": [40, 40, 40],
+            "rotation_randomization": [40, 40, 40]
         }
     ]
 }
 
 
 def is_different_3d_vector(lhs, rhs):
-    is_same = np.isclose(lhs, rhs, rtol=1e-8)
+    is_same = np.isclose(lhs, rhs, rtol=1e-12)
     return not is_same[0] or not is_same[1] or not is_same[2]
 
 
