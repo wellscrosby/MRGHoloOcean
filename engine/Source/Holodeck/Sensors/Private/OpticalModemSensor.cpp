@@ -155,7 +155,7 @@ void UOpticalModemSensor::ParseSensorParms(FString ParmsJson) {
         }
 	}
 	else {
-		UE_LOG(LogHolodeck, Fatal, TEXT("URangUOpticalModemSensoreFinderSensor::ParseSensorParms:: Unable to parse json."));
+		UE_LOG(LogHolodeck, Fatal, TEXT("UOpticalModemSensor::ParseSensorParms:: Unable to parse json."));
 	}
 }
 
