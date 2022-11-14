@@ -18,7 +18,7 @@ public:
     virtual void InitializeSensor() override;
     UOpticalModemSensor* FromSensor = nullptr;
 
-virtual void ParseSensorParms(FString ParmsJson) override;
+    virtual void ParseSensorParms(FString ParmsJson) override;
 
 protected:
 	int GetNumItems() override { return 1; };

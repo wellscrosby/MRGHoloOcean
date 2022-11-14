@@ -1219,6 +1219,9 @@ class AcousticBeaconSensor(HoloOceanSensor):
     following options:
 
     - ``id``: Id of this sensor. If not given, they are numbered sequentially.
+    - ``CheckVisible``: Whether to check for linear line of sight to vehicle when verify message will be received. Used when sending data. Defaults to false.
+    - ``MaxDistance``: Max Distance in meters of AcousticBeacon. Used when sending data. Defaults to no max distance.
+    - ``DistanceSigma``/``DistanceCov``: Determines the standard deviation/covariance of the noise on MaxDistance. Must be scalar value. (default 0 => no noise)
     """
 
     sensor_type = "AcousticBeaconSensor"
@@ -1295,6 +1298,11 @@ class AcousticBeaconSensor(HoloOceanSensor):
                 for i in sending:
                     self.__class__.instances[i].sending_to = []
 
+            # If the message failed to be received b/c of obstacles
+            elif np.all(self._sensor_data_buffer == -1):
+                data =  None
+                self.__class__.instances[sending[0]].sending_to = []
+
             # otherwise parse through type
             else:
                 from_sensor = sending[0]
@@ -1346,13 +1354,13 @@ class OpticalModemSensor(HoloOceanSensor):
     The ``configuration`` block (see :ref:`configuration-block`) accepts the
     following options:
 
-    - ``MaxDistance``: Max Distance in meters of OpticalModem. (default 50)
     - ``id``: Id of this sensor. If not given, they are numbered sequentially.
+    - ``MaxDistance``: Max Distance in meters of OpticalModem. Used when sending data. (default 50)
     - ``DistanceSigma``/``DistanceCov``: Determines the standard deviation/covariance of the noise on MaxDistance. Must be scalar value. (default 0 => no noise)
+    - ``LaserAngle``: Angle of lasers from origin. Measured in degrees. Used when sending data. (default 60)
     - ``AngleSigma``/``AngleCov``: Determines the standard deviation of the noise on LaserAngle. Must be scalar value. (default 0 => no noise)
     - ``LaserDebug``: Show debug traces. (default false)
     - ``DebugNumSides``: Number of sides on the debug cone. (default 72)
-    - ``LaserAngle``: Angle of lasers from origin. Measured in degrees. (default 60)
 
     """
     sensor_type = "OpticalModemSensor"

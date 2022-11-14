@@ -13,8 +13,6 @@ void UOpticalModemSensor::InitializeSensor() {
 	Super::InitializeSensor();
 	//You need to get the pointer to the object the sensor is attached to. 
 	Parent = this->GetAttachmentRootActor();
-    NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
-    NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
 }
 
 void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
@@ -23,9 +21,12 @@ void UOpticalModemSensor::TickSensorComponent(float DeltaTime, ELevelTick TickTy
     BoolBuffer[0] = false;
 
     if (Parent != nullptr && bOn) {
-        NoiseMaxDistance = MaxDistance + DistanceNoise.sampleFloat();
-        NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
 		if (FromSensor) {
+            // Add noise to everything
+            FromSensor->NoiseMaxDistance = FromSensor->MaxDistance + FromSensor->DistanceNoise.sampleFloat();
+            FromSensor->NoiseLaserAngle = FromSensor->LaserAngle + FromSensor->AngleNoise.sampleFloat();
+            NoiseLaserAngle = LaserAngle + AngleNoise.sampleFloat();
+
             // if someone starting transmitting and we're in range, we'll receive
             BoolBuffer[0] = this->CanTransmit();       
 
@@ -106,7 +107,7 @@ bool UOpticalModemSensor::IsSensorOriented(UOpticalModemSensor* Sensor, FVector 
     float Angle = FMath::RadiansToDegrees(UKismetMathLibrary::Acos(DotProduct));
     UE_LOG(LogHolodeck, Log, TEXT("Optical Modem: angle = %f"), Angle);
 
-    if (-1 * NoiseLaserAngle < Angle && Angle < NoiseLaserAngle) {
+    if (-1 * Sensor->NoiseLaserAngle < Angle && Angle < Sensor->NoiseLaserAngle) {
         return true;
     }
     else {
@@ -122,11 +123,11 @@ void UOpticalModemSensor::ParseSensorParms(FString ParmsJson) {
 	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed)) {
 
 		if (JsonParsed->HasTypedField<EJson::Number>("MaxDistance")) {
-			MaxDistance = JsonParsed->GetIntegerField("MaxDistance");
+			MaxDistance = JsonParsed->GetNumberField("MaxDistance");
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("LaserAngle")) {
-			LaserAngle = JsonParsed->GetIntegerField("LaserAngle");
+			LaserAngle = JsonParsed->GetNumberField("LaserAngle");
 		}
 
 		if (JsonParsed->HasTypedField<EJson::Number>("DebugNumSides")) {
@@ -154,7 +155,7 @@ void UOpticalModemSensor::ParseSensorParms(FString ParmsJson) {
         }
 	}
 	else {
-		UE_LOG(LogHolodeck, Fatal, TEXT("URangeFinderSensor::ParseSensorParms:: Unable to parse json."));
+		UE_LOG(LogHolodeck, Fatal, TEXT("UOpticalModemSensor::ParseSensorParms:: Unable to parse json."));
 	}
 }
 

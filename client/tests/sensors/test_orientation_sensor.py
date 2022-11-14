@@ -4,6 +4,11 @@ from tests.utils.equality import almost_equal
 import uuid
 from scipy.spatial.transform import Rotation
 import pytest
+from scipy.linalg import logm
+
+def rot_error(A, B):
+    e = logm(A@B.T)
+    return np.array([e[0,1], e[0,2], e[1,2]])
 
 @pytest.fixture(scope="module")
 def env():
@@ -47,6 +52,5 @@ def test_orientation_sensor_after_teleport(env, num):
     state = env.tick()
     sensed_orientation = state["OrientationSensor"]
 
-    assert np.allclose(R, sensed_orientation, atol=1e-4), \
+    assert np.allclose(np.zeros(3), rot_error(R, sensed_orientation), atol=1e-5), \
         "Expected orientation did not match the expected orientation!"
-
