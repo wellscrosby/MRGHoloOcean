@@ -68,7 +68,7 @@ To install the develop branch, simply run
 ::
 
    git clone https://bitbucket.org/frostlab/holoocean/
-   cd holoocean/clien
+   cd holoocean/client
    git checkout develop
    pip install .
 
