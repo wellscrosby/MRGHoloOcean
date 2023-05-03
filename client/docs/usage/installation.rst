@@ -39,7 +39,7 @@ Or as a single console command,
 
 ::
 
-   python -c `import holoocean; holoocean.install("Ocean")`
+   python -c "import holoocean; holoocean.install('Ocean')"
 
 .. note::
    There is a bug on Windows with the package ``pywin32`` that occurs occasionally. If you see 
