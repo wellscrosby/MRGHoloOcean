@@ -31,8 +31,8 @@ Sockets
 - ``IMUSocket`` Location of the IMU.
 - ``DepthSocket`` Location of the depth sensor.
 - ``SonarSocket`` Location of the sonar sensor.
-- ``CameraRightSocket`` Location of the right camera with respect to the side their mounted on as forwards.
-- ``CameraLeftSocket`` Location of the left camera with respect to the side their mounted on as forwards.
+- ``CameraRightSocket`` Location of the right camera with respect to the side it is mounted on as forwards.
+- ``CameraLeftSocket`` Location of the left camera with respect to the side it is mounted on as forwards.
 - ``Origin`` true center of the robot
 - ``Viewport`` where the robot is viewed from.
 
