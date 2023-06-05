@@ -79,4 +79,11 @@ Make sure the version in the path matches the output of the
    
     ``"path": "WindowsNoEditor/Holodeck/Binaries/Win64/Holodeck.exe"``
 
+Note on creating environment objects and Sonar:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sonar simulation relies upon the collision mesh for objects when generating the octree. If 
+the collision mesh of an object is coarser than the visual mesh then the representation of
+that object in a sonar image will be inaccurate. This issue can be addressed for the objects
+by using the Unreal Engine editor and setting the “Collision Complexity” option in the 
+details section of the static mesh editor to “use complex collision as simple”.
  
