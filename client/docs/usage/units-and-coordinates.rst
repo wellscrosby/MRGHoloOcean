@@ -31,7 +31,7 @@ defaults to centimeters, we've changed this to make things a bit easier).
 Rotations
 =========
 
-Rotations are specified in ``[roll, pitch, yaw]`` / ``[x, y, z]`` format, in in degrees (usually). This means
+Rotations are specified in ``[roll, pitch, yaw]`` / ``[x, y, z]`` format, in degrees (usually). This means
 
 - **Roll**: Rotation around the fixed forward (``x``) axis
 - **Pitch**: Rotation around the fixed right (``y``) axis
