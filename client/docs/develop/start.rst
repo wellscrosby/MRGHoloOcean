@@ -25,7 +25,7 @@ You can now install the python package by running ``pip install -e client/``.
 
 Opening & Prepping Project 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-Inside of your cloned repo in the engine directoyr, there is a holodeck.uproject file. Double click it, and choose "4.27" if an engine version dialog opens up, click "yes" to any dialog that says "Would you like to rebuild them now?", and then unreal should pop open!
+Inside of your cloned repo in the engine directory, there is a holodeck.uproject file. Double click it, and choose "4.27" if an engine version dialog opens up, click "yes" to any dialog that says "Would you like to rebuild them now?", and then unreal should pop open!
 
 There's many ways to develop in unreal, but we're going to focus on how I've found is the easiest way to development code.
 
