@@ -6,7 +6,7 @@ Getting Started
 While unreal development is possible on Linux, I've found working on Windows to be much more straightforward and stable. Regardless of which one you use, you'll need the following dependencies:
 
 * `Unreal Engine 4.27 <https://docs.unrealengine.com/4.27/en-US/Basics/InstallingUnrealEngine/>`_
-* Visual Studio 2017
+* `Visual Studio 2019 <https://visualstudio.microsoft.com/vs/older-downloads/>`
 * git
 * Some sort of python installation (conda is my preferred)
 
