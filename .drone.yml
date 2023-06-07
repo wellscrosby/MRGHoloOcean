@@ -93,11 +93,11 @@ steps:
   - cd client
   - tox -e py310
 
-- name: py311
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
-  commands:
-  - cd client
-  - tox -e py311
+#- name: py311
+#  image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
+#  commands:
+#  - cd client
+#  - tox -e py311
 
 volumes:
 - name: docker_sock
