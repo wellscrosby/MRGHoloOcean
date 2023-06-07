@@ -2,8 +2,7 @@ FROM adamrehn/ue4-runtime:20.04-cudagl11.2.0-noaudio
 
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
-RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb
-RUN sudo dpkg -i cuda-keyring_1.0-1_all.deb
+RUN curl -o cuda-keyring_1.0-1_all.deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb && dpkg -i cuda-keyring_1.0-1_all.deb
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl git libglib2.0-dev software-properties-common
 
