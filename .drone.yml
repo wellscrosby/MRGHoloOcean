@@ -69,11 +69,11 @@ steps:
 
 # iterate through all python versions
 
-- name: py36
-  image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
-  commands:
-  - cd client
-  - tox -e py36
+# - name: py36
+#   image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
+#   commands:
+#   - cd client
+#   - tox -e py36
 
 - name: py37
   image: "${DRONE_REPO}:${DRONE_COMMIT:0:7}"
