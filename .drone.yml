@@ -4,14 +4,14 @@ name: default
 
 steps:
 - name: Build Editor
-  image: adamrehn/ue4-full:custom
+  image: adamrehn/ue4-full:4.27.2_10June2023
   commands:
   - cd engine
   - bash Build/ContinuousIntegration/build_project.sh
   - echo "The commit builds"
 
 - name: Package Project
-  image: adamrehn/ue4-full:custom
+  image: adamrehn/ue4-full:4.27.2_10June2023
   commands:
   - cd engine
   - bash Build/ContinuousIntegration/package_ue4_project.sh ${DRONE_COMMIT:0:7}
