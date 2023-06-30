@@ -18,7 +18,7 @@ class UHolodeckSensor;
 
 /**
 * AHolodeckAgent
-* The base class for holodeck agents. 
+* The base class for holodeck agents.
 * HolodeckAgents are controllable from python.
 * A HolodeckAgent contains the logic for how it acts at a low level.
 * To get to a higher level of control, the logic should be implemented in
@@ -36,14 +36,14 @@ public:
 
 	/**
 	  * BeginPlay
-	  * Should only call Super() and InitializeAgent() all other initialization 
+	  * Should only call Super() and InitializeAgent() all other initialization
 	  * code should be called from within that function
 	  */
 	virtual void BeginPlay() final;
 
 	/**
 	* InitializeAgent
-	* All agent initialization code should go in here. 
+	* All agent initialization code should go in here.
 	*/
 	UFUNCTION(BlueprintCallable)
 	virtual void InitializeAgent();
@@ -124,9 +124,9 @@ public:
 	/* Stores pointers to all the sensors on the agent. */
 	TMap<FString, UHolodeckSensor*> SensorMap;
 	AHolodeckPawnControllerInterface* HolodeckController;
-	
-	float* CurrentVelocity;
-	
+
+	float* OceanCurrentVelocityPtr;
+
 private:
 
 	UHolodeckGameInstance* Instance;

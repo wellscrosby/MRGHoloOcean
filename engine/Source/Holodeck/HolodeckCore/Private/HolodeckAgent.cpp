@@ -9,7 +9,7 @@ const int CURRENT_BYTES = sizeof(float) * 3;
 
 AHolodeckAgent::AHolodeckAgent() {
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.TickGroup = TG_PrePhysics; //The tick function will we called before any physics simulation. 
+	PrimaryActorTick.TickGroup = TG_PrePhysics; //The tick function will we called before any physics simulation.
 	AddTickPrerequisiteActor(GetController()); //The agent's controller will always tick before the agent.
 }
 
@@ -43,7 +43,7 @@ void AHolodeckAgent::InitializeAgent() {
 	}
 
 	// Get Current Velocity pointer
-	CurrentVelocity = static_cast<float*>(Server->Malloc(CURRENT_KEY, CURRENT_BYTES));
+	OceanCurrentVelocityPtr = static_cast<float*>(Server->Malloc(CURRENT_KEY, CURRENT_BYTES));
 
 	// Initialize Sensors
 	TArray<UActorComponent*> Sensors;
@@ -67,7 +67,7 @@ bool AHolodeckAgent::Teleport(const FVector& NewLocation, const FRotator& NewRot
 	bool bWasSuccessful = this->K2_SetActorLocationAndRotation(
 		NewLocation,
 		NewRotation,
-		false, //will not be blocked by object in between current and new location. 
+		false, //will not be blocked by object in between current and new location.
 		DummyHitResult, //this object is where the hit result is reported, if teleport can be blocked by objects in between.
 		true //the object will retain its momentum(otherwise the android could not be teleported).
 	);
@@ -77,7 +77,7 @@ bool AHolodeckAgent::Teleport(const FVector& NewLocation, const FRotator& NewRot
 	} else {
 		UE_LOG(LogHolodeck, Warning, TEXT("HolodeckAgent %s did not teleport successfully"), *AgentName);
 	}
-	
+
 	return bWasSuccessful;
 }
 
@@ -94,7 +94,7 @@ bool AHolodeckAgent::SetState(const FVector& NewLocation, const FRotator& NewRot
 		NewRotation,
 		true, // will sweep and be blocked by an object in the path
 		HitResult, //this object is where the hit result is reported, if teleport can be blocked by objects in between.
-		false 
+		false
 	);
 
 	UPrimitiveComponent* RootComp = (UPrimitiveComponent*)this->GetRootComponent();

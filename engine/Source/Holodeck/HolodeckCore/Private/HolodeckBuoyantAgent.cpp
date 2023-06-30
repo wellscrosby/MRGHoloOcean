@@ -54,7 +54,7 @@ void AHolodeckBuoyantAgent::ApplyBuoyantForce(){
 	// Check to see how underwater we are
 	FVector* points = SurfacePoints.GetData();
 	int count = 0;
-	for(int i=0;i<NumSurfacePoints;i++){	
+	for(int i=0;i<NumSurfacePoints;i++){
 		FVector p_world = ActorLocation + ActorRotation.RotateVector(points[i]);
 		if(p_world.Z < SurfaceLevel)
 			count++;
@@ -76,8 +76,8 @@ void AHolodeckBuoyantAgent::ApplyBuoyantForce(){
 // apply drag force to the AUV
 void AHolodeckBuoyantAgent::ApplyDrag() {
     FVector CurrentsVel = FVector(0, 0, 0);
-    if (CurrentVelocity != nullptr){
-		CurrentsVel = FVector(CurrentVelocity[0], CurrentVelocity[1], CurrentVelocity[2]);
+    if (OceanCurrentVelocityPtr != nullptr){
+		CurrentsVel = FVector(OceanCurrentVelocityPtr[0], OceanCurrentVelocityPtr[1], OceanCurrentVelocityPtr[2]);
     }
 
     FVector AUVVel = RootMesh->GetBodyInstance()->GetUnrealWorldVelocity() / 100; // in m/s
