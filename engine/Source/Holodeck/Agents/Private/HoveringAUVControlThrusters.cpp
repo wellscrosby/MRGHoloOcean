@@ -20,6 +20,10 @@ void UHoveringAUVControlThrusters::Execute(void* const CommandArray, void* const
 	float* CommandArrayFloat = static_cast<float*>(CommandArray);
 
 	HoveringAUV->ApplyBuoyantForce();
+	
+	// Apply drag
+	HoveringAUV->ApplyDrag();
+
 	HoveringAUV->ApplyThrusters(InputCommandFloat);
 
 	// Zero out the physics based controller

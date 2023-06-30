@@ -73,6 +73,24 @@ void AHolodeckBuoyantAgent::ApplyBuoyantForce(){
 	RootMesh->AddForceAtLocation(GravityVector, RootMesh->GetCenterOfMass());
 }
 
+// apply drag force to the AUV
+void AHolodeckBuoyantAgent::ApplyDrag() {
+    FVector CurrentsVel = FVector(0, 0, 0);
+    if (CurrentVelocity != nullptr){
+		CurrentsVel = FVector(CurrentVelocity[0], CurrentVelocity[1], CurrentVelocity[2]);
+    }
+
+    FVector AUVVel = RootMesh->GetBodyInstance()->GetUnrealWorldVelocity() / 100; // in m/s
+    FVector RelativeVel = AUVVel - CurrentsVel;
+
+    // density of water
+    float rho = 1000;
+    // drag force
+    FVector DragForce = -0.5 * rho * RelativeVel.SizeSquared() * CoefficientOfDrag * AreaOfDrag * RelativeVel.GetSafeNormal();
+
+    RootMesh->GetBodyInstance()->AddForce(DragForce, true, true);
+}
+
 void AHolodeckBuoyantAgent::ShowBoundingBox(float DeltaTime){
 	FVector location = GetActorLocation() + GetActorRotation().RotateVector(OffsetToOrigin + CenterVehicle);
 	DrawDebugBox(GetWorld(), location, BoundingBox.GetExtent(), GetActorQuat(), FColor::Red, false, DeltaTime, 0, 1);

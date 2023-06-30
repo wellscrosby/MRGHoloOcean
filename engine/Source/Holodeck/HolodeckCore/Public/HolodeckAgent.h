@@ -124,7 +124,9 @@ public:
 	/* Stores pointers to all the sensors on the agent. */
 	TMap<FString, UHolodeckSensor*> SensorMap;
 	AHolodeckPawnControllerInterface* HolodeckController;
-
+	
+	float* CurrentVelocity;
+	
 private:
 
 	UHolodeckGameInstance* Instance;

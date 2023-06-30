@@ -17,6 +17,10 @@ AHoveringAUV::AHoveringAUV() {
 	this->CenterMass = FVector(-5.9, 0.46, -2.82);
 	this->MassInKG = 31.02;
 	this->OffsetToOrigin = FVector(-0.7, -2, 32);
+
+	// These values are completely guesstimations
+	this->CoefficientOfDrag = 0.8;
+	this->AreaOfDrag = 0.5;
 }
 
 // Sets all values that we need
@@ -63,7 +67,9 @@ void AHoveringAUV::Tick(float DeltaSeconds) {
 // For empty dynamics, damping is disabled
 // Enable it when using thrusters/controller
 void AHoveringAUV::EnableDamping(){
-	RootMesh->SetLinearDamping(1.0);
+	// commenting out linear damping for drag to replace
+	//RootMesh->SetLinearDamping(1.0);
+
 	RootMesh->SetAngularDamping(0.75);
 }
 

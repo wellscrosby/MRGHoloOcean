@@ -4,6 +4,9 @@
 #include "HolodeckAgent.h"
 #include "HolodeckSensor.h"
 
+const char CURRENT_KEY[] = "current_velocity";
+const int CURRENT_BYTES = sizeof(float) * 3;
+
 AHolodeckAgent::AHolodeckAgent() {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PrePhysics; //The tick function will we called before any physics simulation. 
@@ -38,6 +41,9 @@ void AHolodeckAgent::InitializeAgent() {
 	} else {
 		Server->AgentMap.Add(*AgentName, this);
 	}
+
+	// Get Current Velocity pointer
+	CurrentVelocity = static_cast<float*>(Server->Malloc(CURRENT_KEY, CURRENT_BYTES));
 
 	// Initialize Sensors
 	TArray<UActorComponent*> Sensors;

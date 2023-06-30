@@ -39,6 +39,10 @@ public:
 	FVector CenterBuoyancy; // in cm
 	FVector CenterMass; // in cm
 	float MassInKG;
+	float CoefficientOfDrag;
+	float AreaOfDrag; // in m^2
+
+	void ApplyDrag();
 
 	// Used for surface buoyancy.
 	// These are optional to set, will be calculated based on mesh 
@@ -47,7 +51,7 @@ public:
 	FBox BoundingBox = FBox();
 	TArray<FVector> SurfacePoints;
 	float SurfaceLevel = 0;
-	
+
 	void ApplyBuoyantForce();
 	void ShowBoundingBox(float DeltaTime);
 	void ShowSurfacePoints(float DeltaTime);

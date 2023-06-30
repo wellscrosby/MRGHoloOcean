@@ -15,7 +15,11 @@ ATorpedoAUV::ATorpedoAUV() {
 	this->CenterBuoyancy = FVector(0,0,7); 
 	this->CenterMass = FVector(0,0,0);
 	this->MassInKG = 36;
-	this->Volume =  MassInKG / WaterDensity; //0.0342867409204;	
+	this->Volume =  MassInKG / WaterDensity; //0.0342867409204;
+
+	// These values are completely guesstimations
+	this->CoefficientOfDrag = 0.4;
+	this->AreaOfDrag = 0.2;
 }
 
 void ATorpedoAUV::InitializeAgent() {
@@ -109,6 +113,8 @@ void ATorpedoAUV::ApplyThrust(float thrust){
 // For empty dynamics, damping is disabled
 // Enable it when using thrusters & fins
 void ATorpedoAUV::EnableDamping(){
-	RootMesh->SetLinearDamping(0.75);
+	// commenting out linear damping for drag to replace 
+	//RootMesh->SetLinearDamping(0.75);
+	
 	RootMesh->SetAngularDamping(0.5);
 }

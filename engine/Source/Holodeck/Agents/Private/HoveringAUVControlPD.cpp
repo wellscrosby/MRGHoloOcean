@@ -19,6 +19,9 @@ void UHoveringAUVControlPD::Execute(void* const CommandArray, void* const InputC
 	// Apply gravity & buoyancy
 	HoveringAUV->ApplyBuoyantForce();
 
+	// Apply drag
+	HoveringAUV->ApplyDrag();
+
 	float* InputCommandFloat = static_cast<float*>(InputCommand);
 	float* CommandArrayFloat = static_cast<float*>(CommandArray);
 

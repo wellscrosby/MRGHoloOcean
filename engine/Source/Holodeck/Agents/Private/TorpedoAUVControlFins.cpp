@@ -22,6 +22,9 @@ void UTorpedoAUVControlFins::Execute(void* const CommandArray, void* const Input
 	// Buoyancy forces
 	TorpedoAUV->ApplyBuoyantForce();
 
+	// Apply drag
+	TorpedoAUV->ApplyDrag();
+
 	// Propeller
 	TorpedoAUV->ApplyThrust(InputCommandFloat[4]);
 	
