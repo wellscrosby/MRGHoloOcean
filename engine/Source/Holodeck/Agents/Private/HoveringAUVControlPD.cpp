@@ -12,20 +12,20 @@ void UHoveringAUVControlPD::Execute(void* const CommandArray, void* const InputC
 			UE_LOG(LogHolodeck, Error, TEXT("UHoveringAUVControlPD couldn't get HoveringAUV reference"));
 			return;
 		}
-		
 		HoveringAUV->EnableDamping();
 	}
 
 	// Apply gravity & buoyancy
 	HoveringAUV->ApplyBuoyantForce();
 
-	// Apply drag
-	HoveringAUV->ApplyDrag();
+	// Apply Drag
+	HoveringAUV->ApplyDragForce();
+
 
 	float* InputCommandFloat = static_cast<float*>(InputCommand);
 	float* CommandArrayFloat = static_cast<float*>(CommandArray);
 
-	// ALL calculations here are done in HoloOcean frame & units. 
+	// ALL calculations here are done in HoloOcean frame & units.
 
 	// Get desired information
 	FVector DesiredPosition = FVector(InputCommandFloat[0], InputCommandFloat[1], InputCommandFloat[2]);

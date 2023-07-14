@@ -2,13 +2,14 @@
 
 #include "Holodeck.h"
 #include "HoveringAUV.h"
+#include "ScubaDiver.h"
 
 // Sets default values
-AHoveringAUV::AHoveringAUV() {
+AScubaDiver::AScubaDiver() {
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Set the defualt controller
-	AIControllerClass = LoadClass<AController>(NULL, TEXT("/Script/Holodeck.HoveringAUVController"), NULL, LOAD_None, NULL);
+	AIControllerClass = LoadClass<AController>(NULL, TEXT("/Script/Holodeck.ScubaDiverController"), NULL, LOAD_None, NULL);
 	AutoPossessAI = EAutoPossessAI::PlacedInWorld;
 
 	// This values are all pulled from the solidworks file
@@ -24,7 +25,7 @@ AHoveringAUV::AHoveringAUV() {
 }
 
 // Sets all values that we need
-void AHoveringAUV::InitializeAgent() {
+void AScubaDiver::InitializeAgent() {
 	RootMesh = Cast<UStaticMeshComponent>(RootComponent);
 
 	if(Perfect){
@@ -46,7 +47,7 @@ void AHoveringAUV::InitializeAgent() {
 }
 
 // Called every frame
-void AHoveringAUV::Tick(float DeltaSeconds) {
+void AScubaDiver::Tick(float DeltaSeconds) {
 	Super::Tick(DeltaSeconds);
 
 	// Convert linear acceleration to force
@@ -66,7 +67,7 @@ void AHoveringAUV::Tick(float DeltaSeconds) {
 
 // For empty dynamics, damping is disabled
 // Enable it when using thrusters/controller
-void AHoveringAUV::EnableDamping(){
+void AScubaDiver::EnableDamping(){
 	// Only damp if we are not doing currents
 	if (VecFieldActorPtr == nullptr){
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,"Lin Damping");
@@ -76,7 +77,7 @@ void AHoveringAUV::EnableDamping(){
 	RootMesh->SetAngularDamping(0.75);
 }
 
-void AHoveringAUV::ApplyThrusters(float* const ThrusterArray){
+void AScubaDiver::ApplyThrusters(float* const ThrusterArray){
 	// Iterate through vertical thrusters
 	for(int i=0;i<4;i++){
 		float force = FMath::Clamp(ThrusterArray[i], -AUV_MAX_THRUST, AUV_MAX_THRUST);

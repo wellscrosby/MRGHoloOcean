@@ -2,6 +2,7 @@
 
 #include "Holodeck.h"
 #include "HolodeckBuoyantAgent.h"
+#include "VectorField/VectorFieldStatic.h"
 
 void AHolodeckBuoyantAgent::InitializeAgent(){
 	Super::InitializeAgent();
@@ -32,6 +33,8 @@ void AHolodeckBuoyantAgent::InitializeAgent(){
 	else{
 		NumSurfacePoints = SurfacePoints.Num();
 	}
+
+	VecFieldActorPtr = UGameplayStatics::GetActorOfClass(GetWorld(), AVectorFieldVolume::StaticClass());
 }
 
 void AHolodeckBuoyantAgent::Tick(float DeltaSeconds) {
@@ -74,22 +77,96 @@ void AHolodeckBuoyantAgent::ApplyBuoyantForce(){
 }
 
 // apply drag force to the AUV
-void AHolodeckBuoyantAgent::ApplyDrag() {
-    FVector CurrentsVel = FVector(0, 0, 0);
-    if (OceanCurrentVelocityPtr != nullptr){
-		CurrentsVel = FVector(OceanCurrentVelocityPtr[0], OceanCurrentVelocityPtr[1], OceanCurrentVelocityPtr[2]);
-    }
+void AHolodeckBuoyantAgent::ApplyDragForce() {
+	FVector OceanCurrentsVel = FVector(0, 0, 0);
+	if (VecFieldActorPtr != nullptr && GetActorLocation()[2] <= 0){
+		AVectorFieldVolume* VecFieldVolume = Cast<AVectorFieldVolume>(VecFieldActorPtr);
+		UVectorField* VecField = VecFieldVolume->GetVectorFieldComponent()->VectorField;
 
-    FVector AUVVel = RootMesh->GetBodyInstance()->GetUnrealWorldVelocity() / 100; // in m/s
-    FVector RelativeVel = AUVVel - CurrentsVel;
+		FVector VecFieldLocation = VecFieldActorPtr->GetActorLocation();
+		FVector VecFieldMin = VecField->Bounds.Min + VecFieldLocation;
+		FVector VecFieldMax = VecField->Bounds.Max + VecFieldLocation;
 
-    // density of water
-    float rho = 1000;
-    // drag force
-    FVector DragForce = -0.5 * rho * RelativeVel.SizeSquared() * CoefficientOfDrag * AreaOfDrag * RelativeVel.GetSafeNormal();
+		UVectorFieldStatic* VecFieldStatic = Cast<UVectorFieldStatic>(VecField);
 
-    RootMesh->GetBodyInstance()->AddForce(DragForce, true, true);
+		FVector VecFieldDimensions = FVector(VecFieldStatic->SizeX, VecFieldStatic->SizeY, VecFieldStatic->SizeZ);
+
+		FVector GridPos = ((VecFieldDimensions - 1)/(VecFieldMax - VecFieldMin)) * (GetActorLocation() - VecFieldMin);
+
+		OceanCurrentsVel = VecFieldStatic->FilteredSample(GridPos, FVector(1.0, 1.0, 1.0)) / 1000;
+
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,"Grid Pos: " + GridPos.ToString());
+	}
+
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,"Current Vel: " + OceanCurrentsVel.ToString());
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,"World Pos: " + GetActorLocation().ToString());
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, "-------------");
+
+
+	FVector AUVVel = RootMesh->GetBodyInstance()->GetUnrealWorldVelocity() / 100.0; // in m/s
+	FVector RelativeVel = AUVVel - OceanCurrentsVel;
+
+	// density of water
+	float rho = 1000.0;
+	// drag force
+	FVector DragForce = -0.5 * rho * RelativeVel.SizeSquared() * CoefficientOfDrag * AreaOfDrag * RelativeVel.GetSafeNormal();
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, OceanCurrentsVel.ToString());
+
+	// You can use DrawDebug helpers and the log to help visualize and debug your trace queries.
+	//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + (OceanCurrentsVel * 1000), FColor::Red, false, 0.0f, 0, 5.0f);
+
+	RootMesh->GetBodyInstance()->AddForce(DragForce, true, true);
 }
+
+/* // apply drag force to the AUV
+void AHolodeckBuoyantAgent::ApplyDragOld() {
+    if (OceanCurrentVelocityPtr != nullptr){
+		FVector CurrentsVel = FVector(OceanCurrentVelocityPtr[0], OceanCurrentVelocityPtr[1], OceanCurrentVelocityPtr[2]);
+		if (OceanCurrentVelocityPtr[3] > 0.0) {
+			// FHitResult will hold all data returned by our line collision query
+			FHitResult Hit;
+
+			FVector TraceStart = GetActorLocation();
+			FVector TraceEnd = TraceStart + FVector(0.0, 0.0, -100000.0);
+
+			// Here we add ourselves to the ignored list so we won't block the trace
+			FCollisionQueryParams QueryParams;
+			QueryParams.AddIgnoredActor(this);
+
+			// To run the query, you need a pointer to the current level, which you can get from an Actor with GetWorld()
+			// UWorld()->LineTraceSingleByChannel runs a line trace and returns the first actor hit over the provided collision channel.
+			GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, TraceChannelProperty, QueryParams);
+
+			// If the trace hit something, bBlockingHit will be true,
+			// and its fields will be filled with detailed info about what was hit
+			if (Hit.bBlockingHit && IsValid(Hit.GetActor()))
+			{
+				// get our relative depth and scale the current velocity based on that
+				float RelativeDepth = 1 - (TraceStart[2] / Hit.ImpactPoint[2]);
+				CurrentsVel = CurrentsVel * RelativeDepth;
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::SanitizeFloat(RatioDepth));
+			} else {
+				CurrentsVel = FVector(0.0, 0.0, 0.0);
+			}
+		}
+
+		FVector AUVVel = RootMesh->GetBodyInstance()->GetUnrealWorldVelocity() / 100.0; // in m/s
+		FVector RelativeVel = AUVVel - CurrentsVel;
+
+		// density of water
+		float rho = 1000.0;
+		// drag force
+		FVector DragForce = -0.5 * rho * RelativeVel.SizeSquared() * CoefficientOfDrag * AreaOfDrag * RelativeVel.GetSafeNormal();
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, CurrentsVel.ToString());
+
+		// You can use DrawDebug helpers and the log to help visualize and debug your trace queries.
+		DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + (CurrentsVel * 1000), FColor::Red, false, 0.0f, 0, 5.0f);
+
+		RootMesh->GetBodyInstance()->AddForce(DragForce, true, true);
+    }
+} */
+
+
 
 void AHolodeckBuoyantAgent::ShowBoundingBox(float DeltaTime){
 	FVector location = GetActorLocation() + GetActorRotation().RotateVector(OffsetToOrigin + CenterVehicle);

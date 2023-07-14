@@ -113,8 +113,10 @@ void ATorpedoAUV::ApplyThrust(float thrust){
 // For empty dynamics, damping is disabled
 // Enable it when using thrusters & fins
 void ATorpedoAUV::EnableDamping(){
-	// commenting out linear damping for drag to replace 
-	//RootMesh->SetLinearDamping(0.75);
-	
+	// Only damp if we are not doing currents
+	if (VecFieldActorPtr == nullptr){
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,"Lin Damping");
+		RootMesh->SetLinearDamping(1.0);
+	}
 	RootMesh->SetAngularDamping(0.5);
 }

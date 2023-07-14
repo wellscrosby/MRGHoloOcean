@@ -12,7 +12,7 @@ void UTorpedoAUVControlFins::Execute(void* const CommandArray, void* const Input
 			UE_LOG(LogHolodeck, Error, TEXT("UTorpedoAUVControlFins couldn't get TorpedoAUV reference"));
 			return;
 		}
-		
+
 		TorpedoAUV->EnableDamping();
 	}
 
@@ -22,12 +22,12 @@ void UTorpedoAUVControlFins::Execute(void* const CommandArray, void* const Input
 	// Buoyancy forces
 	TorpedoAUV->ApplyBuoyantForce();
 
-	// Apply drag
-	TorpedoAUV->ApplyDrag();
+	// Apply Drag
+	TorpedoAUV->ApplyDragForce();
 
 	// Propeller
 	TorpedoAUV->ApplyThrust(InputCommandFloat[4]);
-	
+
 	// Apply fin forces
 	for(int i=0;i<4;i++){
 		TorpedoAUV->ApplyFin(i, InputCommandFloat[i]);

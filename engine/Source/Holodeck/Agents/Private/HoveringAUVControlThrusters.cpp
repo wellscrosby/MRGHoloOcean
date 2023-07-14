@@ -20,9 +20,9 @@ void UHoveringAUVControlThrusters::Execute(void* const CommandArray, void* const
 	float* CommandArrayFloat = static_cast<float*>(CommandArray);
 
 	HoveringAUV->ApplyBuoyantForce();
-	
-	// Apply drag
-	HoveringAUV->ApplyDrag();
+
+	// Apply Drag
+	HoveringAUV->ApplyDragForce();
 
 	HoveringAUV->ApplyThrusters(InputCommandFloat);
 

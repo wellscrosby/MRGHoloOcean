@@ -125,7 +125,7 @@ public:
 	TMap<FString, UHolodeckSensor*> SensorMap;
 	AHolodeckPawnControllerInterface* HolodeckController;
 
-	float* OceanCurrentVelocityPtr;
+	// float* OceanCurrentVelocityPtr;
 
 private:
 

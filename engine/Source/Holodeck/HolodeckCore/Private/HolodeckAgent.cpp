@@ -4,8 +4,8 @@
 #include "HolodeckAgent.h"
 #include "HolodeckSensor.h"
 
-const char CURRENT_KEY[] = "current_velocity";
-const int CURRENT_BYTES = sizeof(float) * 3;
+const FString OCEAN_CURRENT_KEY = "current_velocity";
+const int OCEAN_CURRENT_BYTES = sizeof(float) * 4;
 
 AHolodeckAgent::AHolodeckAgent() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -42,8 +42,8 @@ void AHolodeckAgent::InitializeAgent() {
 		Server->AgentMap.Add(*AgentName, this);
 	}
 
-	// Get Current Velocity pointer
-	OceanCurrentVelocityPtr = static_cast<float*>(Server->Malloc(CURRENT_KEY, CURRENT_BYTES));
+	// Get Ocean Current Velocity pointer
+	// OceanCurrentVelocityPtr = static_cast<float*>(Server->Malloc(UHolodeckServer::MakeKey(AgentName, OCEAN_CURRENT_KEY), OCEAN_CURRENT_BYTES));
 
 	// Initialize Sensors
 	TArray<UActorComponent*> Sensors;

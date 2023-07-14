@@ -591,7 +591,7 @@ class DynamicsSensor(HoloOceanSensor):
 
 class CollisionSensor(HoloOceanSensor):
     """Returns true if the agent is colliding with anything (including the ground).
-    
+
     """
 
     sensor_type = "CollisionSensor"

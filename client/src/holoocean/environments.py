@@ -159,7 +159,7 @@ class HoloOceanEnvironment:
             elif os.name == "nt":
                 self.__windows_start_process__(
                     binary_path, world_key, verbose=verbose, show_viewport=show_viewport
-                )            
+                )
             else:
                 raise HoloOceanException("Unknown platform: " + os.name)
 
@@ -486,7 +486,7 @@ class HoloOceanEnvironment:
             publish (:obj:`bool`): Whether or not to publish as defined by scenario. Defaults to True.
 
         Returns:
-            :obj:`dict`: 
+            :obj:`dict`:
                 A dictionary from agent name to its full state. The full state is another
                 dictionary from :obj:`holoocean.sensors.Sensors` enum to np.ndarray, containing the
                 sensors information for each sensor. The sensors always include the reward and
@@ -814,7 +814,7 @@ class HoloOceanEnvironment:
             '-OctreeMin=' + str(self._octree_min),
             '-OctreeMax=' + str(self._octree_max)
         ]
-        
+
         if not show_viewport:
             arguments.append("-RenderOffScreen")
 
@@ -947,7 +947,7 @@ class HoloOceanEnvironment:
     @property
     def beacons(self):
         """Gets all instances of AcousticBeaconSensor in the environment.
-        
+
         Returns:
             (:obj:`list` of :obj:`AcousticBeaconSensor`): List of all AcousticBeaconSensor in environment
         """
@@ -956,7 +956,7 @@ class HoloOceanEnvironment:
     @property
     def beacons_id(self):
         """Gets all ids of AcousticBeaconSensor in the environment.
-        
+
         Returns:
             (:obj:`list` of :obj:`int`): List of all AcousticBeaconSensor ids in environment
         """
@@ -965,7 +965,7 @@ class HoloOceanEnvironment:
     @property
     def beacons_status(self):
         """Gets all status of AcousticBeaconSensor in the environment.
-        
+
         Returns:
             (:obj:`list` of :obj:`str`): List of all AcousticBeaconSensor status in environment
         """
@@ -987,7 +987,7 @@ class HoloOceanEnvironment:
     @property
     def modems(self):
         """Gets all instances of OpticalModemSensor in the environment.
-        
+
         Returns:
             (:obj:`list` of :obj:`OpticalModemSensor`): List of all OpticalModemSensor in environment
         """
@@ -996,7 +996,7 @@ class HoloOceanEnvironment:
     @property
     def modems_id(self):
         """Gets all ids of OpticalModemSensor in the environment.
-        
+
         Returns:
             (:obj:`list` of :obj:`int`): List of all OpticalModemSensor ids in environment
         """
